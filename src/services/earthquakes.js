@@ -1,5 +1,5 @@
 import { API_CONFIG } from '../config/api';
-import { autoTranslate } from '../utils/translate';
+import { asyncTranslate } from '../utils/translate';
 
 function magnitudeToSeverity(mag) {
   if (mag >= 7) return 'critical';
@@ -17,10 +17,10 @@ export async function fetchEarthquakes(timeRange = 'day') {
   if (!res.ok) throw new Error(`USGS API error: ${res.status}`);
   const data = await res.json();
 
-  return data.features.map((f) => ({
+  const events = data.features.map((f) => ({
     id: `usgs-${f.id}`,
     type: 'earthquake',
-    title: autoTranslate(f.properties.title),
+    title: f.properties.title,
     description: `Magnitude ${f.properties.mag} – Profondeur ${f.geometry.coordinates[2]?.toFixed(1)} km`,
     latitude: f.geometry.coordinates[1],
     longitude: f.geometry.coordinates[0],
@@ -37,6 +37,11 @@ export async function fetchEarthquakes(timeRange = 'day') {
     sig: f.properties.sig,
     rawData: f.properties,
   }));
+
+  // Batch translate titles
+  const translations = await Promise.all(events.map((e) => asyncTranslate(e.title)));
+  translations.forEach((t, i) => { events[i].title = t; });
+  return events;
 }
 
 export async function fetchSignificantEarthquakes() {
@@ -45,10 +50,10 @@ export async function fetchSignificantEarthquakes() {
   if (!res.ok) throw new Error(`USGS API error: ${res.status}`);
   const data = await res.json();
 
-  return data.features.map((f) => ({
+  const events = data.features.map((f) => ({
     id: `usgs-sig-${f.id}`,
     type: 'earthquake',
-    title: autoTranslate(f.properties.title),
+    title: f.properties.title,
     description: `Séisme significatif – Magnitude ${f.properties.mag}`,
     latitude: f.geometry.coordinates[1],
     longitude: f.geometry.coordinates[0],
@@ -61,4 +66,8 @@ export async function fetchSignificantEarthquakes() {
     tsunami: f.properties.tsunami > 0,
     pagerAlert: f.properties.alert,
   }));
+
+  const translations = await Promise.all(events.map((e) => asyncTranslate(e.title)));
+  translations.forEach((t, i) => { events[i].title = t; });
+  return events;
 }

@@ -181,10 +181,88 @@ export function translateToFrench(text) {
 
 /**
  * Translates only if the text appears to be English (no French accents, etc.)
+ * Synchronous keyword-based fallback.
  */
 export function autoTranslate(text) {
   if (!text) return '';
   const frenchIndicators = /[àâäéèêëïîôùûüçœæ]|(?:^|\s)(le|la|les|de|du|des|un|une|en|et|ou|dans|pour|sur|par|avec|aux)\s/i;
   if (frenchIndicators.test(text)) return text;
   return translateToFrench(text);
+}
+
+// ============================================
+// MyMemory API — real EN→FR translation
+// ============================================
+
+const MYMEMORY_CACHE = new Map();
+const MYMEMORY_MAX_CHARS = 450;
+
+function splitIntoChunks(text) {
+  if (text.length <= MYMEMORY_MAX_CHARS) return [text];
+  const chunks = [];
+  let remaining = text;
+  while (remaining.length > MYMEMORY_MAX_CHARS) {
+    let cutAt = -1;
+    for (let i = MYMEMORY_MAX_CHARS - 1; i >= 100; i--) {
+      if ('.!?:'.includes(remaining[i]) && (i + 1 >= remaining.length || remaining[i + 1] === ' ')) {
+        cutAt = i + 1;
+        break;
+      }
+    }
+    if (cutAt === -1) cutAt = remaining.lastIndexOf(' ', MYMEMORY_MAX_CHARS);
+    if (cutAt <= 0) cutAt = MYMEMORY_MAX_CHARS;
+    chunks.push(remaining.slice(0, cutAt).trim());
+    remaining = remaining.slice(cutAt).trim();
+  }
+  if (remaining) chunks.push(remaining);
+  return chunks;
+}
+
+async function translateChunkMyMemory(text) {
+  if (!text) return text;
+  if (MYMEMORY_CACHE.has(text)) return MYMEMORY_CACHE.get(text);
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|fr`,
+      { signal: controller.signal }
+    );
+    clearTimeout(timeout);
+    if (!res.ok) return text;
+    const json = await res.json();
+    const translated = json.responseData?.translatedText || text;
+    // MyMemory returns uppercase warning when quota exceeded
+    if (translated.includes('MYMEMORY WARNING')) return text;
+    MYMEMORY_CACHE.set(text, translated);
+    return translated;
+  } catch {
+    return text;
+  }
+}
+
+/**
+ * Async EN→FR translation via MyMemory API.
+ * Falls back to original text on failure.
+ */
+export async function asyncTranslate(text) {
+  if (!text || typeof text !== 'string') return text || '';
+  const trimmed = text.trim();
+  if (!trimmed) return '';
+
+  // Already French? Skip
+  const frenchIndicators = /[àâäéèêëïîôùûüçœæ]|(?:^|\s)(le|la|les|de|du|des|un|une|en|et|ou|dans|pour|sur|par|avec|aux)\s/i;
+  if (frenchIndicators.test(trimmed)) return trimmed;
+
+  const chunks = splitIntoChunks(trimmed);
+  const translated = await Promise.all(chunks.map((c) => translateChunkMyMemory(c)));
+  return translated.join(' ');
+}
+
+/**
+ * Batch-translate an array of strings via MyMemory.
+ * Returns same-length array with translated strings.
+ */
+export async function asyncTranslateBatch(texts) {
+  return Promise.all(texts.map((t) => asyncTranslate(t)));
 }

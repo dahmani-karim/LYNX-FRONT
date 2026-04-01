@@ -1,5 +1,5 @@
 import { API_CONFIG } from '../config/api';
-import { autoTranslate } from '../utils/translate';
+import { asyncTranslate } from '../utils/translate';
 
 /**
  * Fetches geopolitical events from GDELT (social unrest, sanctions, diplomacy).
@@ -35,7 +35,7 @@ export async function fetchGeopolitics() {
         events.push({
           id: `geo-${category}-${i}-${Date.now()}`,
           type: category,
-          title: autoTranslate(a.title) || 'Événement géopolitique',
+          title: a.title || 'Événement géopolitique',
           description: `Source: ${a.domain || 'GDELT'}${a.seendate ? ` | ${a.seendate.slice(0, 10)}` : ''}`,
           severity,
           eventDate: a.seendate ? formatDate(a.seendate) : new Date().toISOString(),
@@ -52,6 +52,10 @@ export async function fetchGeopolitics() {
       console.warn(`[geopolitics] GDELT ${category} failed:`, err.message);
     }
   }
+
+  // Batch translate titles
+  const translations = await Promise.all(events.map((e) => asyncTranslate(e.title)));
+  translations.forEach((t, i) => { events[i].title = t; });
 
   return events;
 }

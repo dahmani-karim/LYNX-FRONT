@@ -1,5 +1,5 @@
 import { API_CONFIG } from '../config/api';
-import { autoTranslate } from '../utils/translate';
+import { asyncTranslate } from '../utils/translate';
 
 /**
  * Fetches space weather alerts from NOAA SWPC.
@@ -26,8 +26,8 @@ export async function fetchSpaceWeather() {
         events.push({
           id: `sw-alert-${i}-${Date.now()}`,
           type: 'space_weather',
-          title: autoTranslate(extractAlertTitle(message)),
-          description: autoTranslate(message.slice(0, 400)),
+          title: extractAlertTitle(message),
+          description: message.slice(0, 400),
           severity,
           eventDate: alert.issue_datetime || new Date().toISOString(),
           latitude: 64.8, // Aurora oval center
@@ -68,6 +68,12 @@ export async function fetchSpaceWeather() {
   } catch (err) {
     console.warn('[spaceWeather] NOAA SWPC failed:', err.message);
   }
+
+  // Batch translate titles and descriptions
+  const titleTranslations = await Promise.all(events.map((e) => asyncTranslate(e.title)));
+  const descTranslations = await Promise.all(events.map((e) => asyncTranslate(e.description)));
+  titleTranslations.forEach((t, i) => { events[i].title = t; });
+  descTranslations.forEach((t, i) => { events[i].description = t; });
 
   return events;
 }

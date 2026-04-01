@@ -1,5 +1,5 @@
 import { API_CONFIG } from '../config/api';
-import { autoTranslate } from '../utils/translate';
+import { asyncTranslate } from '../utils/translate';
 
 /**
  * Fetches ongoing international crises and conflicts.
@@ -52,12 +52,12 @@ async function fetchFromGDELT() {
       const articles = data.articles || [];
       if (!articles.length) continue;
 
-      return articles.map((a, i) => {
+      const events = articles.map((a, i) => {
         const severity = assessGDELTSeverity(a);
         return {
           id: `conflict-gdelt-${i}-${Date.now()}`,
           type: 'conflict',
-          title: autoTranslate(a.title) || 'Événement géopolitique',
+          title: a.title || 'Événement géopolitique',
           description: (a.seendate ? `[${a.seendate.slice(0, 10)}] ` : '') + (a.domain || ''),
           severity,
           eventDate: a.seendate ? formatGDELTDate(a.seendate) : new Date().toISOString(),
@@ -71,6 +71,11 @@ async function fetchFromGDELT() {
           metadata: { themes: [], disasters: [] },
         };
       });
+
+      // Batch translate titles
+      const translations = await Promise.all(events.map((e) => asyncTranslate(e.title)));
+      translations.forEach((t, i) => { events[i].title = t; });
+      return events;
     } catch { continue; }
   }
   throw new Error('All proxies failed for GDELT');
@@ -153,16 +158,16 @@ async function fetchFromReliefWebDirect() {
   return mapReliefWebData(data.data || []);
 }
 
-function mapReliefWebData(items) {
-  return items.map((item) => {
+async function mapReliefWebData(items) {
+  const events = items.map((item) => {
     const fields = item.fields || {};
     const country = fields.primary_country?.name || 'Inconnu';
     const countryIso = fields.primary_country?.iso3 || '';
     return {
       id: `conflict-${item.id}`,
       type: 'conflict',
-      title: autoTranslate(fields.title) || 'Conflit international',
-      description: autoTranslate(extractCleanText(fields['body-html'] || '', 200)),
+      title: fields.title || 'Conflit international',
+      description: extractCleanText(fields['body-html'] || '', 200),
       severity: assessReliefWebSeverity(fields),
       eventDate: fields.date?.created || new Date().toISOString(),
       latitude: fields.primary_country?.location?.lat || null,
@@ -178,6 +183,13 @@ function mapReliefWebData(items) {
       },
     };
   });
+
+  // Batch translate titles and descriptions
+  const titleT = await Promise.all(events.map((e) => asyncTranslate(e.title)));
+  const descT = await Promise.all(events.map((e) => asyncTranslate(e.description)));
+  titleT.forEach((t, i) => { events[i].title = t; });
+  descT.forEach((t, i) => { events[i].description = t; });
+  return events;
 }
 
 function assessReliefWebSeverity(fields) {
