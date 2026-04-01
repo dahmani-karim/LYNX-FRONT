@@ -1,13 +1,9 @@
 .map-page {
   position: relative;
-  height: calc(100dvh - $header-height - $bottom-nav-height);
+  height: calc(100dvh - $header-height);
 
   .leaflet-control-attribution {
     display: none;
-  }
-
-  @media (min-width: $bp-lg) {
-    height: calc(100dvh - $header-height);
   }
 
   // Mode switch

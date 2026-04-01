@@ -147,7 +147,7 @@
 .mobile-sidebar {
   position: fixed;
   inset: 0;
-  z-index: $z-header;
+  z-index: $z-map-controls + 10;
 
   @media (min-width: $bp-lg) { display: none; }
 

@@ -1,19 +1,17 @@
 /**
- * Fetches satellite TLE data and visible passes from N2YO.
- * Requires a free API key from n2yo.com.
- * For now, uses a placeholder — will be activated when user provides a key.
+ * Fetches satellite positions.
+ * Primary: N2YO if key available
+ * Fallback: ISS position from wheretheiss.at then open-notify
  */
 
 const N2YO_KEY = import.meta.env.VITE_N2YO_KEY || '';
 
 export async function fetchSatelliteTracker(lat, lng) {
   if (!N2YO_KEY) {
-    // Return ISS position from open API as fallback
     return fetchISSPosition();
   }
 
   try {
-    // Fetch visible satellites above user
     const res = await fetch(
       `https://api.n2yo.com/rest/v1/satellite/above/${lat}/${lng}/0/70/18&apiKey=${N2YO_KEY}`
     );
@@ -38,8 +36,43 @@ export async function fetchSatelliteTracker(lat, lng) {
 }
 
 async function fetchISSPosition() {
+  // Strategy 1: wheretheiss.at (reliable, CORS-friendly)
   try {
-    const res = await fetch('https://api.open-notify.org/iss-now.json');
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch('https://api.wheretheiss.at/v1/satellites/25544', {
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    if (res.ok) {
+      const data = await res.json();
+      return [{
+        id: 'sat-iss',
+        type: 'satellite',
+        name: 'ISS (Station Spatiale Internationale)',
+        satid: 25544,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        altitude: Math.round(data.altitude),
+        velocity: data.velocity ? Math.round(data.velocity) : 27600,
+        intDesignator: '1998-067A',
+        launchDate: '1998-11-20',
+      }];
+    }
+  } catch (err) {
+    console.warn('[satellite] wheretheiss.at failed:', err.message);
+  }
+
+  // Strategy 2: open-notify.org (legacy fallback)
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch('https://api.open-notify.org/iss-now.json', {
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
     if (!res.ok) return [];
     const data = await res.json();
     return [{
