@@ -9,10 +9,8 @@
 
 .layout__main {
   flex: 1;
-  padding-bottom: v.$sp-20;
 
   @media (min-width: v.$bp-lg) {
-    padding-bottom: 0;
     padding-left: v.$sidebar-width;
   }
 }

@@ -138,6 +138,17 @@ const TERM_MAP = [
   ['\\bpolice\\b', 'police'],
   ['\\bcivilian\\b', 'civil'],
   ['\\bcivilians\\b', 'civils'],
+
+  // USGS / Geographic directions
+  ['\\bof\\b', 'de'],
+  ['\\bnear\\b', 'près de'],
+  ['\\bregion\\b', 'région'],
+  ['\\bislands?\\b', 'île(s)'],
+  ['\\bcoast\\b', 'côte'],
+  ['\\bsouth\\b', 'sud'],
+  ['\\bnorth\\b', 'nord'],
+  ['\\beast\\b', 'est'],
+  ['\\bwest\\b', 'ouest'],
 ];
 
 // Precompile regexes

@@ -1,4 +1,5 @@
 import { API_CONFIG } from '../config/api';
+import { autoTranslate } from '../utils/translate';
 
 function magnitudeToSeverity(mag) {
   if (mag >= 7) return 'critical';
@@ -19,7 +20,7 @@ export async function fetchEarthquakes(timeRange = 'day') {
   return data.features.map((f) => ({
     id: `usgs-${f.id}`,
     type: 'earthquake',
-    title: f.properties.title,
+    title: autoTranslate(f.properties.title),
     description: `Magnitude ${f.properties.mag} – Profondeur ${f.geometry.coordinates[2]?.toFixed(1)} km`,
     latitude: f.geometry.coordinates[1],
     longitude: f.geometry.coordinates[0],
@@ -47,7 +48,7 @@ export async function fetchSignificantEarthquakes() {
   return data.features.map((f) => ({
     id: `usgs-sig-${f.id}`,
     type: 'earthquake',
-    title: f.properties.title,
+    title: autoTranslate(f.properties.title),
     description: `Séisme significatif – Magnitude ${f.properties.mag}`,
     latitude: f.geometry.coordinates[1],
     longitude: f.geometry.coordinates[0],

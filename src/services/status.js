@@ -34,14 +34,19 @@ export async function fetchServiceStatuses() {
       const data = await res.json();
 
       const indicator = data.status?.indicator || 'none';
-      const description = data.status?.description || 'Opérationnel';
+      const rawDesc = data.status?.description || 'Operational';
+      const description = rawDesc === 'All Systems Operational' ? 'Opérationnel'
+        : rawDesc === 'Partially Degraded Service' ? 'Service partiellement dégradé'
+        : rawDesc === 'Major Service Outage' ? 'Panne majeure'
+        : rawDesc === 'Minor Service Outage' ? 'Panne mineure'
+        : rawDesc;
 
       if (indicator !== 'none') {
         results.push({
           id: `status-${service.name.toLowerCase()}-${Date.now()}`,
           type: 'blackout',
           title: `${service.name} : ${description}`,
-          description: `Service ${service.name} en état dégradé (${indicator})`,
+          description: `Service ${service.name} en état dégradé (${indicator === 'minor' ? 'mineur' : indicator === 'major' ? 'majeur' : indicator === 'critical' ? 'critique' : indicator})`,
           severity: statusToSeverity(indicator),
           sourceName: `${service.name} Status`,
           sourceReliability: 99,
