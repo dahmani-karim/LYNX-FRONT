@@ -13,6 +13,9 @@ import { fetchHealthAlerts } from '../services/health';
 import { fetchGeopolitics } from '../services/geopolitics';
 import { fetchRadiationData } from '../services/radiation';
 import { calculateRiskScores } from '../services/riskEngine';
+import { notifyNewAlerts } from '../services/notifications';
+
+let knownEventIds = new Set();
 
 export const useAlertStore = create((set, get) => ({
   events: [],
@@ -213,6 +216,13 @@ export const useAlertStore = create((set, get) => ({
     );
 
     const riskScores = calculateRiskScores(uniqueEvents);
+
+    // Send push notifications for new high/critical alerts
+    try {
+      const settings = JSON.parse(localStorage.getItem('lynx-settings') || '{}');
+      const minSev = settings?.state?.notifications?.minSeverity || 'high';
+      knownEventIds = notifyNewAlerts(uniqueEvents, knownEventIds, minSev);
+    } catch {}
 
     set({
       events: uniqueEvents,

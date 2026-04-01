@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSettingsStore } from '../../stores/settingsStore';
 import InstallPrompt from '../../components/InstallPrompt/InstallPrompt';
 import AppSwitcher from '../../components/AppSwitcher/AppSwitcher';
+import { requestPermission } from '../../services/notifications';
 import {
   MapPin, Bell, Eye, Trash2, Plus, Shield, ChevronRight, Info, Globe
 } from 'lucide-react';
@@ -165,7 +166,11 @@ export default function SettingsPage() {
         <div className="settings-page__toggle-row">
           <span className="settings-page__toggle-label">Alertes push</span>
           <button
-            onClick={() => setNotifications({ enabled: !notifications.enabled })}
+            onClick={async () => {
+              const newVal = !notifications.enabled;
+              if (newVal) await requestPermission();
+              setNotifications({ enabled: newVal });
+            }}
             className={`settings-page__toggle ${notifications.enabled ? 'settings-page__toggle--on' : 'settings-page__toggle--off'}`}
           >
             <span className={`settings-page__toggle-knob ${notifications.enabled ? 'settings-page__toggle-knob--on' : ''}`} />

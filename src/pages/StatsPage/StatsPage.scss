@@ -6,6 +6,11 @@
     @include flex-between;
   }
 
+  &__header-actions {
+    display: flex;
+    gap: $sp-2;
+  }
+
   &__title {
     font-size: $text-lg;
     font-weight: 700;

@@ -2,6 +2,10 @@
   position: relative;
   height: calc(100dvh - $header-height - $bottom-nav-height);
 
+  .leaflet-control-attribution {
+    display: none;
+  }
+
   @media (min-width: $bp-lg) {
     height: calc(100dvh - $header-height);
   }

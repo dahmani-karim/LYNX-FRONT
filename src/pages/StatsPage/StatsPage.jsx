@@ -4,7 +4,8 @@ import { useAlertStore } from '../../stores/alertStore';
 import { CATEGORIES, SEVERITY_LEVELS } from '../../config/categories';
 import { getScoreColor } from '../../services/riskEngine';
 import { generateReport } from '../../utils/pdfExport';
-import { FileDown } from 'lucide-react';
+import { downloadRssFeed } from '../../utils/rssFeed';
+import { FileDown, Rss } from 'lucide-react';
 import './StatsPage.scss';
 
 export default function StatsPage() {
@@ -88,13 +89,22 @@ export default function StatsPage() {
     <div className="stats-page">
       <div className="stats-page__header">
         <h1 className="stats-page__title">Statistiques</h1>
-        <button
-          className="stats-page__export-btn"
-          onClick={() => generateReport(events, riskScores)}
-        >
-          <FileDown size={16} />
-          Export PDF
-        </button>
+        <div className="stats-page__header-actions">
+          <button
+            className="stats-page__export-btn"
+            onClick={() => downloadRssFeed(events)}
+          >
+            <Rss size={16} />
+            RSS
+          </button>
+          <button
+            className="stats-page__export-btn"
+            onClick={() => generateReport(events, riskScores)}
+          >
+            <FileDown size={16} />
+            PDF
+          </button>
+        </div>
       </div>
 
       {/* Summary */}
