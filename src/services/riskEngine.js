@@ -40,6 +40,10 @@ export function calculateRiskScores(allEvents) {
     fuel: categoryScore(byCategory.fuel || []),
     health: categoryScore(byCategory.health || []),
     blackout: categoryScore(byCategory.blackout || []),
+    conflict: categoryScore(byCategory.conflict || []),
+    air_quality: categoryScore(byCategory.air_quality || []),
+    fire: categoryScore(byCategory.fire || []),
+    space_weather: categoryScore(byCategory.space_weather || []),
   };
 
   const activeScores = Object.values(scores).filter((s) => s > 0);

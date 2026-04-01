@@ -6,6 +6,12 @@ import { fetchCyberAlerts } from '../services/cyber';
 import { fetchEnergyData } from '../services/energy';
 import { fetchServiceStatuses } from '../services/status';
 import { fetchConflicts } from '../services/conflicts';
+import { fetchAirQuality } from '../services/airQuality';
+import { fetchFires } from '../services/fires';
+import { fetchSpaceWeather } from '../services/spaceWeather';
+import { fetchHealthAlerts } from '../services/health';
+import { fetchGeopolitics } from '../services/geopolitics';
+import { fetchRadiationData } from '../services/radiation';
 import { calculateRiskScores } from '../services/riskEngine';
 
 export const useAlertStore = create((set, get) => ({
@@ -24,6 +30,9 @@ export const useAlertStore = create((set, get) => ({
     fuel: 0,
     health: 0,
     blackout: 0,
+    air_quality: 0,
+    fire: 0,
+    space_weather: 0,
   },
   previousGlobalScore: null,
   isLoading: false,
@@ -109,6 +118,12 @@ export const useAlertStore = create((set, get) => ({
       fetchEnergyData(),
       fetchServiceStatuses(),
       fetchConflicts(),
+      fetchAirQuality(lat, lng),
+      fetchFires(lat, lng),
+      fetchSpaceWeather(),
+      fetchHealthAlerts(),
+      fetchGeopolitics(),
+      fetchRadiationData(),
     ]);
 
     if (results[0].status === 'fulfilled') {
@@ -155,6 +170,42 @@ export const useAlertStore = create((set, get) => ({
       allEvents.push(...results[6].value);
     } else {
       errors.conflict = results[6].reason?.message;
+    }
+
+    if (results[7].status === 'fulfilled') {
+      allEvents.push(...results[7].value);
+    } else {
+      errors.air_quality = results[7].reason?.message;
+    }
+
+    if (results[8].status === 'fulfilled') {
+      allEvents.push(...results[8].value);
+    } else {
+      errors.fire = results[8].reason?.message;
+    }
+
+    if (results[9].status === 'fulfilled') {
+      allEvents.push(...results[9].value);
+    } else {
+      errors.space_weather = results[9].reason?.message;
+    }
+
+    if (results[10].status === 'fulfilled') {
+      allEvents.push(...results[10].value);
+    } else {
+      errors.health = results[10].reason?.message;
+    }
+
+    if (results[11].status === 'fulfilled') {
+      allEvents.push(...results[11].value);
+    } else {
+      errors.geopolitics = results[11].reason?.message;
+    }
+
+    if (results[12].status === 'fulfilled') {
+      allEvents.push(...results[12].value);
+    } else {
+      errors.radiation = results[12].reason?.message;
     }
 
     const uniqueEvents = Array.from(

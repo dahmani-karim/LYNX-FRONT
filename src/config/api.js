@@ -41,10 +41,33 @@ export const API_CONFIG = {
   },
 
   CORS_PROXIES: [
-    'https://corsproxy.io/?',
     'https://api.allorigins.win/raw?url=',
     'https://api.codetabs.com/v1/proxy?quest=',
   ],
+
+  RSS2JSON: 'https://api.rss2json.com/v1/api.json?rss_url=',
+
+  GDELT: {
+    DOC_API: 'https://api.gdeltproject.org/api/v2/doc/doc',
+  },
+
+  OPENAQ: {
+    BASE: 'https://api.openaq.org/v2',
+  },
+
+  NASA_FIRMS: {
+    BASE: 'https://firms.modaps.eosdis.nasa.gov/api/area/csv',
+    MAP_KEY: 'DEMO_KEY',
+  },
+
+  NOAA_SWPC: {
+    ALERTS: 'https://services.swpc.noaa.gov/products/alerts.json',
+    KP_INDEX: 'https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json',
+  },
+
+  DISEASE_SH: {
+    BASE: 'https://disease.sh/v3/covid-19',
+  },
 };
 
 export const POLLING_INTERVALS = {
@@ -54,4 +77,8 @@ export const POLLING_INTERVALS = {
   CYBER: 30 * 60 * 1000,
   ENERGY: 15 * 60 * 1000,
   STATUS: 5 * 60 * 1000,
+  AIR_QUALITY: 15 * 60 * 1000,
+  FIRES: 10 * 60 * 1000,
+  SPACE_WEATHER: 15 * 60 * 1000,
+  HEALTH: 60 * 60 * 1000,
 };

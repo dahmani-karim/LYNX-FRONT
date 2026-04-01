@@ -10,6 +10,9 @@ import {
   Wifi,
   Swords,
   AlertTriangle,
+  Wind,
+  Flame,
+  Sun,
 } from 'lucide-react';
 
 export const CATEGORIES = {
@@ -82,6 +85,27 @@ export const CATEGORIES = {
     icon: Swords,
     color: '#DC2626',
     bgColor: 'rgba(220, 38, 38, 0.15)',
+  },
+  air_quality: {
+    id: 'air_quality',
+    label: 'Qualité air',
+    icon: Wind,
+    color: '#06B6D4',
+    bgColor: 'rgba(6, 182, 212, 0.15)',
+  },
+  fire: {
+    id: 'fire',
+    label: 'Incendies',
+    icon: Flame,
+    color: '#EA580C',
+    bgColor: 'rgba(234, 88, 12, 0.15)',
+  },
+  space_weather: {
+    id: 'space_weather',
+    label: 'Météo spatiale',
+    icon: Sun,
+    color: '#D946EF',
+    bgColor: 'rgba(217, 70, 239, 0.15)',
   },
   other: {
     id: 'other',

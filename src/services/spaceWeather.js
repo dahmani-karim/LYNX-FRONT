@@ -1,0 +1,104 @@
+import { API_CONFIG } from '../config/api';
+
+/**
+ * Fetches space weather alerts from NOAA SWPC.
+ * Free, no API key, CORS-friendly.
+ */
+export async function fetchSpaceWeather() {
+  const events = [];
+
+  try {
+    const [alertsRes, kpRes] = await Promise.allSettled([
+      fetch(API_CONFIG.NOAA_SWPC.ALERTS),
+      fetch(API_CONFIG.NOAA_SWPC.KP_INDEX),
+    ]);
+
+    // Parse SWPC alerts (solar flares, geomagnetic storms, etc.)
+    if (alertsRes.status === 'fulfilled' && alertsRes.value.ok) {
+      const alerts = await alertsRes.value.json();
+      const recent = alerts.slice(0, 15);
+
+      recent.forEach((alert, i) => {
+        const message = alert.message || '';
+        const severity = classifySpaceAlert(message);
+
+        events.push({
+          id: `sw-alert-${i}-${Date.now()}`,
+          type: 'space_weather',
+          title: extractAlertTitle(message),
+          description: message.slice(0, 400),
+          severity,
+          eventDate: alert.issue_datetime || new Date().toISOString(),
+          latitude: 64.8, // Aurora oval center
+          longitude: -18.0,
+          sourceName: 'NOAA SWPC',
+          sourceUrl: 'https://www.swpc.noaa.gov',
+          sourceReliability: 98,
+          metadata: { product_id: alert.product_id },
+        });
+      });
+    }
+
+    // Parse Kp index (geomagnetic activity)
+    if (kpRes.status === 'fulfilled' && kpRes.value.ok) {
+      const kpData = await kpRes.value.json();
+      // Last entry is most recent
+      const latest = kpData[kpData.length - 1];
+      if (latest) {
+        const kp = parseFloat(latest[1]) || 0;
+        if (kp >= 4) {
+          events.push({
+            id: `sw-kp-${Date.now()}`,
+            type: 'space_weather',
+            title: `Indice Kp: ${kp.toFixed(0)} — ${kpLabel(kp)}`,
+            description: `Activité géomagnétique ${kpLabel(kp)}. Kp=${kp.toFixed(1)}. Risques: perturbations GPS, communications radio, réseaux électriques.`,
+            severity: kpSeverity(kp),
+            eventDate: latest[0] || new Date().toISOString(),
+            latitude: 64.8,
+            longitude: -18.0,
+            sourceName: 'NOAA SWPC',
+            sourceUrl: 'https://www.swpc.noaa.gov/products/planetary-k-index',
+            sourceReliability: 98,
+            metadata: { kp_index: kp },
+          });
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[spaceWeather] NOAA SWPC failed:', err.message);
+  }
+
+  return events;
+}
+
+function extractAlertTitle(message) {
+  const firstLine = message.split('\n').find((l) => l.trim().length > 5);
+  if (firstLine && firstLine.length < 120) return firstLine.trim();
+  if (message.includes('WARNING')) return 'Alerte Météo Spatiale';
+  if (message.includes('WATCH')) return 'Veille Météo Spatiale';
+  return 'Bulletin Météo Spatiale';
+}
+
+function classifySpaceAlert(message) {
+  const m = message.toUpperCase();
+  if (m.includes('X-CLASS') || m.includes('EXTREME') || m.includes('G5') || m.includes('G4')) return 'critical';
+  if (m.includes('M-CLASS') || m.includes('STRONG') || m.includes('G3') || m.includes('S3')) return 'high';
+  if (m.includes('WARNING') || m.includes('G2') || m.includes('S2') || m.includes('R2')) return 'medium';
+  if (m.includes('WATCH') || m.includes('G1') || m.includes('S1') || m.includes('R1')) return 'low';
+  return 'info';
+}
+
+function kpSeverity(kp) {
+  if (kp >= 8) return 'critical';
+  if (kp >= 6) return 'high';
+  if (kp >= 5) return 'medium';
+  return 'low';
+}
+
+function kpLabel(kp) {
+  if (kp >= 8) return 'Tempête extrême';
+  if (kp >= 7) return 'Tempête forte';
+  if (kp >= 6) return 'Tempête modérée';
+  if (kp >= 5) return 'Tempête mineure';
+  return 'Activité élevée';
+}

@@ -14,6 +14,7 @@ import StatsPage from './pages/StatsPage/StatsPage';
 import SettingsPage from './pages/SettingsPage/SettingsPage';
 import AlertDetail from './pages/AlertDetail/AlertDetail';
 import Account from './pages/Account/Account';
+import Trackers from './pages/Trackers/Trackers';
 import { useAlertStore } from './stores/alertStore';
 import { useSettingsStore } from './stores/settingsStore';
 import { useAuthStore } from './stores/authStore';
@@ -50,6 +51,7 @@ export default function App() {
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/trackers" element={<Trackers />} />
           <Route path="/alert/:id" element={<AlertDetail />} />
         </Route>
       </Routes>
