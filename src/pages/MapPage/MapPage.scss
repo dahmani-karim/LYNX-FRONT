@@ -115,7 +115,7 @@
   // Location button
   &__locate-btn {
     position: absolute;
-    bottom: 6rem;
+    bottom: 1rem;
     right: $sp-3;
     z-index: $z-map-controls;
     background-color: $lynx-surface;
@@ -136,7 +136,7 @@
   // Event count
   &__count {
     position: absolute;
-    bottom: 6rem;
+    bottom: 1rem;
     left: $sp-3;
     z-index: $z-map-controls;
     background-color: rgba($lynx-surface, 0.9);
