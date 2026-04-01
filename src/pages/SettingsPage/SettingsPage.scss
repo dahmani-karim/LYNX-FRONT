@@ -298,4 +298,96 @@
     color: $lynx-dim;
     padding-bottom: $sp-4;
   }
+
+  // Profile section
+  &__profile {
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+  }
+
+  &__profile-avatar {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: $radius-full;
+    background: linear-gradient(135deg, $lynx-accent, $lynx-iris);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: $text-base;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  &__profile-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__profile-name {
+    font-size: $text-sm;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__profile-email {
+    font-size: $text-xs;
+    color: $lynx-muted;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__profile-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: $sp-1;
+    padding: 2px $sp-2;
+    border-radius: $radius-full;
+    background-color: rgba($lynx-warning, 0.15);
+    color: $lynx-warning;
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  &__profile-actions {
+    display: flex;
+    gap: $sp-2;
+  }
+
+  &__profile-link {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $sp-1-5;
+    padding: $sp-2;
+    background-color: $lynx-elevated;
+    border-radius: $radius-lg;
+    font-size: $text-xs;
+    font-weight: 500;
+    color: $lynx-accent;
+    @include transition;
+
+    &:hover { background-color: rgba($lynx-accent, 0.15); }
+  }
+
+  &__profile-logout {
+    display: flex;
+    align-items: center;
+    gap: $sp-1-5;
+    padding: $sp-2 $sp-3;
+    background-color: rgba($lynx-danger, 0.1);
+    border-radius: $radius-lg;
+    font-size: $text-xs;
+    font-weight: 500;
+    color: $lynx-danger;
+    @include transition;
+
+    &:hover { background-color: rgba($lynx-danger, 0.2); }
+  }
 }

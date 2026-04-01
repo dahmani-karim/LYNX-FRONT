@@ -62,7 +62,7 @@ export const API_CONFIG = {
 
   NASA_FIRMS: {
     BASE: 'https://firms.modaps.eosdis.nasa.gov/api/area/csv',
-    MAP_KEY: 'DEMO_KEY',
+    MAP_KEY: '88b7cebaab82b8e81a7f76a9f321f603',
   },
 
   NOAA_SWPC: {

@@ -6,16 +6,7 @@ import { API_CONFIG } from '../config/api';
  * Strategy 2: NASA EONET wildfire events (CORS-friendly, no key)
  */
 export async function fetchFires(lat, lng) {
-  // Strategy 1: NASA EONET (free, CORS-friendly)
-  try {
-    const res = await fetch(`${API_CONFIG.NASA_EONET.BASE}?category=wildfires&status=open&limit=50`);
-    if (!res.ok) throw new Error(`EONET: ${res.status}`);
-    const data = await res.json();
-    const events = parseEONET(data.events || [], lat, lng);
-    if (events.length > 0) return events;
-  } catch { /* EONET unavailable, try fallback */ }
-
-  // Strategy 2: FIRMS via proxy (requires valid MAP_KEY)
+  // Strategy 1: FIRMS via proxy (real MAP_KEY)
   try {
     const delta = 3;
     const area = `${(lng - delta).toFixed(2)},${(lat - delta).toFixed(2)},${(lng + delta).toFixed(2)},${(lat + delta).toFixed(2)}`;
@@ -32,6 +23,20 @@ export async function fetchFires(lat, lng) {
       } catch { continue; }
     }
   } catch { /* FIRMS unavailable */ }
+
+  // Strategy 2: NASA EONET fallback (currently returning 500)
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(
+      `${API_CONFIG.NASA_EONET.BASE}?category=wildfires&status=open&limit=50`,
+      { signal: controller.signal }
+    );
+    clearTimeout(timeout);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return parseEONET(data.events || [], lat, lng);
+  } catch { /* EONET unavailable */ }
 
   return [];
 }

@@ -15,7 +15,8 @@ import { fetchRadiationData } from '../services/radiation';
 import { calculateRiskScores } from '../services/riskEngine';
 import { notifyNewAlerts } from '../services/notifications';
 
-let knownEventIds = new Set();
+let knownEventSigs = new Set();
+let isFirstFetch = true;
 
 export const useAlertStore = create((set, get) => ({
   events: [],
@@ -224,11 +225,17 @@ export const useAlertStore = create((set, get) => ({
 
     const riskScores = calculateRiskScores(uniqueEvents);
 
-    // Send push notifications for new high/critical alerts
+    // Send push notifications for new high/critical alerts (skip first fetch)
     try {
-      const settings = JSON.parse(localStorage.getItem('lynx-settings') || '{}');
-      const minSev = settings?.state?.notifications?.minSeverity || 'high';
-      knownEventIds = notifyNewAlerts(uniqueEvents, knownEventIds, minSev);
+      if (isFirstFetch) {
+        // Hydrate known signatures without sending notifications
+        knownEventSigs = new Set(uniqueEvents.map((e) => `${e.type}::${e.title}`));
+        isFirstFetch = false;
+      } else {
+        const settings = JSON.parse(localStorage.getItem('lynx-settings') || '{}');
+        const minSev = settings?.state?.notifications?.minSeverity || 'high';
+        knownEventSigs = notifyNewAlerts(uniqueEvents, knownEventSigs, minSev);
+      }
     } catch {}
 
     set({

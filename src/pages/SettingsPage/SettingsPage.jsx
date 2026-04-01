@@ -7,7 +7,8 @@ import AppSwitcher from '../../components/AppSwitcher/AppSwitcher';
 import { requestPermission } from '../../services/notifications';
 import { fetchZones as apiFetchZones, createZone as apiCreateZone, deleteZone as apiDeleteZone } from '../../services/strapi';
 import {
-  MapPin, Bell, Eye, Trash2, Plus, ChevronRight, Info, Globe, Loader
+  MapPin, Bell, Eye, Trash2, Plus, ChevronRight, Info, Globe, Loader,
+  User, Crown, LogOut
 } from 'lucide-react';
 import './SettingsPage.scss';
 
@@ -27,6 +28,9 @@ export default function SettingsPage() {
   } = useSettingsStore();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isPremium = useAuthStore((s) => s.isPremium);
+  const premiumPlan = useAuthStore((s) => s.premiumPlan);
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
   const MAX_FREE_ZONES = 1;
 
   const [showSwitcher, setShowSwitcher] = useState(false);
@@ -125,6 +129,38 @@ export default function SettingsPage() {
       <h1 className="settings-page__title">Réglages</h1>
 
       <InstallPrompt />
+
+      {/* User Profile */}
+      {isAuthenticated && user && (
+        <section className="settings-page__section">
+          <div className="settings-page__profile">
+            <div className="settings-page__profile-avatar">
+              {user.username?.charAt(0)?.toUpperCase() || 'U'}
+            </div>
+            <div className="settings-page__profile-info">
+              <p className="settings-page__profile-name">{user.username}</p>
+              <p className="settings-page__profile-email">{user.email}</p>
+              {isPremium && (
+                <span className="settings-page__profile-badge">
+                  <Crown size={12} />
+                  {premiumPlan || 'Premium'}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="settings-page__profile-actions">
+            <Link to="/account" className="settings-page__profile-link">
+              <User size={16} />
+              Mon compte
+              <ChevronRight size={14} />
+            </Link>
+            <button onClick={() => { logout(); }} className="settings-page__profile-logout">
+              <LogOut size={16} />
+              Se déconnecter
+            </button>
+          </div>
+        </section>
+      )}
 
       {/* Location */}
       <section className="settings-page__section">

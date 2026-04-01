@@ -56,30 +56,33 @@ const SEV_ORDER = ['info', 'low', 'medium', 'high', 'critical'];
 /**
  * Check new events against previous events and send notifications
  * for new critical/high severity alerts.
+ * Uses a stable signature (type+title) instead of volatile IDs.
  * @param {Array} newEvents - latest events
- * @param {Array} previousIds - Set of known event IDs
+ * @param {Set} previousSigs - Set of known event signatures
  * @param {string} minSeverity - minimum severity to notify
- * @returns {Set} updated set of known IDs
+ * @returns {Set} updated set of known signatures
  */
-export function notifyNewAlerts(newEvents, previousIds, minSeverity = 'high') {
-  if (!isPermissionGranted()) return previousIds;
+export function notifyNewAlerts(newEvents, previousSigs, minSeverity = 'high') {
+  if (!isPermissionGranted()) return previousSigs;
 
   const minIdx = SEV_ORDER.indexOf(minSeverity);
-  const updatedIds = new Set(previousIds);
+  const updatedSigs = new Set(previousSigs);
 
   for (const event of newEvents) {
-    if (updatedIds.has(event.id)) continue;
-    updatedIds.add(event.id);
+    // Stable signature: type + title (doesn't change between fetches)
+    const sig = `${event.type}::${event.title}`;
+    if (updatedSigs.has(sig)) continue;
+    updatedSigs.add(sig);
 
     const sevIdx = SEV_ORDER.indexOf(event.severity);
     if (sevIdx >= minIdx) {
       sendNotification(`🔴 ${event.title}`, {
         body: event.description?.slice(0, 120) || event.sourceName,
-        tag: `lynx-${event.id}`,
+        tag: `lynx-${sig}`,
         data: { url: `/#/alert/${encodeURIComponent(event.id)}` },
       });
     }
   }
 
-  return updatedIds;
+  return updatedSigs;
 }
