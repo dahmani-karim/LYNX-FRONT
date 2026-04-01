@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useAlertStore } from '../../stores/alertStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import ScoreGauge from '../../components/ScoreGauge/ScoreGauge';
@@ -6,12 +7,15 @@ import EcosystemBridge from '../../components/EcosystemBridge/EcosystemBridge';
 import Loader from '../../components/Loader/Loader';
 import { CATEGORIES } from '../../config/categories';
 import { getScoreColor } from '../../services/riskEngine';
-import { RefreshCw, MapPin, Thermometer, Wind, Droplets } from 'lucide-react';
+import { findCorrelations, generateInsights } from '../../services/correlationEngine';
+import { getPredictiveAlerts } from '../../services/predictiveEngine';
+import { checkGeofences } from '../../utils/geofencing';
+import { RefreshCw, MapPin, Thermometer, Wind, Droplets, Link2, TrendingUp, Crosshair } from 'lucide-react';
 import './Dashboard.scss';
 
 export default function Dashboard() {
   const { events, riskScores, weatherData, isLoading, errors } = useAlertStore();
-  const userLocation = useSettingsStore((s) => s.userLocation);
+  const { userLocation, zones } = useSettingsStore();
 
   const topAlerts = [...events]
     .sort((a, b) => {
@@ -23,6 +27,15 @@ export default function Dashboard() {
     .slice(0, 5);
 
   const moduleKeys = ['earthquake', 'weather', 'disaster', 'cyber', 'energy', 'blackout'];
+
+  const insights = useMemo(() => {
+    const correlations = findCorrelations(events);
+    return generateInsights(correlations);
+  }, [events]);
+
+  const predictions = useMemo(() => getPredictiveAlerts(events), [events]);
+
+  const zoneMatches = useMemo(() => checkGeofences(events, zones), [events, zones]);
 
   if (isLoading && events.length === 0) {
     return <Loader text="Analyse des données en cours..." />;
@@ -111,6 +124,62 @@ export default function Dashboard() {
           <div className="dashboard__alerts-list">
             {topAlerts.map((event) => (
               <AlertCard key={event.id} event={event} compact />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Correlations & Insights */}
+      {insights.length > 0 && (
+        <section className="dashboard__insights">
+          <h3 className="dashboard__insights-title">
+            <Link2 size={16} />
+            Corrélations détectées
+          </h3>
+          <div className="dashboard__insights-list">
+            {insights.map((insight, i) => (
+              <div key={i} className={`dashboard__insight dashboard__insight--${insight.severity}`}>
+                <p className="dashboard__insight-label">{insight.title}</p>
+                <p className="dashboard__insight-desc">{insight.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Predictive Alerts */}
+      {predictions.length > 0 && (
+        <section className="dashboard__insights">
+          <h3 className="dashboard__insights-title">
+            <TrendingUp size={16} />
+            Tendances prédictives
+          </h3>
+          <div className="dashboard__insights-list">
+            {predictions.map((pred, i) => (
+              <div key={i} className={`dashboard__insight dashboard__insight--${pred.severity}`}>
+                <p className="dashboard__insight-label" style={{ color: pred.color }}>{pred.label}</p>
+                <p className="dashboard__insight-desc">{pred.message}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Zone Alerts (Geofencing) */}
+      {zoneMatches.length > 0 && (
+        <section className="dashboard__insights">
+          <h3 className="dashboard__insights-title">
+            <Crosshair size={16} />
+            Alertes dans vos zones ({zoneMatches.length})
+          </h3>
+          <div className="dashboard__insights-list">
+            {zoneMatches.slice(0, 5).map((m, i) => (
+              <div key={i} className={`dashboard__insight dashboard__insight--${m.event.severity === 'critical' || m.event.severity === 'high' ? 'high' : 'medium'}`}>
+                <p className="dashboard__insight-label">{m.event.title}</p>
+                <p className="dashboard__insight-desc">
+                  Zone « {m.zone.label} » · {m.distanceKm} km · {m.event.sourceName}
+                </p>
+              </div>
             ))}
           </div>
         </section>

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Circle, Popup, useMap } from 'react-leaflet';
 import { useAlertStore } from '../../stores/alertStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { CATEGORIES, SEVERITY_LEVELS } from '../../config/categories';
@@ -43,7 +43,7 @@ function LocationButton() {
 
 export default function MapPage() {
   const events = useAlertStore((s) => s.events);
-  const userLocation = useSettingsStore((s) => s.userLocation);
+  const { userLocation, zones } = useSettingsStore();
   const [activeCategories, setActiveCategories] = useState(new Set());
   const [showHeatmap, setShowHeatmap] = useState(false);
 
@@ -168,6 +168,24 @@ export default function MapPage() {
         >
           <Popup><p style={{ fontSize: '0.875rem', fontWeight: 500 }}>{userLocation.label}</p></Popup>
         </CircleMarker>
+
+        {/* Geofence zones */}
+        {zones.map((zone) => (
+          <Circle
+            key={zone.id}
+            center={[zone.lat, zone.lng]}
+            radius={zone.radiusKm * 1000}
+            pathOptions={{
+              color: '#6DBE45',
+              fillColor: '#6DBE45',
+              fillOpacity: 0.08,
+              weight: 1.5,
+              dashArray: '6 4',
+            }}
+          >
+            <Popup><p style={{ fontSize: '0.875rem', fontWeight: 500 }}>🎯 {zone.label} ({zone.radiusKm} km)</p></Popup>
+          </Circle>
+        ))}
 
         <LocationButton />
       </MapContainer>

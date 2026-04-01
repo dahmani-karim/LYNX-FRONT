@@ -158,6 +158,43 @@
     color: $lynx-muted;
   }
 
+  // Insights / Correlations
+  &__insights-title {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    font-size: $text-sm;
+    font-weight: 600;
+    margin-bottom: $sp-3;
+  }
+
+  &__insights-list {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-2;
+  }
+
+  &__insight {
+    @include card;
+    padding: $sp-3;
+    border-left: 3px solid $lynx-border;
+
+    &--high { border-left-color: $lynx-danger; }
+    &--medium { border-left-color: $lynx-warning; }
+    &--low { border-left-color: $lynx-info; }
+  }
+
+  &__insight-label {
+    font-size: $text-sm;
+    font-weight: 600;
+    margin-bottom: $sp-1;
+  }
+
+  &__insight-desc {
+    font-size: $text-xs;
+    color: $lynx-muted;
+  }
+
   // Disclaimer
   &__disclaimer {
     text-align: center;
