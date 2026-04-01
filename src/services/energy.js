@@ -1,0 +1,72 @@
+import { API_CONFIG } from '../config/api';
+
+function parseEcogazSignal(records) {
+  if (!records || !records.results) return [];
+  const alerts = [];
+
+  records.results.forEach((r) => {
+    const signal = r.indice_de_confiance || r.statut || '';
+    const date = r.date_de_la_journee || r.jour || '';
+
+    if (!signal && !date) return;
+
+    let severity = 'info';
+    let title = 'Réseau gaz normal';
+
+    const signalLower = signal.toString().toLowerCase();
+    if (signalLower.includes('rouge') || signal === '3') {
+      severity = 'critical';
+      title = 'Tension critique réseau gaz';
+    } else if (signalLower.includes('orange') || signal === '2') {
+      severity = 'high';
+      title = 'Tension élevée réseau gaz';
+    } else if (signalLower.includes('jaune') || signal === '1') {
+      severity = 'medium';
+      title = 'Tension modérée réseau gaz';
+    }
+
+    if (severity !== 'info') {
+      alerts.push({
+        id: `ecogaz-${date}`,
+        type: 'energy',
+        title,
+        description: `Signal Ecogaz : ${signal} pour le ${date}`,
+        severity,
+        sourceName: 'ODRÉ / Ecogaz',
+        sourceReliability: 95,
+        sourceUrl: 'https://odre.opendatasoft.com/explore/dataset/signal-ecogaz/',
+        eventDate: date ? new Date(date).toISOString() : new Date().toISOString(),
+        latitude: 46.603354,
+        longitude: 1.888334,
+      });
+    }
+  });
+
+  return alerts;
+}
+
+export async function fetchEnergyData() {
+  try {
+    const url = `${API_CONFIG.ODRE.BASE}${API_CONFIG.ODRE.ECOGAZ}?limit=7&order_by=date_de_la_journee%20DESC`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`ODRÉ API: ${res.status}`);
+    const data = await res.json();
+    return parseEcogazSignal(data);
+  } catch {
+    console.warn('ODRÉ Ecogaz: module indisponible');
+    return [];
+  }
+}
+
+export async function fetchNuclearProduction() {
+  try {
+    const url = `${API_CONFIG.ODRE.BASE}${API_CONFIG.ODRE.NUCLEAR}?limit=24&order_by=date_heure%20DESC`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`ODRÉ Nuclear: ${res.status}`);
+    const data = await res.json();
+    return data.results || [];
+  } catch {
+    console.warn('ODRÉ Nuclear: module indisponible');
+    return [];
+  }
+}

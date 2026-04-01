@@ -1,0 +1,110 @@
+.alert-card {
+  display: block;
+  border-radius: $radius-xl;
+  background-color: $lynx-surface;
+  border: 1px solid rgba($lynx-border, 0.5);
+  @include transition;
+
+  &:hover { background-color: $lynx-elevated; }
+
+  // Compact variant
+  &--compact {
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+    padding: $sp-3;
+  }
+
+  // Full variant
+  &--full {
+    padding: $sp-4;
+  }
+
+  &__icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: $radius-lg;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    &--lg {
+      width: 2.5rem;
+      height: 2.5rem;
+      margin-top: 2px;
+    }
+  }
+
+  &__compact-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__compact-title {
+    font-size: $text-sm;
+    font-weight: 500;
+    @include truncate;
+  }
+
+  &__compact-time {
+    font-size: $text-xs;
+    color: $lynx-muted;
+  }
+
+  // Full layout
+  &__row {
+    display: flex;
+    align-items: flex-start;
+    gap: $sp-3;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    margin-bottom: $sp-1;
+  }
+
+  &__category {
+    font-size: $text-xs;
+    color: $lynx-dim;
+  }
+
+  &__title {
+    font-size: $text-sm;
+    font-weight: 600;
+    margin-bottom: $sp-1;
+    @include line-clamp(2);
+  }
+
+  &__desc {
+    font-size: $text-xs;
+    color: $lynx-muted;
+    margin-bottom: $sp-2;
+    @include line-clamp(2);
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__source-info {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    font-size: $text-xs;
+    color: $lynx-dim;
+  }
+
+  &__chevron {
+    color: $lynx-dim;
+  }
+}

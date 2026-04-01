@@ -1,0 +1,21 @@
+.severity-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: $radius-full;
+  font-weight: 600;
+
+  &--xs {
+    font-size: 10px;
+    padding: 2px $sp-1-5;
+  }
+
+  &--sm {
+    font-size: $text-xs;
+    padding: 2px $sp-2;
+  }
+
+  &--md {
+    font-size: $text-sm;
+    padding: $sp-1 $sp-2-5;
+  }
+}

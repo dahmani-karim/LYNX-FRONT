@@ -1,0 +1,262 @@
+.pricing {
+  min-height: 100dvh;
+  background-color: $lynx-bg;
+  color: $lynx-text;
+}
+
+.pricing__nav {
+  position: sticky;
+  top: 0;
+  z-index: $z-header;
+  background-color: rgba($lynx-bg, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba($lynx-border, 0.3);
+}
+
+.pricing__nav-inner {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: $sp-3 $sp-4;
+  @include flex-between;
+
+  @include md { padding: $sp-3 $sp-8; }
+}
+
+.pricing__back {
+  font-weight: 800;
+  text-decoration: none;
+  color: $lynx-text;
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+}
+
+.pricing__nav-cta {
+  font-size: $text-sm;
+  font-weight: 600;
+  color: white;
+  background-color: $lynx-accent;
+  padding: $sp-1-5 $sp-4;
+  border-radius: $radius-lg;
+  text-decoration: none;
+  @include transition;
+
+  &:hover { background-color: color.adjust($lynx-accent, $lightness: -8%); }
+}
+
+.pricing__header {
+  text-align: center;
+  padding: $sp-8 $sp-4;
+
+  @include md { padding: $sp-12 $sp-8; }
+}
+
+.pricing__title {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: $sp-3;
+}
+
+.pricing__desc {
+  font-size: $text-base;
+  color: $lynx-muted;
+  max-width: 32rem;
+  margin: 0 auto;
+}
+
+// ── Plans grid ──
+.pricing__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $sp-4;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 $sp-4 $sp-8;
+
+  @include md {
+    grid-template-columns: repeat(3, 1fr);
+    padding: 0 $sp-8 $sp-12;
+    align-items: start;
+  }
+}
+
+.pricing__plan {
+  @include card;
+  padding: $sp-6;
+  position: relative;
+  @include transition;
+
+  &:hover { border-color: rgba($lynx-accent, 0.3); }
+
+  &--popular {
+    border-color: $lynx-accent;
+    box-shadow: 0 0 30px rgba($lynx-accent, 0.1);
+
+    @include md {
+      transform: scale(1.03);
+    }
+  }
+}
+
+.pricing__popular-badge {
+  position: absolute;
+  top: -0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: $sp-1 $sp-3;
+  background-color: $lynx-accent;
+  color: white;
+  font-size: $text-xs;
+  font-weight: 700;
+  border-radius: $radius-full;
+  white-space: nowrap;
+}
+
+.pricing__plan-header {
+  text-align: center;
+  margin-bottom: $sp-5;
+  padding-top: $sp-2;
+}
+
+.pricing__plan-icon {
+  color: $lynx-accent;
+  margin-bottom: $sp-3;
+}
+
+.pricing__plan-name {
+  font-size: $text-lg;
+  font-weight: 800;
+  margin-bottom: $sp-2;
+}
+
+.pricing__plan-price {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: $sp-1;
+  margin-bottom: $sp-2;
+}
+
+.pricing__plan-amount {
+  font-size: $text-4xl;
+  font-weight: 900;
+}
+
+.pricing__plan-period {
+  font-size: $text-sm;
+  color: $lynx-muted;
+}
+
+.pricing__plan-desc {
+  font-size: $text-sm;
+  color: $lynx-muted;
+}
+
+// ── Features ──
+.pricing__features {
+  list-style: none;
+  padding: 0;
+  margin-bottom: $sp-5;
+  @include stack($sp-2);
+}
+
+.pricing__feature {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  font-size: $text-sm;
+
+  &--disabled {
+    color: $lynx-dim;
+    opacity: 0.5;
+  }
+}
+
+.pricing__feature-icon {
+  flex-shrink: 0;
+
+  &--yes { color: $lynx-success; }
+  &--no { color: $lynx-dim; }
+}
+
+// ── CTA ──
+.pricing__plan-cta {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-2;
+  padding: $sp-3;
+  border-radius: $radius-lg;
+  font-size: $text-sm;
+  font-weight: 600;
+  @include transition;
+  background-color: $lynx-elevated;
+  color: $lynx-text;
+  border: 1px solid $lynx-border;
+
+  &:hover:not(:disabled) { background-color: rgba($lynx-accent, 0.1); border-color: $lynx-accent; color: $lynx-accent; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  &--primary {
+    background-color: $lynx-accent;
+    color: white;
+    border-color: transparent;
+
+    &:hover:not(:disabled) { background-color: color.adjust($lynx-accent, $lightness: -8%); color: white; }
+  }
+}
+
+// ── FAQ ──
+.pricing__faq {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: $sp-8 $sp-4;
+
+  @include md { padding: $sp-12 $sp-8; }
+}
+
+.pricing__faq-title {
+  font-size: $text-xl;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: $sp-6;
+}
+
+.pricing__faq-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $sp-4;
+
+  @include md { grid-template-columns: repeat(2, 1fr); }
+}
+
+.pricing__faq-item {
+  @include card;
+  padding: $sp-4;
+
+  h3 {
+    font-size: $text-sm;
+    font-weight: 700;
+    margin-bottom: $sp-2;
+  }
+
+  p {
+    font-size: $text-sm;
+    color: $lynx-muted;
+    line-height: 1.6;
+  }
+}
+
+// ── Footer ──
+.pricing__footer {
+  text-align: center;
+  padding: $sp-6 $sp-4;
+  border-top: 1px solid rgba($lynx-border, 0.3);
+
+  p {
+    font-size: $text-xs;
+    color: $lynx-dim;
+  }
+}

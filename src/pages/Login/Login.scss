@@ -1,0 +1,142 @@
+.auth-page {
+  min-height: 100dvh;
+  background-color: $lynx-bg;
+  color: $lynx-text;
+  @include flex-center;
+  padding: $sp-4;
+}
+
+.auth-page__container {
+  width: 100%;
+  max-width: 24rem;
+  @include flex-col;
+  align-items: center;
+}
+
+.auth-page__logo {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  font-size: $text-xl;
+  font-weight: 800;
+  color: $lynx-text;
+  text-decoration: none;
+  margin-bottom: $sp-6;
+}
+
+.auth-page__card {
+  width: 100%;
+  @include card;
+  padding: $sp-6;
+}
+
+.auth-page__title {
+  font-size: $text-xl;
+  font-weight: 800;
+  margin-bottom: $sp-1;
+}
+
+.auth-page__subtitle {
+  font-size: $text-sm;
+  color: $lynx-muted;
+  margin-bottom: $sp-5;
+}
+
+.auth-page__error {
+  padding: $sp-2-5 $sp-3;
+  background-color: rgba($lynx-danger, 0.1);
+  border: 1px solid rgba($lynx-danger, 0.2);
+  border-radius: $radius-lg;
+  color: $lynx-danger;
+  font-size: $text-sm;
+  margin-bottom: $sp-4;
+}
+
+.auth-page__form {
+  @include flex-col;
+  gap: $sp-4;
+}
+
+.auth-page__field {
+  @include flex-col;
+  gap: $sp-1-5;
+}
+
+.auth-page__label {
+  font-size: $text-sm;
+  font-weight: 600;
+  color: $lynx-muted;
+}
+
+.auth-page__input {
+  @include input-base;
+  width: 100%;
+  padding: $sp-2-5 $sp-3;
+}
+
+.auth-page__input-wrap {
+  position: relative;
+
+  .auth-page__input { padding-right: $sp-10; }
+}
+
+.auth-page__eye {
+  position: absolute;
+  right: $sp-3;
+  top: 50%;
+  transform: translateY(-50%);
+  color: $lynx-dim;
+  @include transition;
+
+  &:hover { color: $lynx-muted; }
+}
+
+.auth-page__submit {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-2;
+  padding: $sp-3;
+  background-color: $lynx-accent;
+  color: white;
+  font-weight: 600;
+  font-size: $text-sm;
+  border-radius: $radius-lg;
+  @include transition;
+  margin-top: $sp-2;
+
+  &:hover:not(:disabled) { background-color: color.adjust($lynx-accent, $lightness: -8%); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.auth-page__switch {
+  text-align: center;
+  font-size: $text-sm;
+  color: $lynx-dim;
+  margin-top: $sp-4;
+}
+
+.auth-page__switch-link {
+  color: $lynx-accent;
+  text-decoration: none;
+  font-weight: 600;
+
+  &:hover { text-decoration: underline; }
+}
+
+.auth-page__back {
+  margin-top: $sp-6;
+  font-size: $text-sm;
+  color: $lynx-dim;
+  text-decoration: none;
+  @include transition;
+
+  &:hover { color: $lynx-muted; }
+}
+
+.auth-page__name-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $sp-4;
+}

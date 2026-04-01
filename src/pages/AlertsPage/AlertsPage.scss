@@ -1,0 +1,163 @@
+.alerts-page {
+  @include page-container;
+  @include stack($sp-4);
+
+  // Search bar
+  &__search-row {
+    display: flex;
+    gap: $sp-2;
+  }
+
+  &__search-wrap {
+    flex: 1;
+    position: relative;
+  }
+
+  &__search-icon {
+    position: absolute;
+    left: $sp-3;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $lynx-dim;
+  }
+
+  &__search-input {
+    width: 100%;
+    background-color: $lynx-surface;
+    border: 1px solid $lynx-border;
+    border-radius: $radius-xl;
+    padding: $sp-2-5 $sp-3 $sp-2-5 2.25rem;
+    font-size: $text-sm;
+    color: $lynx-text;
+    outline: none;
+    @include transition(border-color);
+
+    &::placeholder { color: $lynx-dim; }
+    &:focus { border-color: $lynx-accent; }
+  }
+
+  &__search-clear {
+    position: absolute;
+    right: $sp-3;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $lynx-dim;
+  }
+
+  &__filter-btn {
+    padding: $sp-2-5;
+    border-radius: $radius-xl;
+    border: 1px solid $lynx-border;
+    background-color: $lynx-surface;
+    color: $lynx-muted;
+    @include transition;
+
+    &:hover { background-color: $lynx-elevated; }
+
+    &--active {
+      background-color: rgba($lynx-accent, 0.15);
+      border-color: rgba($lynx-accent, 0.3);
+      color: $lynx-accent;
+    }
+  }
+
+  // Filters panel
+  &__filters {
+    @include card;
+    padding: $sp-4;
+    @include stack($sp-4);
+  }
+
+  &__filter-label {
+    font-size: $text-xs;
+    font-weight: 600;
+    color: $lynx-muted;
+    margin-bottom: $sp-2;
+  }
+
+  &__chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $sp-1-5;
+  }
+
+  &__chip {
+    @include chip;
+
+    &--active { @include chip(true); }
+  }
+
+  &__cat-chip {
+    display: flex;
+    align-items: center;
+    gap: $sp-1-5;
+    padding: $sp-1 $sp-2-5;
+    border-radius: $radius-lg;
+    font-size: $text-xs;
+    font-weight: 500;
+    @include transition;
+    background-color: $lynx-elevated;
+    color: $lynx-text;
+
+    &--dim {
+      background-color: rgba($lynx-elevated, 0.5);
+      color: $lynx-dim;
+    }
+  }
+
+  &__cat-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: $radius-full;
+  }
+
+  &__reset {
+    font-size: $text-xs;
+    color: $lynx-accent;
+    &:hover { text-decoration: underline; }
+  }
+
+  // Results header
+  &__results {
+    @include flex-between;
+    padding: 0 $sp-1;
+  }
+
+  &__results-count {
+    font-size: $text-xs;
+    color: $lynx-muted;
+  }
+
+  &__results-period {
+    font-size: $text-xs;
+    color: $lynx-dim;
+  }
+
+  // Alert list
+  &__list {
+    > * + * { margin-top: $sp-2; }
+  }
+
+  // Empty state
+  &__empty {
+    text-align: center;
+    padding: $sp-12 0;
+  }
+
+  &__empty-icon {
+    font-size: $text-4xl;
+    margin-bottom: $sp-3;
+  }
+
+  &__empty-title {
+    font-size: $text-sm;
+    font-weight: 500;
+    color: $lynx-muted;
+  }
+
+  &__empty-hint {
+    font-size: $text-xs;
+    color: $lynx-dim;
+    margin-top: $sp-1;
+  }
+}

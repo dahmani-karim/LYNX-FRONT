@@ -1,0 +1,35 @@
+.loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $sp-12 0;
+  gap: $sp-3;
+
+  &__spinner {
+    position: relative;
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  &__ring {
+    position: absolute;
+    inset: 0;
+    border: 2px solid $lynx-border;
+    border-radius: $radius-full;
+  }
+
+  &__arc {
+    position: absolute;
+    inset: 0;
+    border: 2px solid transparent;
+    border-top-color: $lynx-accent;
+    border-radius: $radius-full;
+    animation: spin 1s linear infinite;
+  }
+
+  &__text {
+    font-size: $text-sm;
+    color: $lynx-muted;
+  }
+}

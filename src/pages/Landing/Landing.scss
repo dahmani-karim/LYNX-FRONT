@@ -1,0 +1,418 @@
+.landing {
+  min-height: 100dvh;
+  background-color: $lynx-bg;
+  color: $lynx-text;
+}
+
+// ── Navbar ──
+.landing__nav {
+  position: sticky;
+  top: 0;
+  z-index: $z-header;
+  background-color: rgba($lynx-bg, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba($lynx-border, 0.3);
+}
+
+.landing__nav-inner {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: $sp-3 $sp-4;
+  @include flex-between;
+
+  @include md {
+    padding: $sp-3 $sp-8;
+  }
+}
+
+.landing__logo {
+  @include flex-center;
+  gap: $sp-2;
+  text-decoration: none;
+  color: $lynx-text;
+}
+
+.landing__logo-icon { font-size: $text-xl; }
+.landing__logo-text { font-size: $text-lg; font-weight: 800; letter-spacing: -0.02em; }
+
+.landing__nav-links {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+
+  @include md { gap: $sp-4; }
+}
+
+.landing__nav-link {
+  font-size: $text-sm;
+  color: $lynx-muted;
+  text-decoration: none;
+  @include transition;
+  display: none;
+
+  @include md { display: inline; }
+
+  &:hover { color: $lynx-text; }
+}
+
+.landing__nav-cta {
+  font-size: $text-sm;
+  font-weight: 600;
+  color: white;
+  background-color: $lynx-accent;
+  padding: $sp-1-5 $sp-4;
+  border-radius: $radius-lg;
+  text-decoration: none;
+  @include transition;
+
+  &:hover { background-color: color.adjust($lynx-accent, $lightness: -8%); }
+}
+
+// ── Hero ──
+.landing__hero {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: $sp-12 $sp-4 $sp-8;
+  display: grid;
+  gap: $sp-8;
+
+  @include md {
+    padding: $sp-16 $sp-8 $sp-12;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: $sp-12;
+  }
+}
+
+.landing__hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-1-5 $sp-3;
+  background-color: rgba($lynx-accent, 0.12);
+  color: $lynx-accent-light;
+  border-radius: $radius-full;
+  font-size: $text-xs;
+  font-weight: 600;
+  margin-bottom: $sp-4;
+}
+
+.landing__hero-title {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: $sp-4;
+}
+
+.landing__hero-accent {
+  background: linear-gradient(135deg, $lynx-accent, $lynx-accent-light);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.landing__hero-desc {
+  font-size: $text-base;
+  color: $lynx-muted;
+  line-height: 1.7;
+  margin-bottom: $sp-6;
+  max-width: 32rem;
+
+  @include md { font-size: $text-lg; }
+}
+
+.landing__hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $sp-3;
+}
+
+// ── Buttons ──
+.landing__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  font-weight: 600;
+  border-radius: $radius-xl;
+  text-decoration: none;
+  @include transition;
+  cursor: pointer;
+
+  &--primary {
+    padding: $sp-3 $sp-6;
+    background-color: $lynx-accent;
+    color: white;
+    font-size: $text-sm;
+
+    &:hover { background-color: color.adjust($lynx-accent, $lightness: -8%); transform: translateY(-1px); }
+  }
+
+  &--ghost {
+    padding: $sp-3 $sp-6;
+    background-color: transparent;
+    color: $lynx-muted;
+    border: 1px solid $lynx-border;
+    font-size: $text-sm;
+
+    &:hover { color: $lynx-text; border-color: $lynx-muted; }
+  }
+
+  &--lg {
+    padding: $sp-4 $sp-8;
+    font-size: $text-base;
+  }
+}
+
+// ── Hero visual ──
+.landing__hero-visual {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-3;
+  perspective: 800px;
+}
+
+.landing__hero-card {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  padding: $sp-3 $sp-4;
+  background-color: $lynx-surface;
+  border: 1px solid rgba($lynx-border, 0.5);
+  border-radius: $radius-xl;
+  animation: slide-in 0.5s ease-out both;
+
+  &--1 { animation-delay: 0.1s; }
+  &--2 { animation-delay: 0.25s; transform: translateX(1rem); }
+  &--3 { animation-delay: 0.4s; }
+  &--4 { animation-delay: 0.55s; transform: translateX(1rem); }
+}
+
+.landing__hero-card-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: $radius-lg;
+  flex-shrink: 0;
+
+  &--red { background: rgba($lynx-danger, 0.2); }
+  &--orange { background: rgba($lynx-warning, 0.2); }
+  &--purple { background: rgba($lynx-purple, 0.2); }
+  &--yellow { background: rgba(#F59E0B, 0.2); }
+}
+
+.landing__hero-card-title { font-size: $text-sm; font-weight: 600; }
+.landing__hero-card-sub { font-size: $text-xs; color: $lynx-dim; margin-top: $sp-0-5; }
+
+// ── Stats ──
+.landing__stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $sp-4;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: $sp-6 $sp-4;
+
+  @include md {
+    grid-template-columns: repeat(4, 1fr);
+    padding: $sp-8;
+  }
+}
+
+.landing__stat {
+  text-align: center;
+  padding: $sp-4;
+  @include card;
+}
+
+.landing__stat-value { font-size: $text-2xl; font-weight: 800; color: $lynx-accent; }
+.landing__stat-label { font-size: $text-xs; color: $lynx-muted; margin-top: $sp-1; }
+
+// ── Features ──
+.landing__features {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: $sp-12 $sp-4;
+  text-align: center;
+
+  @include md { padding: $sp-16 $sp-8; }
+}
+
+.landing__section-title {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: $sp-3;
+}
+
+.landing__section-desc {
+  font-size: $text-base;
+  color: $lynx-muted;
+  max-width: 36rem;
+  margin: 0 auto $sp-8;
+}
+
+.landing__features-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $sp-4;
+
+  @include sm { grid-template-columns: repeat(2, 1fr); }
+  @include lg { grid-template-columns: repeat(3, 1fr); }
+}
+
+.landing__feature-card {
+  @include card;
+  padding: $sp-6;
+  text-align: left;
+  @include transition;
+
+  &:hover { border-color: rgba($lynx-accent, 0.3); transform: translateY(-2px); }
+}
+
+.landing__feature-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: $radius-lg;
+  background-color: rgba($lynx-accent, 0.12);
+  color: $lynx-accent;
+  @include flex-center;
+  margin-bottom: $sp-3;
+}
+
+.landing__feature-title { font-size: $text-base; font-weight: 700; margin-bottom: $sp-2; }
+.landing__feature-desc { font-size: $text-sm; color: $lynx-muted; line-height: 1.6; }
+
+// ── PWA ──
+.landing__pwa {
+  background-color: $lynx-surface;
+  border-top: 1px solid rgba($lynx-border, 0.3);
+  border-bottom: 1px solid rgba($lynx-border, 0.3);
+}
+
+.landing__pwa-content {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: $sp-12 $sp-4;
+  text-align: center;
+
+  @include md { padding: $sp-16 $sp-8; }
+}
+
+.landing__pwa-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $sp-4;
+  max-width: 32rem;
+  margin: 0 auto;
+
+  @include md { grid-template-columns: repeat(4, 1fr); max-width: 48rem; }
+}
+
+.landing__pwa-item {
+  @include flex-col;
+  align-items: center;
+  gap: $sp-2;
+  color: $lynx-muted;
+  font-size: $text-sm;
+  font-weight: 500;
+}
+
+// ── Ecosystem ──
+.landing__ecosystem {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: $sp-12 $sp-4;
+  text-align: center;
+
+  @include md { padding: $sp-16 $sp-8; }
+}
+
+.landing__eco-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $sp-3;
+
+  @include sm { grid-template-columns: repeat(2, 1fr); }
+
+}
+
+.landing__eco-card {
+  @include card;
+  padding: $sp-5;
+  text-align: left;
+  text-decoration: none;
+  color: $lynx-text;
+  border-left: 3px solid;
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  @include transition;
+
+  &:hover { background-color: $lynx-elevated; }
+}
+
+.landing__eco-emoji { font-size: $text-2xl; }
+.landing__eco-name { font-size: $text-sm; font-weight: 700; }
+.landing__eco-desc { font-size: $text-xs; color: $lynx-muted; flex: 1; }
+.landing__eco-arrow { flex-shrink: 0; }
+
+// ── CTA ──
+.landing__cta {
+  text-align: center;
+  padding: $sp-12 $sp-4;
+  background: linear-gradient(180deg, transparent, rgba($lynx-accent, 0.05));
+
+  @include md { padding: $sp-16 $sp-8; }
+}
+
+.landing__cta-title {
+  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+  font-weight: 800;
+  margin-bottom: $sp-3;
+}
+
+.landing__cta-desc {
+  font-size: $text-base;
+  color: $lynx-muted;
+  margin-bottom: $sp-6;
+}
+
+// ── Footer ──
+.landing__footer {
+  border-top: 1px solid rgba($lynx-border, 0.3);
+  padding: $sp-8 $sp-4;
+}
+
+.landing__footer-inner {
+  max-width: 72rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.landing__footer-brand {
+  margin-bottom: $sp-4;
+
+  span { font-size: $text-lg; font-weight: 800; }
+  p { font-size: $text-sm; color: $lynx-dim; margin-top: $sp-1; }
+}
+
+.landing__footer-links {
+  display: flex;
+  justify-content: center;
+  gap: $sp-6;
+  margin-bottom: $sp-4;
+
+  a {
+    font-size: $text-sm;
+    color: $lynx-muted;
+    text-decoration: none;
+    @include transition;
+
+    &:hover { color: $lynx-text; }
+  }
+}
+
+.landing__footer-copy {
+  font-size: $text-xs;
+  color: $lynx-dim;
+}

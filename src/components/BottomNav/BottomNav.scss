@@ -1,0 +1,74 @@
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: $z-header;
+  background-color: rgba($lynx-surface, 0.95);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid $lynx-border;
+
+  @media (min-width: $bp-lg) { display: none; }
+
+  &__list {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    height: $bottom-nav-height;
+    padding: 0 $sp-2;
+  }
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: $sp-1-5 $sp-3;
+    border-radius: $radius-xl;
+    position: relative;
+    color: $lynx-dim;
+    @include transition(color);
+
+    &:hover { color: $lynx-muted; }
+
+    &--active {
+      color: $lynx-accent;
+    }
+  }
+
+  &__icon-wrap {
+    position: relative;
+  }
+
+  &__badge {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    min-width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: $lynx-danger;
+    border-radius: $radius-full;
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    padding: 0 $sp-1;
+  }
+
+  &__label {
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  &__indicator {
+    position: absolute;
+    bottom: -4px;
+    width: 1.5rem;
+    height: 2px;
+    background-color: $lynx-accent;
+    border-radius: $radius-full;
+  }
+}

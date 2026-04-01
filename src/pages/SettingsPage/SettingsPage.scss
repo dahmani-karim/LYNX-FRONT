@@ -1,0 +1,301 @@
+.settings-page {
+  @include page-container;
+  @include stack($sp-5);
+
+  &__title {
+    font-size: $text-lg;
+    font-weight: 700;
+  }
+
+  // Section card
+  &__section {
+    @include card;
+    padding: $sp-4;
+
+    > * + * { margin-top: $sp-3; }
+  }
+
+  &__section-header {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+
+    svg { color: $lynx-accent; }
+
+    h3 {
+      font-size: $text-sm;
+      font-weight: 600;
+    }
+  }
+
+  &__section-header-row {
+    @include flex-between;
+  }
+
+  // Location
+  &__location-row {
+    display: flex;
+    gap: $sp-2;
+  }
+
+  &__location-input {
+    flex: 1;
+    @include input-base;
+  }
+
+  &__gps-btn {
+    padding: $sp-2 $sp-3;
+    background-color: rgba($lynx-accent, 0.15);
+    color: $lynx-accent;
+    border-radius: $radius-lg;
+    font-size: $text-xs;
+    font-weight: 500;
+    @include transition;
+
+    &:hover { background-color: rgba($lynx-accent, 0.25); }
+  }
+
+  &__coords {
+    font-size: $text-xs;
+    color: $lynx-dim;
+  }
+
+  // Zones
+  &__add-btn {
+    padding: $sp-1-5;
+    border-radius: $radius-lg;
+    background-color: rgba($lynx-accent, 0.15);
+    color: $lynx-accent;
+    @include transition;
+
+    &:hover { background-color: rgba($lynx-accent, 0.25); }
+  }
+
+  &__zone-form {
+    background-color: $lynx-elevated;
+    border-radius: $radius-lg;
+    padding: $sp-3;
+
+    > * + * { margin-top: $sp-2; }
+  }
+
+  &__zone-input {
+    width: 100%;
+    @include input-base;
+    background-color: $lynx-surface;
+  }
+
+  &__zone-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $sp-2;
+  }
+
+  &__zone-grid-input {
+    @include input-base;
+    background-color: $lynx-surface;
+  }
+
+  &__zone-submit {
+    width: 100%;
+    padding: $sp-2;
+    background-color: $lynx-accent;
+    color: white;
+    border-radius: $radius-lg;
+    font-size: $text-sm;
+    font-weight: 500;
+    @include transition;
+
+    &:hover { opacity: 0.9; }
+  }
+
+  &__zone-empty {
+    font-size: $text-xs;
+    color: $lynx-dim;
+    padding: $sp-2 0;
+  }
+
+  &__zone-list {
+    > * + * { margin-top: $sp-2; }
+  }
+
+  &__zone-item {
+    @include flex-between;
+    padding: $sp-2-5;
+    background-color: $lynx-elevated;
+    border-radius: $radius-lg;
+  }
+
+  &__zone-name {
+    font-size: $text-sm;
+    font-weight: 500;
+  }
+
+  &__zone-coords {
+    font-size: $text-xs;
+    color: $lynx-dim;
+  }
+
+  &__zone-delete {
+    @include btn-ghost;
+    color: $lynx-dim;
+    &:hover { color: $lynx-danger; }
+  }
+
+  // Toggle switch
+  &__toggle-row {
+    @include flex-between;
+  }
+
+  &__toggle-label {
+    font-size: $text-sm;
+    color: $lynx-muted;
+  }
+
+  &__toggle {
+    width: 2.75rem;
+    height: 1.5rem;
+    border-radius: $radius-full;
+    position: relative;
+    @include transition(background-color);
+
+    &--on { background-color: $lynx-accent; }
+    &--off { background-color: $lynx-elevated; }
+  }
+
+  &__toggle-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 1.25rem;
+    height: 1.25rem;
+    background-color: white;
+    border-radius: $radius-full;
+    box-shadow: $shadow-sm;
+    transition: transform 0.2s ease;
+
+    &--on { transform: translateX(20px); }
+  }
+
+  &__severity-label {
+    font-size: $text-xs;
+    color: $lynx-muted;
+    margin-bottom: $sp-2;
+  }
+
+  &__chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $sp-1-5;
+  }
+
+  &__chip {
+    @include chip;
+    &--active { @include chip(true); }
+  }
+
+  // Ecosystem button
+  &__eco-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+
+    svg:first-child { color: $lynx-accent; }
+  }
+
+  &__eco-body {
+    flex: 1;
+    text-align: left;
+
+    h3 {
+      font-size: $text-sm;
+      font-weight: 600;
+    }
+    p {
+      font-size: $text-xs;
+      color: $lynx-muted;
+    }
+  }
+
+  &__eco-chevron {
+    color: $lynx-dim;
+  }
+
+  // About
+  &__about-text {
+    font-size: $text-xs;
+    color: $lynx-muted;
+
+    > * + * { margin-top: $sp-1; }
+
+    strong { color: $lynx-text; }
+  }
+
+  &__sources {
+    padding-top: $sp-2;
+
+    > * + * { margin-top: $sp-1-5; }
+  }
+
+  &__sources-label {
+    font-size: $text-xs;
+    color: $lynx-dim;
+  }
+
+  &__sources-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $sp-1-5;
+  }
+
+  &__source-tag {
+    padding: $sp-0-5 $sp-2;
+    background-color: $lynx-elevated;
+    border-radius: $radius-sm;
+    font-size: 10px;
+    color: $lynx-muted;
+  }
+
+  // Legal disclaimer
+  &__legal {
+    background-color: rgba($lynx-warning, 0.05);
+    border-radius: $radius-xl;
+    border: 1px solid rgba($lynx-warning, 0.1);
+    padding: $sp-4;
+  }
+
+  &__legal-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: $sp-2;
+  }
+
+  &__legal-icon {
+    color: $lynx-warning;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  &__legal-text {
+    font-size: $text-xs;
+    color: $lynx-muted;
+
+    > * + * { margin-top: $sp-1; }
+
+    strong { color: $lynx-text; }
+  }
+
+  &__legal-title {
+    font-weight: 600;
+    color: $lynx-warning;
+  }
+
+  // Copyright
+  &__copyright {
+    text-align: center;
+    font-size: 10px;
+    color: $lynx-dim;
+    padding-bottom: $sp-4;
+  }
+}

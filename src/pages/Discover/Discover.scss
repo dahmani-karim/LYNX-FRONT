@@ -1,0 +1,178 @@
+.discover {
+  min-height: 100dvh;
+  background-color: $lynx-bg;
+  color: $lynx-text;
+}
+
+.discover__nav {
+  position: sticky;
+  top: 0;
+  z-index: $z-header;
+  background-color: rgba($lynx-bg, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba($lynx-border, 0.3);
+}
+
+.discover__nav-inner {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: $sp-3 $sp-4;
+  @include flex-between;
+}
+
+.discover__back {
+  font-weight: 800;
+  text-decoration: none;
+  color: $lynx-text;
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+}
+
+.discover__nav-cta {
+  font-size: $text-sm;
+  font-weight: 600;
+  color: white;
+  background-color: $lynx-accent;
+  padding: $sp-1-5 $sp-4;
+  border-radius: $radius-lg;
+  text-decoration: none;
+  @include transition;
+
+  &:hover { background-color: color.adjust($lynx-accent, $lightness: -8%); }
+}
+
+.discover__header {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: $sp-8 $sp-4;
+  text-align: center;
+}
+
+.discover__title {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: $sp-3;
+}
+
+.discover__desc {
+  font-size: $text-base;
+  color: $lynx-muted;
+  max-width: 36rem;
+  margin: 0 auto $sp-6;
+  line-height: 1.7;
+}
+
+.discover__meta {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: $sp-6;
+}
+
+.discover__meta-item {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  font-size: $text-sm;
+  color: $lynx-accent-light;
+  font-weight: 500;
+}
+
+.discover__modules {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 0 $sp-4 $sp-8;
+  display: grid;
+  gap: $sp-4;
+}
+
+.discover__module {
+  @include card;
+  padding: $sp-5;
+  border-left: 3px solid;
+}
+
+.discover__module-header {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  margin-bottom: $sp-3;
+}
+
+.discover__module-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: $radius-lg;
+  @include flex-center;
+  flex-shrink: 0;
+}
+
+.discover__module-title {
+  font-size: $text-lg;
+  font-weight: 700;
+}
+
+.discover__module-source {
+  font-size: $text-xs;
+  color: $lynx-dim;
+}
+
+.discover__module-desc {
+  font-size: $text-sm;
+  color: $lynx-muted;
+  line-height: 1.6;
+  margin-bottom: $sp-3;
+}
+
+.discover__module-features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $sp-1-5;
+  list-style: none;
+  padding: 0;
+}
+
+.discover__module-feature {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  font-size: $text-xs;
+  color: $lynx-muted;
+}
+
+.discover__module-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: $radius-full;
+  flex-shrink: 0;
+}
+
+.discover__cta {
+  text-align: center;
+  padding: $sp-12 $sp-4;
+  background: linear-gradient(180deg, transparent, rgba($lynx-accent, 0.05));
+}
+
+.discover__cta-title {
+  font-size: $text-xl;
+  font-weight: 800;
+  margin-bottom: $sp-4;
+}
+
+.discover__cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-3 $sp-6;
+  background-color: $lynx-accent;
+  color: white;
+  font-weight: 600;
+  font-size: $text-sm;
+  border-radius: $radius-xl;
+  text-decoration: none;
+  @include transition;
+
+  &:hover { background-color: color.adjust($lynx-accent, $lightness: -8%); transform: translateY(-1px); }
+}

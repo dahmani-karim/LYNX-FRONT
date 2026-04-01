@@ -1,0 +1,35 @@
+@use 'variables' as *;
+
+.leaflet-container {
+  background: $lynx-bg !important;
+  font-family: $font-sans !important;
+}
+
+.leaflet-control-zoom a {
+  background-color: $lynx-surface !important;
+  color: $lynx-text !important;
+  border-color: $lynx-border !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba($lynx-bg, 0.8) !important;
+  color: $lynx-dim !important;
+  font-size: 10px !important;
+
+  a { color: $lynx-muted !important; }
+}
+
+.leaflet-popup-content-wrapper {
+  background: $lynx-surface !important;
+  color: $lynx-text !important;
+  border-radius: 12px !important;
+  box-shadow: $shadow-lg !important;
+}
+
+.leaflet-popup-tip {
+  background: $lynx-surface !important;
+}
+
+.leaflet-popup-close-button {
+  color: $lynx-muted !important;
+}

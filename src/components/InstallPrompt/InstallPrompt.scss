@@ -1,0 +1,51 @@
+.install-prompt {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  padding: $sp-3;
+  border-radius: $radius-xl;
+
+  &--installed {
+    background-color: rgba($lynx-success, 0.1);
+    border: 1px solid rgba($lynx-success, 0.2);
+  }
+
+  &--available {
+    width: 100%;
+    background-color: rgba($lynx-accent, 0.1);
+    border: 1px solid rgba($lynx-accent, 0.2);
+    @include transition;
+
+    &:hover {
+      background-color: rgba($lynx-accent, 0.2);
+    }
+  }
+
+  &__icon {
+    flex-shrink: 0;
+
+    &--success { color: $lynx-success; }
+    &--accent { color: $lynx-accent; }
+  }
+
+  &__label {
+    color: $lynx-success;
+    font-size: $text-sm;
+  }
+
+  &__body {
+    flex: 1;
+    text-align: left;
+  }
+
+  &__title {
+    font-size: $text-sm;
+    font-weight: 500;
+    color: $lynx-accent;
+  }
+
+  &__desc {
+    font-size: $text-xs;
+    color: $lynx-muted;
+  }
+}

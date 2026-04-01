@@ -1,0 +1,148 @@
+.stats-page {
+  @include page-container;
+  @include stack($sp-5);
+
+  &__title {
+    font-size: $text-lg;
+    font-weight: 700;
+  }
+
+  // Summary cards
+  &__summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $sp-3;
+  }
+
+  &__summary-card {
+    @include card;
+    padding: $sp-3;
+    text-align: center;
+  }
+
+  &__summary-value {
+    font-size: $text-2xl;
+    font-weight: 700;
+
+    &--danger { color: $lynx-danger; }
+  }
+
+  &__summary-label {
+    font-size: $text-xs;
+    color: $lynx-muted;
+  }
+
+  // Sections
+  &__section {
+    @include card;
+    padding: $sp-4;
+  }
+
+  &__section-header {
+    @include flex-between;
+    margin-bottom: $sp-3;
+  }
+
+  &__section-title {
+    font-size: $text-sm;
+    font-weight: 600;
+    color: $lynx-muted;
+  }
+
+  // Module scores bars
+  &__scores {
+    > * + * { margin-top: $sp-2-5; }
+  }
+
+  &__score-row {
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+  }
+
+  &__score-label {
+    font-size: $text-xs;
+    font-weight: 500;
+    width: 6rem;
+    text-align: right;
+    @include truncate;
+    color: $lynx-muted;
+  }
+
+  &__score-track {
+    flex: 1;
+    background-color: $lynx-elevated;
+    border-radius: $radius-full;
+    height: 10px;
+    overflow: hidden;
+  }
+
+  &__score-bar {
+    height: 100%;
+    border-radius: $radius-full;
+    transition: all 0.7s ease;
+  }
+
+  &__score-value {
+    font-size: $text-xs;
+    font-weight: 700;
+    width: 2rem;
+  }
+
+  // Time toggle
+  &__time-toggle {
+    display: flex;
+    gap: $sp-1;
+  }
+
+  &__time-btn {
+    @include chip;
+
+    &--active { @include chip(true); }
+  }
+
+  // Category breakdown
+  &__cat-row {
+    display: flex;
+    align-items: center;
+    gap: $sp-4;
+  }
+
+  &__cat-legend {
+    flex: 1;
+    > * + * { margin-top: $sp-1-5; }
+  }
+
+  &__cat-item {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+  }
+
+  &__cat-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: $radius-full;
+    flex-shrink: 0;
+  }
+
+  &__cat-name {
+    font-size: $text-xs;
+    color: $lynx-muted;
+    flex: 1;
+    @include truncate;
+  }
+
+  &__cat-count {
+    font-size: $text-xs;
+    font-weight: 600;
+  }
+
+  // Empty state
+  &__empty {
+    font-size: $text-sm;
+    color: $lynx-muted;
+    text-align: center;
+    padding: $sp-4 0;
+  }
+}

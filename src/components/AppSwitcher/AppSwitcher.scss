@@ -1,0 +1,121 @@
+.switcher {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  @include sm { align-items: center; }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+  }
+
+  &__panel {
+    position: relative;
+    width: 100%;
+    max-width: 28rem;
+    margin: 0 $sp-4 $sp-4;
+    background-color: $lynx-surface;
+    border-radius: $radius-2xl;
+    border: 1px solid $lynx-border;
+    box-shadow: $shadow-2xl;
+    overflow: hidden;
+    animation: slide-up 0.3s ease-out;
+
+    @include sm { margin-bottom: 0; }
+  }
+
+  &__header {
+    @include flex-between;
+    padding: $sp-4;
+    border-bottom: 1px solid $lynx-border;
+
+    h2 {
+      font-size: $text-base;
+      font-weight: 600;
+    }
+  }
+
+  &__close {
+    @include btn-ghost;
+    color: $lynx-muted;
+  }
+
+  &__list {
+    padding: $sp-3;
+    max-height: 60vh;
+    overflow-y: auto;
+
+    > * + * { margin-top: $sp-1-5; }
+  }
+
+  &__app {
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+    padding: $sp-3;
+    border-radius: $radius-xl;
+    @include transition;
+
+    &:hover { background-color: $lynx-elevated; }
+
+    &--current {
+      background-color: rgba($lynx-accent, 0.1);
+      border: 1px solid rgba($lynx-accent, 0.3);
+    }
+  }
+
+  &__app-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $radius-xl;
+    font-size: $text-2xl;
+  }
+
+  &__app-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__app-name {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+
+    strong {
+      font-size: $text-sm;
+      font-weight: 600;
+    }
+  }
+
+  &__current-tag {
+    font-size: 10px;
+    background-color: rgba($lynx-accent, 0.2);
+    color: $lynx-accent;
+    padding: 2px $sp-1-5;
+    border-radius: $radius-full;
+    font-weight: 500;
+  }
+
+  &__app-desc {
+    font-size: $text-xs;
+    color: $lynx-muted;
+    @include truncate;
+  }
+
+  &__footer {
+    padding: $sp-3;
+    border-top: 1px solid $lynx-border;
+    text-align: center;
+    font-size: $text-xs;
+    color: $lynx-dim;
+  }
+}

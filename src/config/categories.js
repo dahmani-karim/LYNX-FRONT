@@ -1,0 +1,103 @@
+import {
+  Activity,
+  CloudLightning,
+  Globe,
+  Shield,
+  Zap,
+  Users,
+  Fuel,
+  Heart,
+  Wifi,
+  Swords,
+  AlertTriangle,
+} from 'lucide-react';
+
+export const CATEGORIES = {
+  earthquake: {
+    id: 'earthquake',
+    label: 'Séismes',
+    icon: Activity,
+    color: '#EF4444',
+    bgColor: 'rgba(239, 68, 68, 0.15)',
+  },
+  weather: {
+    id: 'weather',
+    label: 'Météo',
+    icon: CloudLightning,
+    color: '#3B82F6',
+    bgColor: 'rgba(59, 130, 246, 0.15)',
+  },
+  disaster: {
+    id: 'disaster',
+    label: 'Catastrophes',
+    icon: Globe,
+    color: '#F59E0B',
+    bgColor: 'rgba(245, 158, 11, 0.15)',
+  },
+  cyber: {
+    id: 'cyber',
+    label: 'Cyber',
+    icon: Shield,
+    color: '#8B5CF6',
+    bgColor: 'rgba(139, 92, 246, 0.15)',
+  },
+  energy: {
+    id: 'energy',
+    label: 'Énergie',
+    icon: Zap,
+    color: '#F97316',
+    bgColor: 'rgba(249, 115, 22, 0.15)',
+  },
+  social: {
+    id: 'social',
+    label: 'Mouvements sociaux',
+    icon: Users,
+    color: '#EC4899',
+    bgColor: 'rgba(236, 72, 153, 0.15)',
+  },
+  fuel: {
+    id: 'fuel',
+    label: 'Carburant',
+    icon: Fuel,
+    color: '#14B8A6',
+    bgColor: 'rgba(20, 184, 166, 0.15)',
+  },
+  health: {
+    id: 'health',
+    label: 'Sanitaire',
+    icon: Heart,
+    color: '#10B981',
+    bgColor: 'rgba(16, 185, 129, 0.15)',
+  },
+  blackout: {
+    id: 'blackout',
+    label: 'Pannes',
+    icon: Wifi,
+    color: '#6366F1',
+    bgColor: 'rgba(99, 102, 241, 0.15)',
+  },
+  conflict: {
+    id: 'conflict',
+    label: 'Conflits',
+    icon: Swords,
+    color: '#DC2626',
+    bgColor: 'rgba(220, 38, 38, 0.15)',
+  },
+  other: {
+    id: 'other',
+    label: 'Autre',
+    icon: AlertTriangle,
+    color: '#9CA3AF',
+    bgColor: 'rgba(156, 163, 175, 0.15)',
+  },
+};
+
+export const SEVERITY_LEVELS = {
+  info: { label: 'Info', color: '#6366F1', order: 0 },
+  low: { label: 'Faible', color: '#10B981', order: 1 },
+  medium: { label: 'Modéré', color: '#F59E0B', order: 2 },
+  high: { label: 'Élevé', color: '#F97316', order: 3 },
+  critical: { label: 'Critique', color: '#EF4444', order: 4 },
+};
+
+export const SEVERITY_ORDER = ['info', 'low', 'medium', 'high', 'critical'];

@@ -1,0 +1,47 @@
+.eco-bridge {
+  > * + * { margin-top: $sp-2; }
+
+  &__title {
+    font-size: $text-sm;
+    font-weight: 600;
+    color: $lynx-muted;
+    padding: 0 $sp-1;
+  }
+
+  &__card {
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+    padding: $sp-3;
+    border-radius: $radius-xl;
+    border: 1px solid rgba($lynx-border, 0.5);
+    border-left-width: 3px;
+    @include transition;
+
+    &:hover { background-color: $lynx-elevated; }
+  }
+
+  &__emoji {
+    font-size: $text-xl;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__message {
+    font-size: $text-sm;
+    font-weight: 500;
+  }
+
+  &__app-name {
+    font-size: $text-xs;
+    color: $lynx-muted;
+  }
+
+  &__arrow {
+    color: $lynx-dim;
+    flex-shrink: 0;
+  }
+}

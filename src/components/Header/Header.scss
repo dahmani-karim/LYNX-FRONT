@@ -1,0 +1,223 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: $z-header;
+  background-color: rgba($lynx-surface, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid $lynx-border;
+
+  &__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 $sp-4;
+    height: $header-height;
+  }
+
+  &__left, &__right {
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+  }
+
+  &__right { gap: $sp-2; }
+
+  &__menu-btn {
+    @include btn-ghost;
+    color: $lynx-muted;
+    @media (min-width: $bp-lg) { display: none; }
+  }
+
+  &__logo {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    text-decoration: none;
+    color: inherit;
+
+    svg { color: $lynx-accent; }
+    span {
+      font-size: $text-lg;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+  }
+
+  &__badge {
+    display: flex;
+    align-items: center;
+    gap: $sp-1;
+    padding: $sp-0-5 $sp-2;
+    background-color: rgba($lynx-danger, 0.2);
+    color: $lynx-danger;
+    border-radius: $radius-full;
+    font-size: $text-xs;
+    font-weight: 600;
+    animation: pulse-danger 1.5s ease-in-out infinite;
+  }
+
+  &__icon-btn {
+    @include btn-ghost;
+    padding: $sp-2;
+    color: $lynx-muted;
+
+    &:disabled { opacity: 0.5; }
+  }
+
+  &__emoji-btn {
+    @include btn-ghost;
+    padding: $sp-2;
+    font-size: $text-lg;
+  }
+}
+
+// Desktop sidebar
+.sidebar {
+  display: none;
+  position: fixed;
+  left: 0;
+  top: $header-height;
+  bottom: 0;
+  width: $sidebar-width;
+  background-color: $lynx-surface;
+  border-right: 1px solid $lynx-border;
+  flex-direction: column;
+  z-index: $z-nav;
+
+  @media (min-width: $bp-lg) { display: flex; }
+
+  &__nav {
+    flex: 1;
+    padding: $sp-4 $sp-3;
+
+    > * + * { margin-top: $sp-1; }
+  }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+    padding: $sp-2-5 $sp-3;
+    border-radius: $radius-lg;
+    color: $lynx-muted;
+    @include transition;
+
+    &:hover {
+      background-color: $lynx-elevated;
+      color: $lynx-text;
+    }
+
+    &--active {
+      background-color: rgba($lynx-accent, 0.15);
+      color: $lynx-accent;
+    }
+
+    span {
+      font-size: $text-sm;
+      font-weight: 500;
+    }
+  }
+
+  &__footer {
+    padding: $sp-3;
+    border-top: 1px solid $lynx-border;
+  }
+
+  &__eco-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+    padding: $sp-2-5 $sp-3;
+    border-radius: $radius-lg;
+    color: $lynx-muted;
+    @include transition;
+
+    &:hover {
+      background-color: $lynx-elevated;
+      color: $lynx-text;
+    }
+
+    .emoji { font-size: $text-lg; }
+    span { font-size: $text-sm; font-weight: 500; }
+  }
+}
+
+// Mobile sidebar overlay
+.mobile-sidebar {
+  position: fixed;
+  inset: 0;
+  z-index: $z-header;
+
+  @media (min-width: $bp-lg) { display: none; }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+  }
+
+  &__panel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 18rem;
+    background-color: $lynx-surface;
+    animation: slide-in 0.3s ease-out;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $sp-4;
+    border-bottom: 1px solid $lynx-border;
+  }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+
+    svg { color: $lynx-accent; }
+    span { font-size: $text-lg; font-weight: 700; }
+  }
+
+  &__close {
+    @include btn-ghost;
+    color: $lynx-muted;
+  }
+
+  &__nav {
+    padding: $sp-4 $sp-3;
+    > * + * { margin-top: $sp-1; }
+  }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+    padding: $sp-3;
+    border-radius: $radius-lg;
+    color: $lynx-muted;
+    @include transition;
+
+    &:hover {
+      background-color: $lynx-elevated;
+      color: $lynx-text;
+    }
+
+    &--active {
+      background-color: rgba($lynx-accent, 0.15);
+      color: $lynx-accent;
+    }
+
+    span { font-size: $text-sm; font-weight: 500; }
+  }
+
+  &__footer {
+    padding: $sp-3;
+    border-top: 1px solid $lynx-border;
+  }
+}

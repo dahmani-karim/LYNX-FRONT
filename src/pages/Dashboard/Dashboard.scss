@@ -1,0 +1,168 @@
+.dashboard {
+  @include page-container;
+  @include stack($sp-5);
+
+  // Risk score card
+  &__risk-card {
+    @include card-lg;
+    padding: $sp-5;
+  }
+
+  &__risk-header {
+    @include flex-between;
+    margin-bottom: $sp-4;
+  }
+
+  &__risk-title {
+    font-size: $text-lg;
+    font-weight: 700;
+  }
+
+  &__risk-location {
+    display: flex;
+    align-items: center;
+    gap: $sp-1-5;
+    margin-top: 2px;
+
+    svg { color: $lynx-muted; }
+    span { font-size: $text-xs; color: $lynx-muted; }
+  }
+
+  &__risk-gauge {
+    @include flex-center;
+  }
+
+  // Weather widget
+  &__weather {
+    @include card-lg;
+    padding: $sp-4;
+  }
+
+  &__weather-title {
+    font-size: $text-sm;
+    font-weight: 600;
+    color: $lynx-muted;
+    margin-bottom: $sp-3;
+  }
+
+  &__weather-grid {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+  }
+
+  &__weather-item {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+  }
+
+  &__weather-value {
+    font-size: $text-xl;
+    font-weight: 700;
+  }
+
+  &__weather-sub {
+    font-size: $text-xs;
+    color: $lynx-muted;
+  }
+
+  &__weather-label {
+    font-size: $text-sm;
+    font-weight: 600;
+  }
+
+  &__weather-desc {
+    text-align: center;
+    font-size: $text-xs;
+    color: $lynx-dim;
+    margin-top: $sp-2;
+  }
+
+  // Module scores grid
+  &__modules-title {
+    font-size: $text-sm;
+    font-weight: 600;
+    color: $lynx-muted;
+    margin-bottom: $sp-3;
+    padding: 0 $sp-1;
+  }
+
+  &__modules-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $sp-2;
+  }
+
+  &__module-card {
+    @include card;
+    padding: $sp-3;
+    @include flex-col;
+    align-items: center;
+    gap: $sp-1-5;
+  }
+
+  &__module-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: $radius-lg;
+    @include flex-center;
+  }
+
+  &__module-label {
+    font-size: $text-xs;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  &__module-score {
+    font-size: $text-lg;
+    font-weight: 700;
+  }
+
+  // Alerts section
+  &__alerts-header {
+    @include flex-between;
+    margin-bottom: $sp-3;
+    padding: 0 $sp-1;
+  }
+
+  &__alerts-title {
+    font-size: $text-sm;
+    font-weight: 600;
+    color: $lynx-muted;
+  }
+
+  &__alerts-list {
+    > * + * { margin-top: $sp-2; }
+  }
+
+  // Errors section
+  &__errors {
+    background-color: rgba($lynx-warning, 0.1);
+    border-radius: $radius-xl;
+    border: 1px solid rgba($lynx-warning, 0.2);
+    padding: $sp-3;
+  }
+
+  &__errors-title {
+    font-size: $text-xs;
+    font-weight: 600;
+    color: $lynx-warning;
+    margin-bottom: $sp-1;
+  }
+
+  &__errors-item {
+    font-size: $text-xs;
+    color: $lynx-muted;
+  }
+
+  // Disclaimer
+  &__disclaimer {
+    text-align: center;
+    font-size: 10px;
+    color: $lynx-dim;
+    padding: 0 $sp-4 $sp-2;
+  }
+}
