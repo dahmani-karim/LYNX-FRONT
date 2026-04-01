@@ -8,7 +8,14 @@ import { API_CONFIG } from '../config/api';
 
 const FR_FUEL_API = 'https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/records';
 
-const FUEL_TYPES = ['Gazole', 'SP95', 'SP98', 'E85', 'E10', 'GPLc'];
+const FUEL_COLS = [
+  { name: 'Gazole', col: 'gazole_prix' },
+  { name: 'SP95', col: 'sp95_prix' },
+  { name: 'SP98', col: 'sp98_prix' },
+  { name: 'E85', col: 'e85_prix' },
+  { name: 'E10', col: 'e10_prix' },
+  { name: 'GPLc', col: 'gplc_prix' },
+];
 
 export async function fetchFuelPrices(countryCode = 'FR') {
   if (countryCode === 'FR') {
@@ -18,38 +25,44 @@ export async function fetchFuelPrices(countryCode = 'FR') {
 }
 
 async function fetchFrenchFuelPrices() {
-  const results = [];
+  try {
+    // Single query aggregating all fuel columns at once
+    const selectParts = FUEL_COLS.map(({ col }) =>
+      `avg(${col}) as ${col}_avg, min(${col}) as ${col}_min, max(${col}) as ${col}_max`
+    ).join(', ');
 
-  // Query each fuel type individually for reliable aggregation
-  for (const fuel of FUEL_TYPES) {
-    try {
-      const params = new URLSearchParams({
-        where: `prix_nom="${fuel}"`,
-        select: 'min(prix_valeur) as prix_min, max(prix_valeur) as prix_max, avg(prix_valeur) as prix_avg',
-        limit: '1',
+    const params = new URLSearchParams({
+      select: selectParts,
+      limit: '1',
+    });
+
+    const res = await fetch(`${FR_FUEL_API}?${params}`);
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    const data = await res.json();
+    const r = data.results?.[0];
+    if (!r) throw new Error('No results');
+
+    const results = [];
+    for (const { name, col } of FUEL_COLS) {
+      const avg = r[`${col}_avg`];
+      if (avg == null) continue;
+      results.push({
+        name,
+        rawName: name,
+        min: round2(r[`${col}_min`]),
+        max: round2(r[`${col}_max`]),
+        avg: round2(avg),
+        unit: '€/L',
+        type: 'fuel',
+        source: 'data.economie.gouv.fr',
+        trend: 'stable',
       });
-      const res = await fetch(`${FR_FUEL_API}?${params}`);
-      if (!res.ok) continue;
-      const data = await res.json();
-      if (data.results?.[0]) {
-        const r = data.results[0];
-        results.push({
-          name: fuel,
-          rawName: fuel,
-          min: round2(r.prix_min / 1000),
-          max: round2(r.prix_max / 1000),
-          avg: round2(r.prix_avg / 1000),
-          unit: '€/L',
-          type: 'fuel',
-          source: 'data.economie.gouv.fr',
-          trend: 'stable',
-        });
-      }
-    } catch { continue; }
-  }
+    }
 
-  if (results.length === 0) return getStaticFuelPrices('FR');
-  return results;
+    if (results.length > 0) return results;
+  } catch { /* fallback to static */ }
+
+  return getStaticFuelPrices('FR');
 }
 
 /**

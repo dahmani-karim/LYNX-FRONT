@@ -6,11 +6,20 @@ import { API_CONFIG } from '../config/api';
  * Strategy 2: NASA EONET wildfire events (CORS-friendly, no key)
  */
 export async function fetchFires(lat, lng) {
-  // Strategy 1: FIRMS via proxy
+  // Strategy 1: NASA EONET (free, CORS-friendly)
   try {
-    const delta = 5;
+    const res = await fetch(`${API_CONFIG.NASA_EONET.BASE}?category=wildfires&status=open&limit=50`);
+    if (!res.ok) throw new Error(`EONET: ${res.status}`);
+    const data = await res.json();
+    const events = parseEONET(data.events || [], lat, lng);
+    if (events.length > 0) return events;
+  } catch { /* EONET unavailable, try fallback */ }
+
+  // Strategy 2: FIRMS via proxy (requires valid MAP_KEY)
+  try {
+    const delta = 3;
     const area = `${(lng - delta).toFixed(2)},${(lat - delta).toFixed(2)},${(lng + delta).toFixed(2)},${(lat + delta).toFixed(2)}`;
-    const firmsUrl = `${API_CONFIG.NASA_FIRMS.BASE}/${API_CONFIG.NASA_FIRMS.MAP_KEY}/VIIRS_SNPP_NRT/${area}/2`;
+    const firmsUrl = `${API_CONFIG.NASA_FIRMS.BASE}/${API_CONFIG.NASA_FIRMS.MAP_KEY}/VIIRS_SNPP_NRT/${area}/1`;
 
     for (const proxy of API_CONFIG.CORS_PROXIES) {
       try {
@@ -22,21 +31,9 @@ export async function fetchFires(lat, lng) {
         }
       } catch { continue; }
     }
-    throw new Error('FIRMS proxies failed');
-  } catch (err) {
-    console.warn('[fires] FIRMS proxy failed:', err.message);
-  }
+  } catch { /* FIRMS unavailable */ }
 
-  // Strategy 2: NASA EONET (free, CORS-friendly)
-  try {
-    const res = await fetch(`${API_CONFIG.NASA_EONET.BASE}?category=wildfires&status=open&limit=50`);
-    if (!res.ok) throw new Error(`EONET: ${res.status}`);
-    const data = await res.json();
-    return parseEONET(data.events || [], lat, lng);
-  } catch (err) {
-    console.warn('[fires] EONET failed:', err.message);
-    return [];
-  }
+  return [];
 }
 
 function parseEONET(events, userLat, userLng) {

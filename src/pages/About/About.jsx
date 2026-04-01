@@ -52,7 +52,7 @@ const GUIDE_SECTIONS = [
 export default function About() {
   return (
     <div className="about">
-      <nav className="about__nav">
+      {/* <nav className="about__nav">
         <div className="about__nav-inner">
           <Link to="/settings" className="about__back">
             <ArrowLeft size={18} />
@@ -60,7 +60,7 @@ export default function About() {
           </Link>
           <LynxLogo size={28} />
         </div>
-      </nav>
+      </nav> */}
 
       {/* About / Version */}
       <section className="about__section">

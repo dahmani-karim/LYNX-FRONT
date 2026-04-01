@@ -1,52 +1,43 @@
-import { API_CONFIG } from '../config/api';
-
-const BFS_URL = 'https://odlinfo.bfs.de/json/stat.json';
-
 /**
- * Fetches radiation monitoring data from German BfS via CORS proxy.
+ * Fetches radiation monitoring data from German BfS IMIS WFS (CORS-friendly).
  */
+
+const BFS_WFS = 'https://www.imis.bfs.de/ogc/opendata/ows?service=WFS&version=1.1.0&request=GetFeature&typeName=opendata:odlinfo_odl_1h_latest&outputFormat=application/json&maxFeatures=100';
+
 export async function fetchRadiationData() {
   const events = [];
 
   try {
-    let data = null;
+    const res = await fetch(BFS_WFS);
+    if (!res.ok) throw new Error(`BfS WFS: ${res.status}`);
+    const geojson = await res.json();
 
-    // Try CORS proxies
-    for (const proxy of API_CONFIG.CORS_PROXIES) {
-      try {
-        const res = await fetch(`${proxy}${encodeURIComponent(BFS_URL)}`);
-        if (res.ok) {
-          data = await res.json();
-          break;
-        }
-      } catch { continue; }
-    }
+    const features = (geojson.features || []).slice(0, 50);
 
-    if (!data) throw new Error('All proxies failed');
-
-    const stations = Object.entries(data).slice(0, 30);
-
-    for (const [id, station] of stations) {
-      const value = station.mw || 0; // µSv/h
+    for (const feat of features) {
+      const p = feat.properties || {};
+      const value = p.value || 0; // µSv/h
       if (value <= 0.3) continue; // Skip normal background
 
+      const coords = feat.geometry?.coordinates || [10, 51];
       const severity = radiationSeverity(value);
+
       events.push({
-        id: `rad-${id}-${Date.now()}`,
+        id: `rad-${p.id || p.kenn}-${Date.now()}`,
         type: 'radiation',
-        title: `Radiation: ${value.toFixed(3)} µSv/h — ${station.ort || id}`,
-        description: `Station ${station.ort || id} (${station.kenn || ''}). Débit dose: ${value.toFixed(3)} µSv/h. Statut: ${station.status === 1 ? 'Actif' : 'Inactif'}`,
+        title: `Radiation: ${value.toFixed(3)} µSv/h — ${p.name || p.id}`,
+        description: `Station ${p.name || p.id}. Débit dose: ${value.toFixed(3)} µSv/h. Statut: ${p.site_status === 1 ? 'Actif' : 'Inactif'}`,
         severity,
-        eventDate: station.t ? new Date(station.t * 1000).toISOString() : new Date().toISOString(),
-        latitude: station.lat || 51.0,
-        longitude: station.lon || 10.0,
+        eventDate: p.end_measure || new Date().toISOString(),
+        latitude: coords[1],
+        longitude: coords[0],
         sourceName: 'BfS ODL',
         sourceUrl: 'https://odlinfo.bfs.de',
         sourceReliability: 95,
         metadata: {
           doseRate: value,
           unit: 'µSv/h',
-          stationId: id,
+          stationId: p.id,
         },
       });
     }
