@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAlertStore } from '../../stores/alertStore';
+import { useAuthStore } from '../../stores/authStore';
 import { CATEGORIES, SEVERITY_LEVELS } from '../../config/categories';
 import SeverityBadge from '../../components/SeverityBadge/SeverityBadge';
 import { formatDate, timeAgo } from '../../utils/date';
-import { Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { Clock, ChevronDown, ChevronUp, Crown } from 'lucide-react';
 import './Timeline.scss';
 
 const TIME_FILTERS = [
@@ -34,8 +35,11 @@ function groupByDate(events) {
 
 export default function Timeline() {
   const events = useAlertStore((s) => s.events);
+  const isPremium = useAuthStore((s) => s.isPremium);
   const [timeFilter, setTimeFilter] = useState('24h');
   const [expandedGroups, setExpandedGroups] = useState(new Set());
+
+  const FREE_FILTERS = ['6h', '24h'];
 
   const filteredEvents = useMemo(() => {
     const limit = getTimeLimit(timeFilter);
@@ -66,15 +70,20 @@ export default function Timeline() {
           Chronologie
         </h1>
         <div className="timeline__filters">
-          {TIME_FILTERS.map((f) => (
-            <button
-              key={f.value}
-              onClick={() => setTimeFilter(f.value)}
-              className={`timeline__chip ${timeFilter === f.value ? 'timeline__chip--active' : ''}`}
-            >
-              {f.label}
-            </button>
-          ))}
+          {TIME_FILTERS.map((f) => {
+            const locked = !isPremium && !FREE_FILTERS.includes(f.value);
+            return (
+              <button
+                key={f.value}
+                onClick={() => !locked && setTimeFilter(f.value)}
+                className={`timeline__chip ${timeFilter === f.value ? 'timeline__chip--active' : ''} ${locked ? 'timeline__chip--locked' : ''}`}
+                title={locked ? 'Premium requis' : ''}
+              >
+                {f.label}
+                {locked && <Crown size={10} />}
+              </button>
+            );
+          })}
         </div>
       </div>
 

@@ -114,10 +114,14 @@ export async function fetchGDACSEvents() {
     return parseGDACSEventsFromJSON(data);
   } catch {
     try {
-      const proxyUrl = `${API_CONFIG.CORS_PROXY}${encodeURIComponent(API_CONFIG.GDACS.RSS)}`;
-      const res = await fetch(proxyUrl);
-      if (!res.ok) throw new Error(`GDACS RSS proxy: ${res.status}`);
-      const xml = await res.text();
+      let xml = null;
+      for (const proxy of API_CONFIG.CORS_PROXIES) {
+        try {
+          const res = await fetch(`${proxy}${encodeURIComponent(API_CONFIG.GDACS.RSS)}`);
+          if (res.ok) { xml = await res.text(); break; }
+        } catch { continue; }
+      }
+      if (!xml) throw new Error('All GDACS RSS proxies failed');
       return parseGDACSRSS(xml);
     } catch {
       console.warn('GDACS: toutes les tentatives ont échoué');

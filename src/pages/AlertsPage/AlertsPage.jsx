@@ -5,8 +5,10 @@ import { useAuthStore } from '../../stores/authStore';
 import AlertCard from '../../components/AlertCard/AlertCard';
 import Loader from '../../components/Loader/Loader';
 import { CATEGORIES } from '../../config/categories';
-import { Search, SlidersHorizontal, X, Bookmark, Radio } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Bookmark, Radio, Crown } from 'lucide-react';
 import './AlertsPage.scss';
+
+const FREE_TIME_RANGES = ['1h', '6h', '24h'];
 
 const TIME_RANGES = [
   { value: '1h', label: '1h' },
@@ -27,7 +29,8 @@ const SEVERITY_OPTIONS = [
 
 export default function AlertsPage() {
   const { isLoading, filters, setFilter, getFilteredEvents, resetFilters } = useAlertStore();
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const { isAuthenticated } = useAuthStore();
+  const isPremium = useAuthStore((s) => s.isPremium);
   const { savedAlerts, fetchSaved } = useSavedAlertStore();
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -108,15 +111,20 @@ export default function AlertsPage() {
           <div>
             <p className="alerts-page__filter-label">Période</p>
             <div className="alerts-page__chip-group">
-              {TIME_RANGES.map((t) => (
-                <button
-                  key={t.value}
-                  onClick={() => setFilter('timeRange', t.value)}
-                  className={`alerts-page__chip ${filters.timeRange === t.value ? 'alerts-page__chip--active' : ''}`}
-                >
-                  {t.label}
-                </button>
-              ))}
+              {TIME_RANGES.map((t) => {
+                const locked = !isPremium && !FREE_TIME_RANGES.includes(t.value);
+                return (
+                  <button
+                    key={t.value}
+                    onClick={() => !locked && setFilter('timeRange', t.value)}
+                    className={`alerts-page__chip ${filters.timeRange === t.value ? 'alerts-page__chip--active' : ''} ${locked ? 'alerts-page__chip--locked' : ''}`}
+                    title={locked ? 'Premium requis' : ''}
+                  >
+                    {t.label}
+                    {locked && <Crown size={10} />}
+                  </button>
+                );
+              })}
             </div>
           </div>
 

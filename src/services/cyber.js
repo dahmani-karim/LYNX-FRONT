@@ -72,24 +72,98 @@ async function fetchViaProxies(targetUrl) {
 }
 
 export async function fetchCyberAlerts() {
-  // Strategy 1: rss2json (CORS-friendly, returns JSON)
+  const results = [];
+
+  // Strategy 1: CERT-FR alertes via rss2json
   try {
-    return await fetchViaRss2Json(API_CONFIG.CERT_FR.ALERTES_RSS);
+    const certAlerts = await fetchViaRss2Json(API_CONFIG.CERT_FR.ALERTES_RSS);
+    results.push(...certAlerts);
   } catch { /* fall through */ }
 
-  try {
-    return await fetchViaRss2Json(API_CONFIG.CERT_FR.AVIS_RSS);
-  } catch { /* fall through */ }
-
-  // Strategy 2: CORS proxies
-  try {
-    return await fetchViaProxies(API_CONFIG.CERT_FR.ALERTES_RSS);
-  } catch { /* fall through */ }
-
-  try {
-    return await fetchViaProxies(API_CONFIG.CERT_FR.AVIS_RSS);
-  } catch {
-    console.warn('CERT-FR: all fetch strategies failed');
-    return [];
+  if (results.length === 0) {
+    try {
+      const certAvis = await fetchViaRss2Json(API_CONFIG.CERT_FR.AVIS_RSS);
+      results.push(...certAvis);
+    } catch { /* fall through */ }
   }
+
+  // Strategy 2: CORS proxies for CERT-FR
+  if (results.length === 0) {
+    try {
+      const proxied = await fetchViaProxies(API_CONFIG.CERT_FR.ALERTES_RSS);
+      results.push(...proxied);
+    } catch { /* fall through */ }
+  }
+
+  if (results.length === 0) {
+    try {
+      const proxied = await fetchViaProxies(API_CONFIG.CERT_FR.AVIS_RSS);
+      results.push(...proxied);
+    } catch { /* fall through */ }
+  }
+
+  // Data breach monitoring (additional sources)
+  try {
+    const breaches = await fetchDataBreaches();
+    results.push(...breaches);
+  } catch { /* silent */ }
+
+  if (results.length === 0) {
+    console.warn('CERT-FR: all fetch strategies failed');
+  }
+
+  return results;
+}
+
+/**
+ * Fetches recent data breach news from HIBP-style public feeds
+ * and French cyber news sources via RSS.
+ */
+async function fetchDataBreaches() {
+  const breachSources = [
+    'https://www.zataz.com/feed/',
+    'https://www.cybermalveillance.gouv.fr/feed',
+  ];
+
+  const allBreaches = [];
+
+  for (const rssUrl of breachSources) {
+    try {
+      const items = await fetchViaRss2Json(rssUrl);
+      const breachItems = items.map((item) => ({
+        ...item,
+        id: `breach-${item.id}`,
+        type: 'cyber',
+        severity: classifyBreachSeverity(item.title),
+        sourceName: rssUrl.includes('zataz') ? 'ZATAZ' : 'Cybermalveillance.gouv.fr',
+        sourceReliability: rssUrl.includes('zataz') ? 80 : 95,
+      }));
+      allBreaches.push(...breachItems);
+    } catch { continue; }
+
+    // Try CORS proxy fallback
+    if (allBreaches.length === 0) {
+      try {
+        const items = await fetchViaProxies(rssUrl);
+        const breachItems = items.map((item) => ({
+          ...item,
+          id: `breach-${item.id}`,
+          severity: classifyBreachSeverity(item.title),
+          sourceName: rssUrl.includes('zataz') ? 'ZATAZ' : 'Cybermalveillance.gouv.fr',
+          sourceReliability: rssUrl.includes('zataz') ? 80 : 95,
+        }));
+        allBreaches.push(...breachItems);
+      } catch { continue; }
+    }
+  }
+
+  return allBreaches;
+}
+
+function classifyBreachSeverity(title) {
+  const t = (title || '').toLowerCase();
+  if (t.includes('fuite') || t.includes('breach') || t.includes('données personnelles') || t.includes('ransomware')) return 'high';
+  if (t.includes('attaque') || t.includes('piratage') || t.includes('hack')) return 'high';
+  if (t.includes('phishing') || t.includes('arnaque') || t.includes('vulnérabilité')) return 'medium';
+  return 'medium';
 }

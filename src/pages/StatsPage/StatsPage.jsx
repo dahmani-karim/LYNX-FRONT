@@ -7,12 +7,14 @@ import { generateReport } from '../../utils/pdfExport';
 import { downloadRssFeed } from '../../utils/rssFeed';
 import { FileDown, Rss, Crown } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
+import { useNavigate } from 'react-router-dom';
 import './StatsPage.scss';
 
 export default function StatsPage() {
   const { events, riskScores } = useAlertStore();
   const [timeView, setTimeView] = useState('24h');
   const isPremium = useAuthStore((s) => s.isPremium);
+  const navigate = useNavigate();
 
   const categoryData = useMemo(() => {
     const counts = {};
@@ -94,8 +96,7 @@ export default function StatsPage() {
         <div className="stats-page__header-actions">
           <button
             className="stats-page__export-btn"
-            onClick={() => isPremium ? downloadRssFeed(events) : null}
-            disabled={!isPremium}
+            onClick={() => isPremium ? downloadRssFeed(events) : navigate('/pricing')}
             title={!isPremium ? 'Premium requis' : 'Exporter en RSS'}
           >
             {!isPremium && <Crown size={12} />}
@@ -104,8 +105,7 @@ export default function StatsPage() {
           </button>
           <button
             className="stats-page__export-btn"
-            onClick={() => isPremium ? generateReport(events, riskScores) : null}
-            disabled={!isPremium}
+            onClick={() => isPremium ? generateReport(events, riskScores) : navigate('/pricing')}
             title={!isPremium ? 'Premium requis' : 'Exporter en PDF'}
           >
             {!isPremium && <Crown size={12} />}

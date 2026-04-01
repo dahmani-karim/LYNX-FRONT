@@ -10,10 +10,47 @@
     height: calc(100dvh - $header-height);
   }
 
+  // Mode switch
+  &__mode-switch {
+    position: absolute;
+    top: $sp-3;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: $z-map-controls + 1;
+    display: flex;
+    background-color: rgba($lynx-surface, 0.9);
+    backdrop-filter: blur(8px);
+    border: 1px solid $lynx-border;
+    border-radius: $radius-full;
+    padding: $sp-0-5;
+    gap: $sp-0-5;
+  }
+
+  &__mode-btn {
+    display: flex;
+    align-items: center;
+    gap: $sp-1-5;
+    padding: $sp-1-5 $sp-4;
+    border-radius: $radius-full;
+    font-size: $text-xs;
+    font-weight: 600;
+    @include transition;
+    color: $lynx-muted;
+
+    &--active {
+      background-color: $lynx-accent;
+      color: white;
+    }
+
+    &:not(&--active):hover {
+      color: $lynx-text;
+    }
+  }
+
   // Filter chips
   &__filters {
     position: absolute;
-    top: $sp-3;
+    top: $sp-12;
     left: $sp-3;
     right: $sp-3;
     z-index: $z-map-controls;
@@ -150,5 +187,9 @@
     @media (min-width: $bp-lg) {
       bottom: $sp-6;
     }
+  }
+
+  &__last-update {
+    color: $lynx-dim;
   }
 }

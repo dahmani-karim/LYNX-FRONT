@@ -4,7 +4,7 @@ import { useAlertStore } from '../../stores/alertStore';
 import './BottomNav.scss';
 
 const TABS = [
-  { to: '/dashboard', icon: Home, label: 'Home' },
+  { to: '/dashboard', icon: Home, label: 'Accueil' },
   { to: '/map', icon: Map, label: 'Carte' },
   { to: '/alerts', icon: Bell, label: 'Alertes' },
   { to: '/stats', icon: BarChart3, label: 'Stats' },

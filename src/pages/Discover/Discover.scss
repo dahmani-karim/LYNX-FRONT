@@ -149,6 +149,226 @@
   flex-shrink: 0;
 }
 
+/* Section title */
+.discover__section-title {
+  max-width: 56rem;
+  margin: 0 auto $sp-6;
+  padding: 0 $sp-4;
+  font-size: $text-xl;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+}
+
+/* Stats */
+.discover__stats {
+  max-width: 56rem;
+  margin: 0 auto $sp-8;
+  padding: 0 $sp-4;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $sp-4;
+
+  @include sm { grid-template-columns: repeat(2, 1fr); }
+}
+
+.discover__stat {
+  @include card;
+  padding: $sp-4;
+  text-align: center;
+}
+
+.discover__stat-value {
+  font-size: $text-xl;
+  font-weight: 800;
+  color: $lynx-accent-light;
+  margin-bottom: $sp-1;
+}
+
+.discover__stat-label {
+  font-size: $text-xs;
+  color: $lynx-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Features overview */
+.discover__features {
+  max-width: 56rem;
+  margin: 0 auto $sp-8;
+  padding: 0 $sp-4;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $sp-4;
+
+  @include sm { grid-template-columns: 1fr; }
+}
+
+.discover__feature-item {
+  @include card;
+  padding: $sp-4;
+  display: flex;
+  gap: $sp-3;
+  align-items: flex-start;
+
+  > svg {
+    flex-shrink: 0;
+    color: $lynx-accent-light;
+    margin-top: 2px;
+  }
+
+  h4 {
+    font-size: $text-sm;
+    font-weight: 700;
+    margin-bottom: $sp-1;
+  }
+
+  p {
+    font-size: $text-xs;
+    color: $lynx-muted;
+    line-height: 1.5;
+  }
+}
+
+/* Modules section wrapper */
+.discover__modules-section {
+  margin-bottom: $sp-8;
+}
+
+/* Premium */
+.discover__premium {
+  max-width: 56rem;
+  margin: 0 auto $sp-8;
+}
+
+.discover__premium-grid {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 0 $sp-4;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $sp-4;
+
+  @include sm { grid-template-columns: 1fr; }
+}
+
+.discover__premium-item {
+  @include card;
+  padding: $sp-5;
+  border: 1px solid rgba($lynx-accent, 0.15);
+  text-align: center;
+
+  > span {
+    font-size: 1.75rem;
+    display: block;
+    margin-bottom: $sp-2;
+  }
+
+  h4 {
+    font-size: $text-sm;
+    font-weight: 700;
+    margin-bottom: $sp-1;
+  }
+
+  p {
+    font-size: $text-xs;
+    color: $lynx-muted;
+    line-height: 1.5;
+  }
+}
+
+/* PWA */
+.discover__pwa {
+  max-width: 56rem;
+  margin: 0 auto $sp-8;
+  text-align: center;
+
+  .discover__desc {
+    margin-bottom: $sp-4;
+  }
+}
+
+.discover__pwa-grid {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 0 $sp-4;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $sp-3;
+
+  @include sm { grid-template-columns: repeat(2, 1fr); }
+}
+
+.discover__pwa-item {
+  @include card;
+  padding: $sp-3;
+  @include flex-center;
+  flex-direction: column;
+  gap: $sp-2;
+  font-size: $text-sm;
+  font-weight: 600;
+  color: $lynx-muted;
+
+  svg { color: $lynx-accent-light; }
+}
+
+/* Ecosystem */
+.discover__ecosystem {
+  max-width: 56rem;
+  margin: 0 auto $sp-8;
+  text-align: center;
+
+  .discover__desc {
+    margin-bottom: $sp-4;
+  }
+}
+
+.discover__eco-grid {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 0 $sp-4;
+  display: grid;
+  gap: $sp-3;
+}
+
+.discover__eco-card {
+  @include card;
+  padding: $sp-4;
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  text-decoration: none;
+  color: $lynx-text;
+  border-left: 3px solid;
+  @include transition;
+
+  &:hover {
+    background-color: $lynx-elevated;
+    transform: translateX(4px);
+  }
+
+  svg { flex-shrink: 0; }
+}
+
+.discover__eco-emoji {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.discover__eco-name {
+  font-size: $text-sm;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.discover__eco-desc {
+  font-size: $text-xs;
+  color: $lynx-muted;
+  line-height: 1.4;
+}
+
+/* CTA */
 .discover__cta {
   text-align: center;
   padding: $sp-12 $sp-4;

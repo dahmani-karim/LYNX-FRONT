@@ -1,11 +1,15 @@
-import { useState, useMemo } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Circle, Popup, useMap } from 'react-leaflet';
+import { useState, useMemo, useEffect } from 'react';
+import { MapContainer, TileLayer, CircleMarker, Circle, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
 import { useAlertStore } from '../../stores/alertStore';
 import { useSettingsStore } from '../../stores/settingsStore';
+import { useTrackerStore } from '../../stores/trackerStore';
+import { useAuthStore } from '../../stores/authStore';
 import { CATEGORIES, SEVERITY_LEVELS } from '../../config/categories';
 import SeverityBadge from '../../components/SeverityBadge/SeverityBadge';
+import PremiumGate from '../../components/PremiumGate/PremiumGate';
 import { timeAgo } from '../../utils/date';
-import { Locate, ExternalLink, Layers } from 'lucide-react';
+import { Locate, ExternalLink, Layers, Radio, Plane, Satellite, Ship, Eye, EyeOff } from 'lucide-react';
 import HeatmapLayer from '../../components/HeatmapLayer/HeatmapLayer';
 import './MapPage.scss';
 
@@ -41,11 +45,61 @@ function LocationButton() {
   );
 }
 
+const TRACKER_TYPES = [
+  { key: 'aircraft', label: 'Aéronefs', icon: Plane, color: '#3B82F6' },
+  { key: 'satellite', label: 'Satellites', icon: Satellite, color: '#D946EF' },
+  { key: 'ship', label: 'Navires', icon: Ship, color: '#06B6D4' },
+];
+
+function createTrackerIcon(type) {
+  const colors = { aircraft: '#3B82F6', satellite: '#D946EF', ship: '#06B6D4' };
+  const symbols = { aircraft: '✈', satellite: '🛰', ship: '🚢' };
+  return L.divIcon({
+    className: 'tracker-icon',
+    html: `<div style="background:${colors[type]};width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,.4)">${symbols[type]}</div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+  });
+}
+
 export default function MapPage() {
   const events = useAlertStore((s) => s.events);
   const { userLocation, zones } = useSettingsStore();
+  const isPremium = useAuthStore((s) => s.isPremium);
   const [activeCategories, setActiveCategories] = useState(new Set());
   const [showHeatmap, setShowHeatmap] = useState(false);
+  const [mode, setMode] = useState('alerts'); // 'alerts' | 'tracking'
+  const [autoRefresh, setAutoRefresh] = useState(true);
+
+  // Tracker store
+  const { aircraft, satellites, ships, activeTrackers, isLoading: trackersLoading, lastFetch, fetchTrackers, toggleTracker } =
+    useTrackerStore();
+
+  const lat = userLocation?.lat || 48.8566;
+  const lng = userLocation?.lng || 2.3522;
+
+  // Auto-fetch trackers when in tracking mode
+  useEffect(() => {
+    if (mode !== 'tracking') return;
+    fetchTrackers(lat, lng);
+    if (!autoRefresh) return;
+    const interval = setInterval(() => fetchTrackers(lat, lng), 30 * 1000);
+    return () => clearInterval(interval);
+  }, [lat, lng, autoRefresh, fetchTrackers, mode]);
+
+  const trackerCounts = {
+    aircraft: aircraft.length,
+    satellite: satellites.length,
+    ship: ships.length,
+  };
+
+  const allTrackerPoints = useMemo(() => {
+    const points = [];
+    if (activeTrackers.includes('aircraft')) points.push(...aircraft);
+    if (activeTrackers.includes('satellite')) points.push(...satellites);
+    if (activeTrackers.includes('ship')) points.push(...ships);
+    return points;
+  }, [aircraft, satellites, ships, activeTrackers]);
 
   const filteredEvents = useMemo(() => {
     let items = events.filter((e) => e.latitude && e.longitude);
@@ -80,89 +134,189 @@ export default function MapPage() {
 
   return (
     <div className="map-page">
-      {/* Filter chips */}
-      <div className="map-page__filters">
+      {/* Mode switch */}
+      <div className="map-page__mode-switch">
         <button
-          onClick={() => setShowHeatmap(!showHeatmap)}
-          className={`map-page__chip ${showHeatmap ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
+          onClick={() => setMode('alerts')}
+          className={`map-page__mode-btn ${mode === 'alerts' ? 'map-page__mode-btn--active' : ''}`}
         >
-          <Layers size={14} />
-          Heatmap
+          <Radio size={14} />
+          Alertes
         </button>
-        {availableCategories.map((cat) => {
-          const isActive = activeCategories.size === 0 || activeCategories.has(cat.id);
-          const count = events.filter((e) => e.type === cat.id).length;
-          return (
-            <button
-              key={cat.id}
-              onClick={() => toggleCategory(cat.id)}
-              className={`map-page__chip ${isActive ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
-            >
-              <span className="map-page__chip-dot" style={{ backgroundColor: cat.color }} />
-              {cat.label}
-              <span className="map-page__chip-count">({count})</span>
-            </button>
-          );
-        })}
+        <button
+          onClick={() => setMode('tracking')}
+          className={`map-page__mode-btn ${mode === 'tracking' ? 'map-page__mode-btn--active' : ''}`}
+        >
+          <Plane size={14} />
+          Tracking
+        </button>
       </div>
+
+      {/* Alert mode filters */}
+      {mode === 'alerts' && (
+        <div className="map-page__filters">
+          <PremiumGate feature="Heatmap">
+            <button
+              onClick={() => setShowHeatmap(!showHeatmap)}
+              className={`map-page__chip ${showHeatmap ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
+            >
+              <Layers size={14} />
+              Heatmap
+            </button>
+          </PremiumGate>
+          {availableCategories.map((cat) => {
+            const isActive = activeCategories.size === 0 || activeCategories.has(cat.id);
+            const count = events.filter((e) => e.type === cat.id).length;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => toggleCategory(cat.id)}
+                className={`map-page__chip ${isActive ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
+              >
+                <span className="map-page__chip-dot" style={{ backgroundColor: cat.color }} />
+                {cat.label}
+                <span className="map-page__chip-count">({count})</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Tracking mode filters */}
+      {mode === 'tracking' && (
+        <div className="map-page__filters">
+          <button
+            className={`map-page__chip ${autoRefresh ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
+            onClick={() => setAutoRefresh(!autoRefresh)}
+          >
+            {autoRefresh ? <Eye size={14} /> : <EyeOff size={14} />}
+            Auto
+          </button>
+          {TRACKER_TYPES.map(({ key, label, icon: Icon, color }) => {
+            const active = activeTrackers.includes(key);
+            return (
+              <button
+                key={key}
+                className={`map-page__chip ${active ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
+                onClick={() => toggleTracker(key)}
+              >
+                <span className="map-page__chip-dot" style={{ backgroundColor: color }} />
+                <Icon size={14} />
+                {label}
+                <span className="map-page__chip-count">({trackerCounts[key]})</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Map */}
       <MapContainer
-        center={[userLocation.lat, userLocation.lng]}
-        zoom={4}
+        center={[lat, lng]}
+        zoom={mode === 'tracking' ? 8 : 4}
         className="map-page__map"
         zoomControl={false}
       >
         <TileLayer url={DARK_TILES} attribution={DARK_ATTRIBUTION} />
 
-        {showHeatmap && <HeatmapLayer points={heatPoints} />}
+        {/* Alert markers */}
+        {mode === 'alerts' && (
+          <>
+            {showHeatmap && isPremium && <HeatmapLayer points={heatPoints} />}
 
-        {filteredEvents.map((event) => {
-          const cat = CATEGORIES[event.type] || CATEGORIES.other;
-          const sev = SEVERITY_LEVELS[event.severity] || SEVERITY_LEVELS.info;
-          return (
-            <CircleMarker
-              key={event.id}
-              center={[event.latitude, event.longitude]}
-              radius={severityToRadius(event.severity)}
-              pathOptions={{
-                color: sev.color,
-                fillColor: cat.color,
-                fillOpacity: 0.7,
-                weight: 2,
-              }}
+            {filteredEvents.map((event) => {
+              const cat = CATEGORIES[event.type] || CATEGORIES.other;
+              const sev = SEVERITY_LEVELS[event.severity] || SEVERITY_LEVELS.info;
+              return (
+                <CircleMarker
+                  key={event.id}
+                  center={[event.latitude, event.longitude]}
+                  radius={severityToRadius(event.severity)}
+                  pathOptions={{
+                    color: sev.color,
+                    fillColor: cat.color,
+                    fillOpacity: 0.7,
+                    weight: 2,
+                  }}
+                >
+                  <Popup>
+                    <div className="map-page__popup">
+                      <div className="map-page__popup-header">
+                        <SeverityBadge severity={event.severity} size="xs" />
+                        <span className="map-page__popup-category">{cat.label}</span>
+                      </div>
+                      <h4 className="map-page__popup-title">{event.title}</h4>
+                      <p className="map-page__popup-desc">{event.description}</p>
+                      <div className="map-page__popup-meta">
+                        <span>{event.sourceName}</span>
+                        <span>{timeAgo(event.eventDate)}</span>
+                      </div>
+                      {event.sourceUrl && (
+                        <a
+                          href={event.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="map-page__popup-link"
+                        >
+                          Source <ExternalLink size={10} />
+                        </a>
+                      )}
+                    </div>
+                  </Popup>
+                </CircleMarker>
+              );
+            })}
+          </>
+        )}
+
+        {/* Tracker markers */}
+        {mode === 'tracking' && allTrackerPoints
+          .filter((p) => p.latitude && p.longitude)
+          .map((point) => (
+            <Marker
+              key={point.id}
+              position={[point.latitude, point.longitude]}
+              icon={createTrackerIcon(point.type)}
             >
               <Popup>
                 <div className="map-page__popup">
-                  <div className="map-page__popup-header">
-                    <SeverityBadge severity={event.severity} size="xs" />
-                    <span className="map-page__popup-category">{cat.label}</span>
-                  </div>
-                  <h4 className="map-page__popup-title">{event.title}</h4>
-                  <p className="map-page__popup-desc">{event.description}</p>
-                  <div className="map-page__popup-meta">
-                    <span>{event.sourceName}</span>
-                    <span>{timeAgo(event.eventDate)}</span>
-                  </div>
-                  {event.sourceUrl && (
-                    <a
-                      href={event.sourceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="map-page__popup-link"
-                    >
-                      Source <ExternalLink size={10} />
-                    </a>
+                  {point.type === 'aircraft' && (
+                    <>
+                      <h4 className="map-page__popup-title">{point.callsign || point.icao24}</h4>
+                      <p className="map-page__popup-desc">
+                        Altitude: {Math.round(point.altitude)}m<br />
+                        Vitesse: {Math.round(point.velocity * 3.6)} km/h<br />
+                        Origine: {point.origin}
+                      </p>
+                    </>
+                  )}
+                  {point.type === 'satellite' && (
+                    <>
+                      <h4 className="map-page__popup-title">{point.name}</h4>
+                      <p className="map-page__popup-desc">
+                        Altitude: {Math.round(point.altitude)} km<br />
+                        ID: {point.satid}
+                      </p>
+                    </>
+                  )}
+                  {point.type === 'ship' && (
+                    <>
+                      <h4 className="map-page__popup-title">{point.name}</h4>
+                      <p className="map-page__popup-desc">
+                        Vitesse: {point.speed} kn<br />
+                        Cap: {Math.round(point.heading)}°
+                      </p>
+                    </>
                   )}
                 </div>
               </Popup>
-            </CircleMarker>
-          );
-        })}
+            </Marker>
+          ))
+        }
 
         {/* User location */}
         <CircleMarker
-          center={[userLocation.lat, userLocation.lng]}
+          center={[lat, lng]}
           radius={6}
           pathOptions={{ color: '#3B82F6', fillColor: '#3B82F6', fillOpacity: 1, weight: 3 }}
         >
@@ -190,9 +344,15 @@ export default function MapPage() {
         <LocationButton />
       </MapContainer>
 
-      {/* Event count */}
+      {/* Bottom info bar */}
       <div className="map-page__count">
-        {filteredEvents.length} événement{filteredEvents.length > 1 ? 's' : ''}
+        {mode === 'alerts'
+          ? `${filteredEvents.length} événement${filteredEvents.length > 1 ? 's' : ''}`
+          : `${allTrackerPoints.length} objet${allTrackerPoints.length > 1 ? 's' : ''} suivi${allTrackerPoints.length > 1 ? 's' : ''}`
+        }
+        {mode === 'tracking' && lastFetch && (
+          <span className="map-page__last-update"> · MAJ {new Date(lastFetch).toLocaleTimeString('fr-FR')}</span>
+        )}
       </div>
     </div>
   );

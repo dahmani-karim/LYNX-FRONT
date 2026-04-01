@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, lazy, Suspense } from 'react';
 import ScrollToTop from './components/ScrollToTop/ScrollToTop';
 import Layout from './components/Layout/Layout';
@@ -20,21 +20,29 @@ const StatsPage = lazy(() => import('./pages/StatsPage/StatsPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage/SettingsPage'));
 const AlertDetail = lazy(() => import('./pages/AlertDetail/AlertDetail'));
 const Account = lazy(() => import('./pages/Account/Account'));
-const Trackers = lazy(() => import('./pages/Trackers/Trackers'));
+const EnergyPrices = lazy(() => import('./pages/EnergyPrices/EnergyPrices'));
 const Timeline = lazy(() => import('./pages/Timeline/Timeline'));
+
+function RequireAuth({ children }) {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return children;
+}
 
 export default function App() {
   const fetchAllData = useAlertStore((s) => s.fetchAllData);
   const userLocation = useSettingsStore((s) => s.userLocation);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isPremium = useAuthStore((s) => s.isPremium);
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchAllData(userLocation);
-      const interval = setInterval(() => fetchAllData(userLocation), 5 * 60 * 1000);
+      const ms = isPremium ? 60 * 1000 : 5 * 60 * 1000;
+      const interval = setInterval(() => fetchAllData(userLocation), ms);
       return () => clearInterval(interval);
     }
-  }, [fetchAllData, userLocation, isAuthenticated]);
+  }, [fetchAllData, userLocation, isAuthenticated, isPremium]);
 
   return (
     <>
@@ -48,18 +56,24 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/pricing" element={<Pricing />} />
 
-        {/* App pages (with Layout) */}
-        <Route element={<Layout />}>
+        {/* App pages (with Layout, auth required) */}
+        <Route element={<RequireAuth><Layout /></RequireAuth>}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="/alerts" element={<AlertsPage />} />
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/account" element={<Account />} />
-          <Route path="/trackers" element={<Trackers />} />
+          <Route path="/energy" element={<EnergyPrices />} />
           <Route path="/timeline" element={<Timeline />} />
           <Route path="/alert/:id" element={<AlertDetail />} />
         </Route>
+
+        {/* Redirect old trackers route */}
+        <Route path="/trackers" element={<Navigate to="/map" replace />} />
+
+        {/* 404 */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       </Suspense>
     </>

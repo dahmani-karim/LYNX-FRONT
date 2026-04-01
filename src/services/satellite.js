@@ -39,7 +39,7 @@ export async function fetchSatelliteTracker(lat, lng) {
 
 async function fetchISSPosition() {
   try {
-    const res = await fetch('http://api.open-notify.org/iss-now.json');
+    const res = await fetch('https://api.open-notify.org/iss-now.json');
     if (!res.ok) return [];
     const data = await res.json();
     return [{

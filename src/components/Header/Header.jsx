@@ -44,15 +44,15 @@ export default function Header() {
             >
               <Menu size={20} />
             </button>
-            <Link to="/dashboard" className="header__logo">
-              <LynxLogo size={28} />
-            </Link>
           </div>
 
+            <Link to="/dashboard" className="header__logo">
+              <LynxLogo size={38} />
+            </Link>
           <div className="header__right">
-            {criticalCount > 0 && (
+            {/* {criticalCount > 0 && (
               <span className="header__badge">{criticalCount}</span>
-            )}
+            )} */}
             <button
               onClick={() => fetchAllData(userLocation)}
               disabled={isLoading}
@@ -61,13 +61,13 @@ export default function Header() {
             >
               <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
             </button>
-            <button
+            {/* <button
               onClick={() => setShowSwitcher(true)}
               className="header__emoji-btn"
               aria-label="Applications"
             >
               🐆
-            </button>
+            </button> */}
           </div>
         </div>
       </header>

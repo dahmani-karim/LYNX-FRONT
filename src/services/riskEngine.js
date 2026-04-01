@@ -44,6 +44,8 @@ export function calculateRiskScores(allEvents) {
     air_quality: categoryScore(byCategory.air_quality || []),
     fire: categoryScore(byCategory.fire || []),
     space_weather: categoryScore(byCategory.space_weather || []),
+    nuclear: categoryScore(byCategory.nuclear || []),
+    radiation: categoryScore(byCategory.radiation || []),
   };
 
   const activeScores = Object.values(scores).filter((s) => s > 0);

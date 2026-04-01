@@ -29,7 +29,7 @@ export default function Dashboard() {
     })
     .slice(0, 5);
 
-  const moduleKeys = ['earthquake', 'weather', 'disaster', 'cyber', 'energy', 'blackout'];
+  const moduleKeys = Object.keys(CATEGORIES).filter((k) => k !== 'other');
 
   const insights = useMemo(() => {
     const correlations = findCorrelations(events);
@@ -154,6 +154,7 @@ export default function Dashboard() {
 
       {/* Predictive Alerts */}
       {predictions.length > 0 && (
+        <PremiumGate feature="Tendances prédictives">
         <section className="dashboard__insights">
           <h3 className="dashboard__insights-title">
             <TrendingUp size={16} />
@@ -168,6 +169,7 @@ export default function Dashboard() {
             ))}
           </div>
         </section>
+        </PremiumGate>
       )}
 
       {/* Zone Alerts (Geofencing) */}

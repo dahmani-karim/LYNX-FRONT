@@ -25,8 +25,17 @@ export const useAuthStore = create(
         try {
           const profile = await fetchProfile();
           set({ profile });
+          // Check VIP status from profile
+          if (profile?.vipLynx) {
+            set({ isPremium: true, premiumPlan: 'VIP' });
+          }
         } catch {
           // Profile fetch can fail if not created yet
+        }
+
+        // Check VIP from user object
+        if (data.user?.vipLynx) {
+          set({ isPremium: true, premiumPlan: 'VIP' });
         }
 
         // Auto-check Fourthwall membership (non-blocking)
@@ -45,6 +54,11 @@ export const useAuthStore = create(
           jwt: data.jwt,
           isAuthenticated: true,
         });
+
+        // Check VIP for newly registered users
+        if (data.user?.vipLynx) {
+          set({ isPremium: true, premiumPlan: 'VIP' });
+        }
       },
 
       logout: () => {
@@ -68,6 +82,10 @@ export const useAuthStore = create(
         try {
           const profile = await fetchProfile();
           set({ profile });
+          // Re-check VIP status on refresh
+          if (profile?.vipLynx) {
+            set({ isPremium: true, premiumPlan: 'VIP' });
+          }
         } catch {
           // silent fail
         }
