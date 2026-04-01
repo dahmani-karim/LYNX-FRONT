@@ -272,6 +272,7 @@ async function translateChunkMyMemory(text) {
         { signal: controller.signal }
       );
       clearTimeout(timeout);
+      if (res.status === 429) return '___RATE_LIMITED___';
       if (!res.ok) return null;
       const json = await res.json();
       const result = json.responseData?.translatedText || null;
@@ -279,12 +280,17 @@ async function translateChunkMyMemory(text) {
       return result;
     });
 
+    if (translated === '___RATE_LIMITED___') {
+      // Signal to stop the background queue
+      return null;
+    }
+
     if (translated) {
       MYMEMORY_CACHE.set(text, translated);
       saveCache(MYMEMORY_CACHE);
       return translated;
     }
-    // API failed (429, etc.) — use keyword fallback and cache it
+    // API failed — use keyword fallback and cache it
     const fallback = translateToFrench(text);
     MYMEMORY_CACHE.set(text, fallback);
     saveCache(MYMEMORY_CACHE);
@@ -327,9 +333,12 @@ export function asyncTranslate(text) {
   return keywordResult;
 }
 
-// Background translation queue — processes one text at a time
+// Background translation queue — processes one text at a time, stops on 429
 const bgQueue = [];
 let bgProcessing = false;
+let bgPausedUntil = 0;
+const BG_MAX_PER_CYCLE = 5; // max 5 translations per background run
+const BG_PAUSE_DURATION = 60000; // pause 60s on 429
 
 function queueBackgroundTranslation(text) {
   if (MYMEMORY_CACHE.has(text)) return;
@@ -339,18 +348,35 @@ function queueBackgroundTranslation(text) {
 }
 
 async function processBackgroundQueue() {
+  if (Date.now() < bgPausedUntil) return;
   bgProcessing = true;
-  while (bgQueue.length > 0) {
+  let count = 0;
+  while (bgQueue.length > 0 && count < BG_MAX_PER_CYCLE) {
     const text = bgQueue.shift();
     if (MYMEMORY_CACHE.has(text)) continue;
     const chunks = splitIntoChunks(text);
+    let rateLimited = false;
     for (const chunk of chunks) {
       if (!MYMEMORY_CACHE.has(chunk)) {
-        await translateChunkMyMemory(chunk);
+        const result = await translateChunkMyMemory(chunk);
+        if (result === null) {
+          // 429 rate limited — pause and stop
+          bgPausedUntil = Date.now() + BG_PAUSE_DURATION;
+          bgQueue.unshift(text); // put it back
+          bgProcessing = false;
+          // Schedule retry after pause
+          setTimeout(() => { if (!bgProcessing && bgQueue.length > 0) processBackgroundQueue(); }, BG_PAUSE_DURATION);
+          return;
+        }
       }
     }
+    count++;
   }
   bgProcessing = false;
+  // If more items remain, schedule next batch
+  if (bgQueue.length > 0) {
+    setTimeout(() => { if (!bgProcessing) processBackgroundQueue(); }, 2000);
+  }
 }
 
 /**

@@ -2,45 +2,23 @@ import { API_CONFIG } from '../config/api';
 import { asyncTranslate } from '../utils/translate';
 
 /**
- * Fetches ongoing international crises and conflicts.
- * Strategy 1: GDELT API (free, CORS-friendly)
- * Strategy 2: ReliefWeb as fallback
+ * Fetches ongoing international crises and conflicts from GDELT.
+ * Adds a small delay before fetching to stagger with geopolitics (also uses GDELT).
+ * ReliefWeb removed — requires pre-approved appname since Nov 2025.
  */
 export async function fetchConflicts() {
-  // Strategy 1: GDELT
-  try {
-    return await fetchFromGDELT();
-  } catch (err) {
-    console.warn('[conflicts] GDELT failed:', err.message);
-  }
+  // Stagger: wait 3s so geopolitics can hit CORS proxies first
+  await new Promise((r) => setTimeout(r, 3000));
 
-  // Strategy 2: ReliefWeb via CORS proxy
-  try {
-    return await fetchFromReliefWebProxy();
-  } catch (err) {
-    console.warn('[conflicts] ReliefWeb proxy failed:', err.message);
-  }
-
-  // Strategy 3: Direct ReliefWeb (may 403 in browser)
-  try {
-    return await fetchFromReliefWebDirect();
-  } catch (err) {
-    console.warn('[conflicts] ReliefWeb direct failed:', err.message);
-    return [];
-  }
-}
-
-async function fetchFromGDELT() {
   const params = new URLSearchParams({
     query: '(conflict OR war OR crisis OR attack OR military) sourcelang:eng',
     mode: 'ArtList',
-    maxrecords: '40',
+    maxrecords: '20',
     format: 'json',
     sort: 'DateDesc',
   });
   const gdeltUrl = `${API_CONFIG.GDELT.DOC_API}?${params}`;
 
-  // GDELT needs CORS proxy from browser
   for (const proxy of API_CONFIG.CORS_PROXIES) {
     try {
       const controller = new AbortController();
@@ -57,7 +35,7 @@ async function fetchFromGDELT() {
         return {
           id: `conflict-gdelt-${i}-${Date.now()}`,
           type: 'conflict',
-          title: a.title || 'Événement géopolitique',
+          title: asyncTranslate(a.title || 'Conflit international'),
           description: (a.seendate ? `[${a.seendate.slice(0, 10)}] ` : '') + (a.domain || ''),
           severity,
           eventDate: a.seendate ? formatGDELTDate(a.seendate) : new Date().toISOString(),
@@ -71,13 +49,12 @@ async function fetchFromGDELT() {
           metadata: { themes: [], disasters: [] },
         };
       });
-
-      // Translate titles
-      events.forEach((e) => { e.title = asyncTranslate(e.title); });
       return events;
     } catch { continue; }
   }
-  throw new Error('All proxies failed for GDELT');
+  // All proxies failed — return empty instead of throwing
+  console.warn('[conflicts] All GDELT proxies failed');
+  return [];
 }
 
 function formatGDELTDate(seendate) {
@@ -97,114 +74,6 @@ function assessGDELTSeverity(article) {
   if (t.includes('crisis') || t.includes('military') || t.includes('strike') || t.includes('combat')) return 'high';
   if (t.includes('tension') || t.includes('protest') || t.includes('sanction') || t.includes('threat')) return 'medium';
   return 'low';
-}
-
-async function fetchFromReliefWebProxy() {
-  // ReliefWeb v1 POST endpoint — more reliable than GET with appname
-  const payload = JSON.stringify({
-    preset: 'latest',
-    limit: 20,
-    fields: {
-      include: ['title', 'body-html', 'date', 'source', 'primary_country', 'theme', 'disaster', 'url'],
-    },
-  });
-
-  const targetUrl = 'https://api.reliefweb.int/v1/reports?appname=lynx';
-
-  for (const proxy of API_CONFIG.CORS_PROXIES) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 10000);
-      const res = await fetch(`${proxy}${encodeURIComponent(targetUrl)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: payload,
-        signal: controller.signal,
-      });
-      clearTimeout(timer);
-      if (!res.ok) continue;
-      const data = await res.json();
-      if (data.data?.length) return mapReliefWebData(data.data);
-    } catch { continue; }
-  }
-
-  // Try GET with minimal params as last resort
-  for (const proxy of API_CONFIG.CORS_PROXIES) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 10000);
-      const simpleUrl = 'https://api.reliefweb.int/v1/reports?preset=latest&limit=20';
-      const res = await fetch(`${proxy}${encodeURIComponent(simpleUrl)}`, { signal: controller.signal });
-      clearTimeout(timer);
-      if (!res.ok) continue;
-      const data = await res.json();
-      if (data.data?.length) return mapReliefWebData(data.data);
-    } catch { continue; }
-  }
-
-  throw new Error('All proxies failed for ReliefWeb');
-}
-
-async function fetchFromReliefWebDirect() {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 10000);
-  const res = await fetch('https://api.reliefweb.int/v1/reports?preset=latest&limit=20', {
-    signal: controller.signal,
-  });
-  clearTimeout(timer);
-  if (!res.ok) throw new Error(`ReliefWeb: ${res.status}`);
-  const data = await res.json();
-  return mapReliefWebData(data.data || []);
-}
-
-function mapReliefWebData(items) {
-  const events = items.map((item) => {
-    const fields = item.fields || {};
-    const country = fields.primary_country?.name || 'Inconnu';
-    const countryIso = fields.primary_country?.iso3 || '';
-    return {
-      id: `conflict-${item.id}`,
-      type: 'conflict',
-      title: fields.title || 'Conflit international',
-      description: extractCleanText(fields['body-html'] || '', 200),
-      severity: assessReliefWebSeverity(fields),
-      eventDate: fields.date?.created || new Date().toISOString(),
-      latitude: fields.primary_country?.location?.lat || null,
-      longitude: fields.primary_country?.location?.lon || null,
-      country,
-      countryIso,
-      sourceName: fields.source?.[0]?.name || 'ReliefWeb',
-      sourceUrl: fields.url || `https://reliefweb.int/node/${item.id}`,
-      sourceReliability: 95,
-      metadata: {
-        themes: (fields.theme || []).map((t) => t.name),
-        disasters: (fields.disaster || []).map((d) => d.name),
-      },
-    };
-  });
-
-  // Translate titles and descriptions
-  events.forEach((e) => {
-    e.title = asyncTranslate(e.title);
-    e.description = asyncTranslate(e.description);
-  });
-  return events;
-}
-
-function assessReliefWebSeverity(fields) {
-  const title = (fields.title || '').toLowerCase();
-  if (title.includes('war') || title.includes('guerre') || title.includes('offensive') ||
-      title.includes('invasion') || title.includes('armed conflict')) return 'critical';
-  if (title.includes('crisis') || title.includes('crise') || title.includes('emergency') ||
-      title.includes('combat') || title.includes('escalation')) return 'high';
-  if (title.includes('tension') || title.includes('displacement') || title.includes('refugee') ||
-      title.includes('sanction') || title.includes('protest')) return 'medium';
-  return 'low';
-}
-
-function extractCleanText(html, maxLen) {
-  const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-  return text.length > maxLen ? text.slice(0, maxLen) + '…' : text;
 }
 
 /**
