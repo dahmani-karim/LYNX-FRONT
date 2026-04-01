@@ -19,7 +19,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      login(email, password);
+      await login(email, password);
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);

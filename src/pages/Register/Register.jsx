@@ -30,7 +30,7 @@ export default function Register() {
 
     setLoading(true);
     try {
-      register(name, email, password);
+      await register(name, email, password);
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);

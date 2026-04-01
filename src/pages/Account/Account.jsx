@@ -13,16 +13,20 @@ export default function Account() {
   const { user, isPremium, premiumPlan, logout, updateProfile } = useAuthStore();
   const userLocation = useSettingsStore((s) => s.userLocation);
   const [editName, setEditName] = useState(false);
-  const [nameValue, setNameValue] = useState(user?.name || '');
+  const [nameValue, setNameValue] = useState(user?.username || '');
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
 
-  const handleSaveName = () => {
+  const handleSaveName = async () => {
     if (nameValue.trim()) {
-      updateProfile({ name: nameValue.trim() });
+      try {
+        await updateProfile({ firstName: nameValue.trim() });
+      } catch {
+        // silent
+      }
     }
     setEditName(false);
   };
@@ -43,7 +47,7 @@ export default function Account() {
             <img src={user.avatar} alt="" className="account__avatar-img" />
           ) : (
             <div className="account__avatar-placeholder">
-              {user.name?.charAt(0)?.toUpperCase() || 'U'}
+              {user.username?.charAt(0)?.toUpperCase() || 'U'}
             </div>
           )}
         </div>
@@ -61,7 +65,7 @@ export default function Account() {
             </div>
           ) : (
             <button onClick={() => setEditName(true)} className="account__name">
-              {user.name}
+              {user.username}
             </button>
           )}
           <p className="account__email">{user.email}</p>
@@ -126,7 +130,7 @@ export default function Account() {
           <User size={18} />
           <div className="account__row-body">
             <p className="account__row-label">Nom</p>
-            <p className="account__row-value">{user.name}</p>
+            <p className="account__row-value">{user.username}</p>
           </div>
         </div>
 
