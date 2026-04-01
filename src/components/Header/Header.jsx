@@ -1,19 +1,24 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { RefreshCw, Menu, X, Home, Map, Bell, BarChart3, Settings, Eye, Zap, Info } from 'lucide-react';
+import { RefreshCw, Menu, X, Home, Map, Bell, BarChart3, Settings, Eye, Zap, Info, Compass, CreditCard } from 'lucide-react';
 import { useAlertStore } from '../../stores/alertStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import LynxLogo from '../LynxLogo/LynxLogo';
 import AppSwitcher from '../AppSwitcher/AppSwitcher';
 import './Header.scss';
 
-const NAV_ITEMS = [
+const NAV_MAIN = [
   { to: '/dashboard', icon: Home, label: 'Dashboard' },
   { to: '/map', icon: Map, label: 'Carte' },
   { to: '/alerts', icon: Bell, label: 'Alertes' },
   { to: '/stats', icon: BarChart3, label: 'Stats' },
   { to: '/energy', icon: Zap, label: 'Énergie' },
   { to: '/settings', icon: Settings, label: 'Réglages' },
+];
+
+const NAV_SECONDARY = [
+  { to: '/discover', icon: Compass, label: 'Découvrir' },
+  { to: '/pricing', icon: CreditCard, label: 'Tarifs' },
   { to: '/about', icon: Info, label: 'À propos' },
 ];
 
@@ -75,7 +80,18 @@ export default function Header() {
       {/* Desktop sidebar */}
       <nav className="sidebar">
         <div className="sidebar__nav">
-          {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
+          {NAV_MAIN.map(({ to, icon: Icon, label }) => (
+            <Link
+              key={to}
+              to={to}
+              className={`sidebar__link ${isActive(to) ? 'sidebar__link--active' : ''}`}
+            >
+              <Icon size={20} />
+              <span>{label}</span>
+            </Link>
+          ))}
+          <div className="sidebar__separator" />
+          {NAV_SECONDARY.map(({ to, icon: Icon, label }) => (
             <Link
               key={to}
               to={to}
@@ -109,7 +125,19 @@ export default function Header() {
               </button>
             </div>
             <div className="mobile-sidebar__nav">
-              {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
+              {NAV_MAIN.map(({ to, icon: Icon, label }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  onClick={() => setShowSidebar(false)}
+                  className={`mobile-sidebar__link ${isActive(to) ? 'mobile-sidebar__link--active' : ''}`}
+                >
+                  <Icon size={20} />
+                  <span>{label}</span>
+                </Link>
+              ))}
+              <div className="mobile-sidebar__separator" />
+              {NAV_SECONDARY.map(({ to, icon: Icon, label }) => (
                 <Link
                   key={to}
                   to={to}

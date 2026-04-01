@@ -93,7 +93,12 @@ export default function Dashboard() {
 
       {/* Module Scores Grid */}
       <section>
-        <h3 className="dashboard__modules-title">Modules de surveillance</h3>
+        <div className="dashboard__alerts-header">
+          <h3 className="dashboard__modules-title">Modules de surveillance</h3>
+          <Link to="/stats" className="dashboard__alerts-link">
+            Statistiques <ChevronRight size={14} />
+          </Link>
+        </div>
         <div className="dashboard__modules-grid">
           {moduleKeys.map((key) => {
             const cat = CATEGORIES[key];

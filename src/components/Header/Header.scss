@@ -118,6 +118,12 @@
     }
   }
 
+  &__separator {
+    height: 1px;
+    background-color: $lynx-border;
+    margin: $sp-2 0;
+  }
+
   &__footer {
     padding: $sp-3;
     border-top: 1px solid $lynx-border;
@@ -214,6 +220,12 @@
     }
 
     span { font-size: $text-sm; font-weight: 500; }
+  }
+
+  &__separator {
+    height: 1px;
+    background-color: $lynx-border;
+    margin: $sp-2 0;
   }
 
   &__footer {
