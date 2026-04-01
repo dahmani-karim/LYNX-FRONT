@@ -38,34 +38,42 @@ async function fetchFromGDELT() {
     format: 'json',
     sort: 'DateDesc',
   });
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8000);
-  const res = await fetch(`${API_CONFIG.GDELT.DOC_API}?${params}`, { signal: controller.signal });
-  clearTimeout(timer);
-  if (!res.ok) throw new Error(`GDELT: ${res.status}`);
-  const data = await res.json();
-  const articles = data.articles || [];
-  if (!articles.length) throw new Error('GDELT: no articles');
+  const gdeltUrl = `${API_CONFIG.GDELT.DOC_API}?${params}`;
 
-  return articles.map((a, i) => {
-    const severity = assessGDELTSeverity(a);
-    return {
-      id: `conflict-gdelt-${i}-${Date.now()}`,
-      type: 'conflict',
-      title: autoTranslate(a.title) || 'Événement géopolitique',
-      description: (a.seendate ? `[${a.seendate.slice(0, 10)}] ` : '') + (a.domain || ''),
-      severity,
-      eventDate: a.seendate ? formatGDELTDate(a.seendate) : new Date().toISOString(),
-      latitude: a.sourcelat ? parseFloat(a.sourcelat) : null,
-      longitude: a.sourcelon ? parseFloat(a.sourcelon) : null,
-      country: a.sourcecountry || 'Inconnu',
-      countryIso: '',
-      sourceName: a.domain || 'GDELT',
-      sourceUrl: a.url || 'https://www.gdeltproject.org',
-      sourceReliability: 75,
-      metadata: { themes: [], disasters: [] },
-    };
-  });
+  // GDELT needs CORS proxy from browser
+  for (const proxy of API_CONFIG.CORS_PROXIES) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 15000);
+      const res = await fetch(`${proxy}${encodeURIComponent(gdeltUrl)}`, { signal: controller.signal });
+      clearTimeout(timer);
+      if (!res.ok) continue;
+      const data = await res.json();
+      const articles = data.articles || [];
+      if (!articles.length) continue;
+
+      return articles.map((a, i) => {
+        const severity = assessGDELTSeverity(a);
+        return {
+          id: `conflict-gdelt-${i}-${Date.now()}`,
+          type: 'conflict',
+          title: autoTranslate(a.title) || 'Événement géopolitique',
+          description: (a.seendate ? `[${a.seendate.slice(0, 10)}] ` : '') + (a.domain || ''),
+          severity,
+          eventDate: a.seendate ? formatGDELTDate(a.seendate) : new Date().toISOString(),
+          latitude: a.sourcelat ? parseFloat(a.sourcelat) : null,
+          longitude: a.sourcelon ? parseFloat(a.sourcelon) : null,
+          country: a.sourcecountry || 'Inconnu',
+          countryIso: '',
+          sourceName: a.domain || 'GDELT',
+          sourceUrl: a.url || 'https://www.gdeltproject.org',
+          sourceReliability: 75,
+          metadata: { themes: [], disasters: [] },
+        };
+      });
+    } catch { continue; }
+  }
+  throw new Error('All proxies failed for GDELT');
 }
 
 function formatGDELTDate(seendate) {
@@ -88,20 +96,58 @@ function assessGDELTSeverity(article) {
 }
 
 async function fetchFromReliefWebProxy() {
-  const targetUrl = 'https://api.reliefweb.int/v1/reports?appname=lynx-monitoring&preset=latest&limit=20';
+  // ReliefWeb v1 POST endpoint — more reliable than GET with appname
+  const payload = JSON.stringify({
+    preset: 'latest',
+    limit: 20,
+    fields: {
+      include: ['title', 'body-html', 'date', 'source', 'primary_country', 'theme', 'disaster', 'url'],
+    },
+  });
+
+  const targetUrl = 'https://api.reliefweb.int/v1/reports?appname=lynx';
+
   for (const proxy of API_CONFIG.CORS_PROXIES) {
     try {
-      const res = await fetch(`${proxy}${encodeURIComponent(targetUrl)}`);
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 10000);
+      const res = await fetch(`${proxy}${encodeURIComponent(targetUrl)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
       if (!res.ok) continue;
       const data = await res.json();
       if (data.data?.length) return mapReliefWebData(data.data);
     } catch { continue; }
   }
+
+  // Try GET with minimal params as last resort
+  for (const proxy of API_CONFIG.CORS_PROXIES) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 10000);
+      const simpleUrl = 'https://api.reliefweb.int/v1/reports?preset=latest&limit=20';
+      const res = await fetch(`${proxy}${encodeURIComponent(simpleUrl)}`, { signal: controller.signal });
+      clearTimeout(timer);
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data.data?.length) return mapReliefWebData(data.data);
+    } catch { continue; }
+  }
+
   throw new Error('All proxies failed for ReliefWeb');
 }
 
 async function fetchFromReliefWebDirect() {
-  const res = await fetch('https://api.reliefweb.int/v1/reports?appname=lynx-monitoring&preset=latest&limit=20');
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10000);
+  const res = await fetch('https://api.reliefweb.int/v1/reports?preset=latest&limit=20', {
+    signal: controller.signal,
+  });
+  clearTimeout(timer);
   if (!res.ok) throw new Error(`ReliefWeb: ${res.status}`);
   const data = await res.json();
   return mapReliefWebData(data.data || []);
