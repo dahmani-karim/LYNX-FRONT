@@ -13,6 +13,8 @@ import {
   Wind,
   Flame,
   Sun,
+  Atom,
+  Radiation,
 } from 'lucide-react';
 
 export const CATEGORIES = {
@@ -106,6 +108,20 @@ export const CATEGORIES = {
     icon: Sun,
     color: '#D946EF',
     bgColor: 'rgba(217, 70, 239, 0.15)',
+  },
+  nuclear: {
+    id: 'nuclear',
+    label: 'Nucléaire',
+    icon: Atom,
+    color: '#FBBF24',
+    bgColor: 'rgba(251, 191, 36, 0.15)',
+  },
+  radiation: {
+    id: 'radiation',
+    label: 'Radiation',
+    icon: Radiation,
+    color: '#F59E0B',
+    bgColor: 'rgba(245, 158, 11, 0.15)',
   },
   other: {
     id: 'other',

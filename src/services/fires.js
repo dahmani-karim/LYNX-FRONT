@@ -1,25 +1,66 @@
 import { API_CONFIG } from '../config/api';
 
 /**
- * Fetches active fire/hotspot data from NASA FIRMS (MODIS/VIIRS).
- * Uses CSV endpoint which is CORS-friendly with the DEMO_KEY.
+ * Fetches active fire/hotspot data.
+ * Strategy 1: NASA FIRMS via CORS proxy
+ * Strategy 2: NASA EONET wildfire events (CORS-friendly, no key)
  */
 export async function fetchFires(lat, lng) {
+  // Strategy 1: FIRMS via proxy
   try {
-    // Bounding box: ~500km around the user
-    const delta = 5; // ~5 degrees
+    const delta = 5;
     const area = `${(lng - delta).toFixed(2)},${(lat - delta).toFixed(2)},${(lng + delta).toFixed(2)},${(lat + delta).toFixed(2)}`;
-    const url = `${API_CONFIG.NASA_FIRMS.BASE}/${API_CONFIG.NASA_FIRMS.MAP_KEY}/VIIRS_SNPP_NRT/${area}/2`;
+    const firmsUrl = `${API_CONFIG.NASA_FIRMS.BASE}/${API_CONFIG.NASA_FIRMS.MAP_KEY}/VIIRS_SNPP_NRT/${area}/2`;
 
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`FIRMS: ${res.status}`);
-    const csv = await res.text();
-
-    return parseFireCSV(csv, lat, lng);
+    for (const proxy of API_CONFIG.CORS_PROXIES) {
+      try {
+        const res = await fetch(`${proxy}${encodeURIComponent(firmsUrl)}`);
+        if (!res.ok) continue;
+        const csv = await res.text();
+        if (csv && csv.includes('latitude')) {
+          return parseFireCSV(csv, lat, lng);
+        }
+      } catch { continue; }
+    }
+    throw new Error('FIRMS proxies failed');
   } catch (err) {
-    console.warn('[fires] NASA FIRMS failed:', err.message);
+    console.warn('[fires] FIRMS proxy failed:', err.message);
+  }
+
+  // Strategy 2: NASA EONET (free, CORS-friendly)
+  try {
+    const res = await fetch(`${API_CONFIG.NASA_EONET.BASE}?category=wildfires&status=open&limit=50`);
+    if (!res.ok) throw new Error(`EONET: ${res.status}`);
+    const data = await res.json();
+    return parseEONET(data.events || [], lat, lng);
+  } catch (err) {
+    console.warn('[fires] EONET failed:', err.message);
     return [];
   }
+}
+
+function parseEONET(events, userLat, userLng) {
+  return events.map((e, i) => {
+    const geo = e.geometry?.[e.geometry.length - 1];
+    const fireLat = geo?.coordinates?.[1] || 0;
+    const fireLng = geo?.coordinates?.[0] || 0;
+    const dist = haversine(userLat, userLng, fireLat, fireLng);
+
+    return {
+      id: `fire-eonet-${e.id || i}-${Date.now()}`,
+      type: 'fire',
+      title: e.title || 'Feu de forêt détecté',
+      description: `${e.title || 'Feu'} à ${dist.toFixed(0)}km. Source: ${e.sources?.[0]?.id || 'NASA EONET'}`,
+      severity: dist < 100 ? 'critical' : dist < 300 ? 'high' : dist < 500 ? 'medium' : 'low',
+      eventDate: geo?.date || new Date().toISOString(),
+      latitude: fireLat,
+      longitude: fireLng,
+      sourceName: 'NASA EONET',
+      sourceUrl: e.sources?.[0]?.url || 'https://eonet.gsfc.nasa.gov',
+      sourceReliability: 90,
+      metadata: { distance: dist, eonetId: e.id },
+    };
+  }).sort((a, b) => a.metadata.distance - b.metadata.distance).slice(0, 50);
 }
 
 function parseFireCSV(csv, userLat, userLng) {

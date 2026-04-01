@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { strapiLogin, strapiRegister, fetchProfile, updateProfile as updateProfileApi } from '../services/strapi';
+import { strapiLogin, strapiRegister, fetchProfile, updateProfile as updateProfileApi, checkMembership } from '../services/strapi';
 
 export const useAuthStore = create(
   persist(
@@ -28,6 +28,13 @@ export const useAuthStore = create(
         } catch {
           // Profile fetch can fail if not created yet
         }
+
+        // Auto-check Fourthwall membership (non-blocking)
+        checkMembership().then((res) => {
+          if (res?.isPremium || res?.premiumApps?.premiumLynx) {
+            set({ isPremium: true, premiumPlan: res.tierName || 'Fourthwall' });
+          }
+        }).catch(() => {});
       },
 
       register: async (username, email, password) => {

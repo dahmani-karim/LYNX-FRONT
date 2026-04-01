@@ -51,8 +51,12 @@ export const API_CONFIG = {
     DOC_API: 'https://api.gdeltproject.org/api/v2/doc/doc',
   },
 
-  OPENAQ: {
-    BASE: 'https://api.openaq.org/v2',
+  OPEN_METEO_AQ: {
+    BASE: 'https://air-quality-api.open-meteo.com/v1/air-quality',
+  },
+
+  NASA_EONET: {
+    BASE: 'https://eonet.gsfc.nasa.gov/api/v3/events',
   },
 
   NASA_FIRMS: {

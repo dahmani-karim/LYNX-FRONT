@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { useTrackerStore } from '../../stores/trackerStore';
@@ -54,7 +54,13 @@ export default function Trackers() {
     ship: ships.length,
   };
 
-  const allPoints = useTrackerStore((s) => s.getAllTrackerPoints());
+  const allPoints = useMemo(() => {
+    const points = [];
+    if (activeTrackers.includes('aircraft')) points.push(...aircraft);
+    if (activeTrackers.includes('satellite')) points.push(...satellites);
+    if (activeTrackers.includes('ship')) points.push(...ships);
+    return points;
+  }, [aircraft, satellites, ships, activeTrackers]);
 
   return (
     <div className="trackers">

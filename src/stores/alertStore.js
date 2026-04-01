@@ -3,7 +3,7 @@ import { fetchEarthquakes } from '../services/earthquakes';
 import { fetchWeather } from '../services/weather';
 import { fetchGDACSEvents } from '../services/gdacs';
 import { fetchCyberAlerts } from '../services/cyber';
-import { fetchEnergyData } from '../services/energy';
+import { fetchEnergyData, fetchNuclearProduction } from '../services/energy';
 import { fetchServiceStatuses } from '../services/status';
 import { fetchConflicts } from '../services/conflicts';
 import { fetchAirQuality } from '../services/airQuality';
@@ -127,6 +127,7 @@ export const useAlertStore = create((set, get) => ({
       fetchHealthAlerts(),
       fetchGeopolitics(),
       fetchRadiationData(),
+      fetchNuclearProduction(),
     ]);
 
     if (results[0].status === 'fulfilled') {
@@ -209,6 +210,12 @@ export const useAlertStore = create((set, get) => ({
       allEvents.push(...results[12].value);
     } else {
       errors.radiation = results[12].reason?.message;
+    }
+
+    if (results[13].status === 'fulfilled') {
+      allEvents.push(...results[13].value);
+    } else {
+      errors.nuclear = results[13].reason?.message;
     }
 
     const uniqueEvents = Array.from(

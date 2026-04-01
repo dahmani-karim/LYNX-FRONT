@@ -79,12 +79,19 @@ const PLANS = [
 export default function Pricing() {
   const { isAuthenticated, isPremium } = useAuthStore();
 
+  const FOURTHWALL_URL = 'https://lacavernedurefractaire-shop.fourthwall.com/supporters/pricing';
+
   const handleSelectPlan = (planId) => {
+    if (planId === 'free') {
+      if (!isAuthenticated) window.location.hash = '#/register';
+      return;
+    }
     if (planId === 'pro') {
       window.open('mailto:contact@lacavernedurefractaire.fr?subject=LYNX%20Pro', '_blank');
       return;
     }
-    // In a real app, this would open a payment flow
+    // Redirect to Fourthwall membership page
+    window.open(FOURTHWALL_URL, '_blank');
   };
 
   return (
@@ -149,10 +156,11 @@ export default function Pricing() {
             <button
               onClick={() => handleSelectPlan(plan.id)}
               className={`pricing__plan-cta ${plan.popular ? 'pricing__plan-cta--primary' : ''}`}
-              disabled={plan.id === 'free' && isAuthenticated}
+              disabled={(plan.id === 'free' && isAuthenticated && !isPremium) || (plan.id === 'premium' && isPremium)}
             >
-              {plan.id === 'free' && isAuthenticated ? 'Plan actuel' : plan.cta}
-              {plan.id !== 'free' || !isAuthenticated ? <ArrowRight size={16} /> : null}
+              {plan.id === 'free' && isAuthenticated ? 'Plan actuel' : 
+               plan.id === 'premium' && isPremium ? 'Plan actuel' : plan.cta}
+              {!(plan.id === 'free' && isAuthenticated) && !(plan.id === 'premium' && isPremium) ? <ArrowRight size={16} /> : null}
             </button>
           </div>
         ))}
@@ -177,6 +185,10 @@ export default function Pricing() {
           <div className="pricing__faq-item">
             <h3>Comment fonctionne le plan Pro ?</h3>
             <p>Le plan Pro est conçu pour les organisations. Contactez-nous pour une démonstration et un devis personnalisé.</p>
+          </div>
+          <div className="pricing__faq-item">
+            <h3>Comment activer mon abonnement ?</h3>
+            <p>Abonnez-vous via notre page Fourthwall, puis dans LYNX, allez dans <strong>Mon compte</strong> et cliquez <strong>« Vérifier mon abonnement »</strong>. Votre statut sera mis à jour automatiquement.</p>
           </div>
         </div>
       </section>

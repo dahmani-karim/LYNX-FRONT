@@ -141,3 +141,13 @@ export async function deleteZone(id) {
   });
   return handleResponse(res);
 }
+
+// ─── Fourthwall Membership ─────────────────────────────────
+
+export async function checkMembership() {
+  const res = await fetch(`${STRAPI}/api/fourthwall/check-membership`, {
+    method: 'POST',
+    headers: authHeaders(),
+  });
+  return handleResponse(res);
+}

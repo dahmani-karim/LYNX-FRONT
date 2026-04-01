@@ -1,4 +1,3 @@
-import { jsPDF } from 'jspdf';
 import { CATEGORIES, SEVERITY_LEVELS } from '../config/categories';
 
 const COLORS = {
@@ -23,7 +22,8 @@ function severityColor(severity) {
   return map[severity] || COLORS.muted;
 }
 
-export function generateReport(events, riskScores) {
+export async function generateReport(events, riskScores) {
+  const { jsPDF } = await import('jspdf');
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pw = doc.internal.pageSize.getWidth();
   const ph = doc.internal.pageSize.getHeight();

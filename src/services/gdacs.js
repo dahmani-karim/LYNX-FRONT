@@ -14,6 +14,7 @@ function gdacsTypeToCategory(type) {
   const t = type.toUpperCase();
   if (t === 'EQ') return 'earthquake';
   if (t === 'TC') return 'weather';
+  if (t === 'WF') return 'fire';
   if (t === 'FL') return 'disaster';
   if (t === 'VO') return 'disaster';
   if (t === 'DR') return 'disaster';
@@ -80,9 +81,10 @@ function parseGDACSRSS(xml) {
     else if (title.toLowerCase().includes('orange')) severity = 'high';
     else if (title.toLowerCase().includes('green')) severity = 'medium';
 
+    const rssType = title.toLowerCase().includes('wildfire') || title.toLowerCase().includes('fire') ? 'fire' : 'disaster';
     events.push({
       id: `gdacs-rss-${i}-${Date.now()}`,
-      type: 'disaster',
+      type: rssType,
       title: title.replace(/<[^>]*>/g, '').trim(),
       description: desc.replace(/<[^>]*>/g, '').trim().substring(0, 300),
       latitude,

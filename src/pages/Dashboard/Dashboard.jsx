@@ -1,9 +1,11 @@
 import { useMemo } from 'react';
 import { useAlertStore } from '../../stores/alertStore';
 import { useSettingsStore } from '../../stores/settingsStore';
+import { useAuthStore } from '../../stores/authStore';
 import ScoreGauge from '../../components/ScoreGauge/ScoreGauge';
 import AlertCard from '../../components/AlertCard/AlertCard';
 import EcosystemBridge from '../../components/EcosystemBridge/EcosystemBridge';
+import PremiumGate from '../../components/PremiumGate/PremiumGate';
 import Loader from '../../components/Loader/Loader';
 import { CATEGORIES } from '../../config/categories';
 import { getScoreColor } from '../../services/riskEngine';
@@ -16,6 +18,7 @@ import './Dashboard.scss';
 export default function Dashboard() {
   const { events, riskScores, weatherData, isLoading, errors } = useAlertStore();
   const { userLocation, zones } = useSettingsStore();
+  const isPremium = useAuthStore((s) => s.isPremium);
 
   const topAlerts = [...events]
     .sort((a, b) => {
@@ -131,6 +134,7 @@ export default function Dashboard() {
 
       {/* Correlations & Insights */}
       {insights.length > 0 && (
+        <PremiumGate feature="Analyse de corrélations">
         <section className="dashboard__insights">
           <h3 className="dashboard__insights-title">
             <Link2 size={16} />
@@ -145,6 +149,7 @@ export default function Dashboard() {
             ))}
           </div>
         </section>
+        </PremiumGate>
       )}
 
       {/* Predictive Alerts */}

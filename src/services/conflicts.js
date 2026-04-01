@@ -1,4 +1,5 @@
 import { API_CONFIG } from '../config/api';
+import { autoTranslate } from '../utils/translate';
 
 /**
  * Fetches ongoing international crises and conflicts.
@@ -37,7 +38,10 @@ async function fetchFromGDELT() {
     format: 'json',
     sort: 'DateDesc',
   });
-  const res = await fetch(`${API_CONFIG.GDELT.DOC_API}?${params}`);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  const res = await fetch(`${API_CONFIG.GDELT.DOC_API}?${params}`, { signal: controller.signal });
+  clearTimeout(timer);
   if (!res.ok) throw new Error(`GDELT: ${res.status}`);
   const data = await res.json();
   const articles = data.articles || [];
@@ -48,7 +52,7 @@ async function fetchFromGDELT() {
     return {
       id: `conflict-gdelt-${i}-${Date.now()}`,
       type: 'conflict',
-      title: a.title || 'Événement géopolitique',
+      title: autoTranslate(a.title) || 'Événement géopolitique',
       description: (a.seendate ? `[${a.seendate.slice(0, 10)}] ` : '') + (a.domain || ''),
       severity,
       eventDate: a.seendate ? formatGDELTDate(a.seendate) : new Date().toISOString(),
@@ -111,8 +115,8 @@ function mapReliefWebData(items) {
     return {
       id: `conflict-${item.id}`,
       type: 'conflict',
-      title: fields.title || 'Conflit international',
-      description: extractCleanText(fields['body-html'] || '', 200),
+      title: autoTranslate(fields.title) || 'Conflit international',
+      description: autoTranslate(extractCleanText(fields['body-html'] || '', 200)),
       severity: assessReliefWebSeverity(fields),
       eventDate: fields.date?.created || new Date().toISOString(),
       latitude: fields.primary_country?.location?.lat || null,

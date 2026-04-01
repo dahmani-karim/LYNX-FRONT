@@ -1,8 +1,8 @@
 import { API_CONFIG } from '../config/api';
 
 /**
- * Fetches live aircraft positions from OpenSky Network.
- * Free, CORS-friendly, no key needed (rate-limited to 10 req/10s).
+ * Fetches live aircraft positions from OpenSky Network via CORS proxy.
+ * Free, rate-limited to 10 req/10s.
  * Returns tracker points for the map, not alert events.
  */
 export async function fetchAircraftTracker(lat, lng, radiusKm = 200) {
@@ -13,11 +13,20 @@ export async function fetchAircraftTracker(lat, lng, radiusKm = 200) {
     const lomin = lng - delta;
     const lomax = lng + delta;
 
-    const res = await fetch(
-      `https://opensky-network.org/api/states/all?lamin=${lamin}&lamax=${lamax}&lomin=${lomin}&lomax=${lomax}`
-    );
-    if (!res.ok) throw new Error(`OpenSky: ${res.status}`);
-    const data = await res.json();
+    const openSkyUrl = `https://opensky-network.org/api/states/all?lamin=${lamin}&lamax=${lamax}&lomin=${lomin}&lomax=${lomax}`;
+
+    let data = null;
+    for (const proxy of API_CONFIG.CORS_PROXIES) {
+      try {
+        const res = await fetch(`${proxy}${encodeURIComponent(openSkyUrl)}`);
+        if (res.ok) {
+          data = await res.json();
+          break;
+        }
+      } catch { continue; }
+    }
+
+    if (!data) throw new Error('All proxies failed');
 
     return (data.states || []).map((s) => ({
       id: `aircraft-${s[0]}`,

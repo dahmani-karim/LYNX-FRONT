@@ -22,8 +22,8 @@ export async function fetchHealthAlerts() {
         events.push({
           id: `health-global-${Date.now()}`,
           type: 'health',
-          title: `COVID-19 Global: +${formatNumber(global.todayCases)} cas`,
-          description: `${formatNumber(global.todayCases)} nouveaux cas, ${formatNumber(global.todayDeaths)} décès aujourd'hui. Total: ${formatNumber(global.cases)} cas, ${formatNumber(global.deaths)} décès. Actifs: ${formatNumber(global.active)}`,
+          title: `COVID-19 – Monde: +${formatNumber(global.todayCases)} cas`,
+          description: `Maladie: COVID-19 (pandémie). ${formatNumber(global.todayCases)} nouveaux cas, ${formatNumber(global.todayDeaths)} décès aujourd'hui. Total: ${formatNumber(global.cases)} cas, ${formatNumber(global.deaths)} décès. Actifs: ${formatNumber(global.active)}`,
           severity,
           eventDate: new Date(global.updated).toISOString(),
           latitude: 20,
@@ -53,8 +53,8 @@ export async function fetchHealthAlerts() {
         events.push({
           id: `health-${c.countryInfo?.iso3 || i}-${Date.now()}`,
           type: 'health',
-          title: `${c.country}: +${formatNumber(c.todayCases)} cas`,
-          description: `${formatNumber(c.todayCases)} nouveaux cas, ${formatNumber(c.todayDeaths)} décès. Actifs: ${formatNumber(c.active)}. Cas/million: ${formatNumber(c.casesPerOneMillion)}`,
+          title: `COVID-19 – ${c.country}: +${formatNumber(c.todayCases)} cas`,
+          description: `Maladie: COVID-19. ${formatNumber(c.todayCases)} nouveaux cas, ${formatNumber(c.todayDeaths)} décès. Actifs: ${formatNumber(c.active)}. Cas/million: ${formatNumber(c.casesPerOneMillion)}`,
           severity,
           eventDate: new Date(c.updated).toISOString(),
           latitude: c.countryInfo?.lat || 0,

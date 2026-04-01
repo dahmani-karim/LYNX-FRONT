@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { useSettingsStore } from '../../stores/settingsStore';
+import { checkMembership } from '../../services/strapi';
 import {
   User, Mail, LogOut, Crown, MapPin, Bell,
-  ChevronRight, Shield, Camera
+  ChevronRight, Shield, RefreshCw, ExternalLink, Loader
 } from 'lucide-react';
 import './Account.scss';
 
@@ -14,6 +15,8 @@ export default function Account() {
   const userLocation = useSettingsStore((s) => s.userLocation);
   const [editName, setEditName] = useState(false);
   const [nameValue, setNameValue] = useState(user?.username || '');
+  const [checkingMembership, setCheckingMembership] = useState(false);
+  const [membershipMsg, setMembershipMsg] = useState(null);
 
   const handleLogout = () => {
     logout();
@@ -29,6 +32,23 @@ export default function Account() {
       }
     }
     setEditName(false);
+  };
+
+  const handleCheckMembership = async () => {
+    setCheckingMembership(true);
+    setMembershipMsg(null);
+    try {
+      const res = await checkMembership();
+      if (res.isPremium || res.premiumApps?.premiumLynx) {
+        useAuthStore.getState().setPremium(res.tierName || 'Fourthwall');
+        setMembershipMsg({ type: 'success', text: 'Statut Premium activé avec succès !' });
+      } else {
+        setMembershipMsg({ type: 'info', text: 'Aucun abonnement Premium actif trouvé pour LYNX.' });
+      }
+    } catch {
+      setMembershipMsg({ type: 'error', text: 'Impossible de vérifier. Réessayez plus tard.' });
+    }
+    setCheckingMembership(false);
   };
 
   if (!user) {
@@ -79,14 +99,37 @@ export default function Account() {
       </section>
 
       {/* Premium status */}
-      {!isPremium && (
-        <section className="account__upgrade" onClick={() => navigate('/pricing')}>
-          <Crown size={20} className="account__upgrade-icon" />
-          <div className="account__upgrade-body">
-            <h3>Passer à Premium</h3>
-            <p>Zones illimitées, refresh 1 min, alertes push prioritaires</p>
+      {isPremium ? (
+        <section className="account__premium-active">
+          <Crown size={20} className="account__premium-active-icon" />
+          <div>
+            <h3>Premium actif</h3>
+            <p>{premiumPlan || 'Abonnement Fourthwall'}</p>
           </div>
-          <ChevronRight size={16} className="account__upgrade-arrow" />
+        </section>
+      ) : (
+        <section className="account__upgrade-section">
+          <div className="account__upgrade" onClick={() => navigate('/pricing')}>
+            <Crown size={20} className="account__upgrade-icon" />
+            <div className="account__upgrade-body">
+              <h3>Passer à Premium</h3>
+              <p>Zones illimitées, refresh 1 min, alertes push prioritaires</p>
+            </div>
+            <ChevronRight size={16} className="account__upgrade-arrow" />
+          </div>
+          <button
+            onClick={handleCheckMembership}
+            disabled={checkingMembership}
+            className="account__check-membership"
+          >
+            {checkingMembership ? <Loader size={16} className="spin" /> : <RefreshCw size={16} />}
+            Vérifier mon abonnement Fourthwall
+          </button>
+          {membershipMsg && (
+            <p className={`account__membership-msg account__membership-msg--${membershipMsg.type}`}>
+              {membershipMsg.text}
+            </p>
+          )}
         </section>
       )}
 

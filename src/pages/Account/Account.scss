@@ -94,6 +94,10 @@
 }
 
 // ── Upgrade ──
+.account__upgrade-section {
+  @include stack($sp-3);
+}
+
 .account__upgrade {
   @include card;
   padding: $sp-4;
@@ -117,6 +121,87 @@
 }
 
 .account__upgrade-arrow { color: $lynx-dim; }
+
+.account__check-membership {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-2;
+  width: 100%;
+  padding: $sp-2-5 $sp-4;
+  background: transparent;
+  border: 1px solid $lynx-border;
+  border-radius: $radius-xl;
+  color: $lynx-muted;
+  font-size: $text-xs;
+  font-weight: 500;
+  @include transition;
+
+  &:hover:not(:disabled) {
+    background-color: $lynx-elevated;
+    color: $lynx-text;
+    border-color: $lynx-accent;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .spin {
+    animation: spin 1s linear infinite;
+  }
+}
+
+.account__membership-msg {
+  font-size: $text-xs;
+  text-align: center;
+  padding: $sp-2;
+  border-radius: $radius-lg;
+
+  &--success {
+    color: $lynx-success;
+    background: rgba($lynx-success, 0.1);
+  }
+  &--error {
+    color: $lynx-danger;
+    background: rgba($lynx-danger, 0.1);
+  }
+  &--info {
+    color: $lynx-info;
+    background: rgba($lynx-info, 0.1);
+  }
+}
+
+.account__premium-active {
+  @include card;
+  padding: $sp-4;
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  border-color: rgba(#F59E0B, 0.3);
+  background: linear-gradient(135deg, rgba(#F59E0B, 0.05), rgba(#F97316, 0.05));
+
+  .account__premium-active-icon {
+    color: #F59E0B;
+  }
+
+  h3 {
+    font-size: $text-sm;
+    font-weight: 700;
+    color: #F59E0B;
+  }
+  p {
+    font-size: $text-xs;
+    color: $lynx-muted;
+    margin-top: $sp-0-5;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 
 // ── Sections ──
 .account__section {

@@ -5,12 +5,14 @@ import { CATEGORIES, SEVERITY_LEVELS } from '../../config/categories';
 import { getScoreColor } from '../../services/riskEngine';
 import { generateReport } from '../../utils/pdfExport';
 import { downloadRssFeed } from '../../utils/rssFeed';
-import { FileDown, Rss } from 'lucide-react';
+import { FileDown, Rss, Crown } from 'lucide-react';
+import { useAuthStore } from '../../stores/authStore';
 import './StatsPage.scss';
 
 export default function StatsPage() {
   const { events, riskScores } = useAlertStore();
   const [timeView, setTimeView] = useState('24h');
+  const isPremium = useAuthStore((s) => s.isPremium);
 
   const categoryData = useMemo(() => {
     const counts = {};
@@ -92,15 +94,21 @@ export default function StatsPage() {
         <div className="stats-page__header-actions">
           <button
             className="stats-page__export-btn"
-            onClick={() => downloadRssFeed(events)}
+            onClick={() => isPremium ? downloadRssFeed(events) : null}
+            disabled={!isPremium}
+            title={!isPremium ? 'Premium requis' : 'Exporter en RSS'}
           >
+            {!isPremium && <Crown size={12} />}
             <Rss size={16} />
             RSS
           </button>
           <button
             className="stats-page__export-btn"
-            onClick={() => generateReport(events, riskScores)}
+            onClick={() => isPremium ? generateReport(events, riskScores) : null}
+            disabled={!isPremium}
+            title={!isPremium ? 'Premium requis' : 'Exporter en PDF'}
           >
+            {!isPremium && <Crown size={12} />}
             <FileDown size={16} />
             PDF
           </button>

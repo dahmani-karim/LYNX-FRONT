@@ -65,7 +65,43 @@ export async function fetchNuclearProduction() {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`ODRÉ Nuclear: ${res.status}`);
     const data = await res.json();
-    return data.results || [];
+    const records = data.results || [];
+
+    const alerts = [];
+    const seen = new Set();
+
+    for (const r of records) {
+      const plant = r.centrale || r.nom_site || '';
+      if (!plant || seen.has(plant)) continue;
+      seen.add(plant);
+
+      const production = r.puissance_mw || r.production_nette || 0;
+      const capacity = r.puissance_maximale_mw || r.puissance_installee || 0;
+      const ratio = capacity > 0 ? production / capacity : 1;
+
+      // Alert if plant is stopped or producing below 10% capacity
+      if (ratio < 0.1) {
+        const severity = production <= 0 ? 'high' : 'medium';
+        alerts.push({
+          id: `nuclear-${plant}-${Date.now()}`,
+          type: 'nuclear',
+          title: production <= 0
+            ? `Centrale nucléaire arrêtée — ${plant}`
+            : `Production nucléaire faible — ${plant}`,
+          description: `${plant}: ${production} MW / ${capacity} MW (${Math.round(ratio * 100)}% de capacité).`,
+          severity,
+          eventDate: r.date_heure ? new Date(r.date_heure).toISOString() : new Date().toISOString(),
+          latitude: r.latitude || 46.6,
+          longitude: r.longitude || 1.9,
+          sourceName: 'ODRÉ',
+          sourceUrl: 'https://odre.opendatasoft.com/explore/dataset/production-nette-nucleaire/',
+          sourceReliability: 95,
+          metadata: { plant, production, capacity, ratio },
+        });
+      }
+    }
+
+    return alerts;
   } catch {
     console.warn('ODRÉ Nuclear: module indisponible');
     return [];

@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSettingsStore } from '../../stores/settingsStore';
+import { useAuthStore } from '../../stores/authStore';
 import InstallPrompt from '../../components/InstallPrompt/InstallPrompt';
 import AppSwitcher from '../../components/AppSwitcher/AppSwitcher';
 import { requestPermission } from '../../services/notifications';
+import { fetchZones as apiFetchZones, createZone as apiCreateZone, deleteZone as apiDeleteZone } from '../../services/strapi';
 import {
-  MapPin, Bell, Eye, Trash2, Plus, Shield, ChevronRight, Info, Globe
+  MapPin, Bell, Eye, Trash2, Plus, Shield, ChevronRight, Info, Globe, Loader
 } from 'lucide-react';
 import './SettingsPage.scss';
 
@@ -22,22 +24,84 @@ export default function SettingsPage() {
     zones, addZone, removeZone,
     notifications, setNotifications,
   } = useSettingsStore();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isPremium = useAuthStore((s) => s.isPremium);
+  const MAX_FREE_ZONES = 1;
 
   const [showSwitcher, setShowSwitcher] = useState(false);
   const [showAddZone, setShowAddZone] = useState(false);
   const [newZone, setNewZone] = useState({ label: '', lat: '', lng: '', radiusKm: 50 });
   const [locationInput, setLocationInput] = useState(userLocation.label);
+  const [syncing, setSyncing] = useState(false);
 
-  const handleAddZone = () => {
+  // Sync zones from Strapi when authenticated
+  const syncZonesFromStrapi = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const res = await apiFetchZones();
+      const remote = (res.data || []).map((z) => ({
+        id: String(z.id),
+        strapiId: z.id,
+        label: z.attributes?.label || z.label,
+        lat: z.attributes?.lat || z.lat,
+        lng: z.attributes?.lng || z.lng,
+        radiusKm: z.attributes?.radiusKm || z.radiusKm || 50,
+      }));
+      // Merge: keep local zones not in Strapi, add Strapi zones
+      const localOnly = zones.filter((lz) => !lz.strapiId);
+      const merged = [...remote, ...localOnly];
+      useSettingsStore.setState({ zones: merged });
+    } catch {
+      // Strapi unavailable — keep local zones
+    }
+  }, [isAuthenticated, zones]);
+
+  useEffect(() => {
+    syncZonesFromStrapi();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
+
+  const handleAddZone = async () => {
     if (!newZone.label || !newZone.lat || !newZone.lng) return;
-    addZone({
+    const zoneData = {
       label: newZone.label,
       lat: parseFloat(newZone.lat),
       lng: parseFloat(newZone.lng),
       radiusKm: parseInt(newZone.radiusKm) || 50,
-    });
+    };
+
+    // Save to Strapi if authenticated
+    if (isAuthenticated) {
+      setSyncing(true);
+      try {
+        const res = await apiCreateZone({ data: zoneData });
+        const created = res.data;
+        addZone({
+          ...zoneData,
+          strapiId: created.id,
+        });
+      } catch {
+        // Fallback: save locally only
+        addZone(zoneData);
+      }
+      setSyncing(false);
+    } else {
+      addZone(zoneData);
+    }
+
     setNewZone({ label: '', lat: '', lng: '', radiusKm: 50 });
     setShowAddZone(false);
+  };
+
+  const handleRemoveZone = async (zone) => {
+    if (isAuthenticated && zone.strapiId) {
+      try {
+        await apiDeleteZone(zone.strapiId);
+      } catch {
+        // Continue with local removal even if Strapi fails
+      }
+    }
+    removeZone(zone.id);
   };
 
   const handleUseGeolocation = () => {
@@ -91,7 +155,12 @@ export default function SettingsPage() {
             <Eye size={18} />
             <h3>Zones surveillées</h3>
           </div>
-          <button onClick={() => setShowAddZone(!showAddZone)} className="settings-page__add-btn">
+          <button
+            onClick={() => setShowAddZone(!showAddZone)}
+            className="settings-page__add-btn"
+            disabled={!isPremium && zones.length >= MAX_FREE_ZONES}
+            title={!isPremium && zones.length >= MAX_FREE_ZONES ? 'Premium requis pour plus de zones' : ''}
+          >
             <Plus size={16} />
           </button>
         </div>
@@ -130,8 +199,8 @@ export default function SettingsPage() {
                 className="settings-page__zone-grid-input"
               />
             </div>
-            <button onClick={handleAddZone} className="settings-page__zone-submit">
-              Ajouter la zone
+            <button onClick={handleAddZone} className="settings-page__zone-submit" disabled={syncing}>
+              {syncing ? <><Loader size={14} className="spin" /> Synchronisation...</> : 'Ajouter la zone'}
             </button>
           </div>
         )}
@@ -148,7 +217,7 @@ export default function SettingsPage() {
                     {zone.lat.toFixed(2)}, {zone.lng.toFixed(2)} · {zone.radiusKm}km
                   </p>
                 </div>
-                <button onClick={() => removeZone(zone.id)} className="settings-page__zone-delete">
+                <button onClick={() => handleRemoveZone(zone)} className="settings-page__zone-delete">
                   <Trash2 size={14} />
                 </button>
               </div>
