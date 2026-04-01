@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Eye, RefreshCw, Menu, X, Home, Map, Bell, BarChart3, Settings } from 'lucide-react';
+import { RefreshCw, Menu, X, Home, Map, Bell, BarChart3, Settings } from 'lucide-react';
 import { useAlertStore } from '../../stores/alertStore';
 import { useSettingsStore } from '../../stores/settingsStore';
+import LynxLogo from '../LynxLogo/LynxLogo';
 import AppSwitcher from '../AppSwitcher/AppSwitcher';
 import './Header.scss';
 
@@ -42,8 +43,7 @@ export default function Header() {
               <Menu size={20} />
             </button>
             <Link to="/dashboard" className="header__logo">
-              <Eye size={24} />
-              <span>LYNX</span>
+              <LynxLogo size={28} />
             </Link>
           </div>
 

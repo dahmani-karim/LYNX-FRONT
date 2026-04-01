@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
+import LynxLogo from '../../components/LynxLogo/LynxLogo';
 import '../Login/Login.scss';
 
 export default function Register() {
@@ -43,7 +44,7 @@ export default function Register() {
     <div className="auth-page">
       <div className="auth-page__container">
         <Link to="/" className="auth-page__logo">
-          <span>🐆</span> LYNX
+          <LynxLogo size={32} />
         </Link>
 
         <div className="auth-page__card">

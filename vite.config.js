@@ -21,8 +21,8 @@ export default defineConfig({
         name: 'LYNX – Voyez ce que les autres ne voient pas',
         short_name: 'LYNX',
         description: 'Plateforme d\'anticipation & d\'alertes en temps réel',
-        theme_color: '#0A0E17',
-        background_color: '#0A0E17',
+        theme_color: '#080C14',
+        background_color: '#080C14',
         display: 'standalone',
         orientation: 'portrait-primary',
         start_url: './',
@@ -89,6 +89,14 @@ export default defineConfig({
             options: {
               cacheName: 'lynx-reliefweb',
               expiration: { maxEntries: 50, maxAgeSeconds: 600 }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/(corsproxy\.io|api\.allorigins\.win|api\.codetabs\.com)/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'lynx-cors-proxy',
+              expiration: { maxEntries: 30, maxAgeSeconds: 600 }
             }
           }
         ]

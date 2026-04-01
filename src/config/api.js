@@ -40,7 +40,11 @@ export const API_CONFIG = {
     CLOUDFLARE: 'https://www.cloudflarestatus.com/api/v2/status.json',
   },
 
-  CORS_PROXY: 'https://api.allorigins.win/raw?url=',
+  CORS_PROXIES: [
+    'https://corsproxy.io/?',
+    'https://api.allorigins.win/raw?url=',
+    'https://api.codetabs.com/v1/proxy?quest=',
+  ],
 };
 
 export const POLLING_INTERVALS = {

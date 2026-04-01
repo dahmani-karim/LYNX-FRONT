@@ -36,22 +36,30 @@ function parseCERTRSS(xml) {
   return events;
 }
 
+async function fetchViaProxies(targetUrl) {
+  for (const proxy of API_CONFIG.CORS_PROXIES) {
+    try {
+      const res = await fetch(`${proxy}${encodeURIComponent(targetUrl)}`);
+      if (!res.ok) continue;
+      const text = await res.text();
+      if (text && text.includes('<item>')) return text;
+    } catch {
+      continue;
+    }
+  }
+  throw new Error('All CORS proxies failed');
+}
+
 export async function fetchCyberAlerts() {
   try {
-    const proxyUrl = `${API_CONFIG.CORS_PROXY}${encodeURIComponent(API_CONFIG.CERT_FR.ALERTES_RSS)}`;
-    const res = await fetch(proxyUrl);
-    if (!res.ok) throw new Error(`CERT-FR proxy: ${res.status}`);
-    const xml = await res.text();
+    const xml = await fetchViaProxies(API_CONFIG.CERT_FR.ALERTES_RSS);
     return parseCERTRSS(xml);
   } catch {
     try {
-      const proxyUrl = `${API_CONFIG.CORS_PROXY}${encodeURIComponent(API_CONFIG.CERT_FR.AVIS_RSS)}`;
-      const res = await fetch(proxyUrl);
-      if (!res.ok) throw new Error(`CERT-FR avis proxy: ${res.status}`);
-      const xml = await res.text();
+      const xml = await fetchViaProxies(API_CONFIG.CERT_FR.AVIS_RSS);
       return parseCERTRSS(xml);
     } catch {
-      console.warn('CERT-FR: module en attente du backend Strapi');
+      console.warn('CERT-FR: tous les proxies CORS ont échoué');
       return [];
     }
   }

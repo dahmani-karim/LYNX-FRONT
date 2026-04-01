@@ -5,6 +5,8 @@ import {
   Monitor, Smartphone, Wifi, Lock, ChevronRight, Swords
 } from 'lucide-react';
 import { ECOSYSTEM_APPS, getAppUrl } from '../../config/ecosystem';
+import LynxLogo from '../../components/LynxLogo/LynxLogo';
+import InstallPrompt from '../../components/InstallPrompt/InstallPrompt';
 import './Landing.scss';
 
 const FEATURES = [
@@ -33,8 +35,7 @@ export default function Landing() {
       <nav className="landing__nav">
         <div className="landing__nav-inner">
           <Link to="/" className="landing__logo">
-            <span className="landing__logo-icon">🐆</span>
-            <span className="landing__logo-text">LYNX</span>
+            <LynxLogo size={30} />
           </Link>
           <div className="landing__nav-links">
             <Link to="/discover" className="landing__nav-link">Découvrir</Link>
@@ -160,6 +161,9 @@ export default function Landing() {
               <Lock size={20} />
               <span>HTTPS sécurisé</span>
             </div>
+          </div>
+          <div className="landing__pwa-install">
+            <InstallPrompt />
           </div>
         </div>
       </section>

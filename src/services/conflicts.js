@@ -6,32 +6,26 @@ import { API_CONFIG } from '../config/api';
  */
 export async function fetchConflicts() {
   try {
-    const url = new URL('https://api.reliefweb.int/v1/reports');
-    url.searchParams.set('appname', 'lynx-monitoring');
-    url.searchParams.set('preset', 'latest');
-    url.searchParams.set('limit', '30');
-    url.searchParams.set('fields[include][]', 'title');
+    const res = await fetch('https://api.reliefweb.int/v1/reports?appname=lynx-monitoring', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        preset: 'latest',
+        limit: 30,
+        fields: {
+          include: ['title', 'body-html', 'date.created', 'primary_country', 'source', 'disaster', 'url', 'theme'],
+        },
+        filter: {
+          operator: 'OR',
+          conditions: [
+            { field: 'theme.name', value: ['Contributions'] },
+            { field: 'theme.name', value: ['Peacekeeping and Peacebuilding'] },
+            { field: 'disaster_type.name', value: ['Complex Emergency'] },
+          ],
+        },
+      }),
+    });
 
-    const params = [
-      ['fields[include][]', 'body-html'],
-      ['fields[include][]', 'date.created'],
-      ['fields[include][]', 'primary_country'],
-      ['fields[include][]', 'source'],
-      ['fields[include][]', 'disaster'],
-      ['fields[include][]', 'url'],
-      ['fields[include][]', 'theme'],
-      ['filter[operator]', 'OR'],
-      ['filter[conditions][0][field]', 'theme.name'],
-      ['filter[conditions][0][value][]', 'Contributions'],
-      ['filter[conditions][1][field]', 'theme.name'],
-      ['filter[conditions][1][value][]', 'Peacekeeping and Peacebuilding'],
-      ['filter[conditions][2][field]', 'disaster_type.name'],
-      ['filter[conditions][2][value][]', 'Complex Emergency'],
-    ];
-
-    params.forEach(([key, val]) => url.searchParams.append(key, val));
-
-    const res = await fetch(url.toString());
     if (!res.ok) throw new Error(`ReliefWeb: ${res.status}`);
 
     const data = await res.json();

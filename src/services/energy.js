@@ -5,8 +5,9 @@ function parseEcogazSignal(records) {
   const alerts = [];
 
   records.results.forEach((r) => {
-    const signal = r.indice_de_confiance || r.statut || '';
-    const date = r.date_de_la_journee || r.jour || '';
+    const signal = r.couleur_du_signal_fr || r.color || '';
+    const colorIndex = r.indice_de_couleur || '';
+    const date = r.gas_day || '';
 
     if (!signal && !date) return;
 
@@ -14,13 +15,13 @@ function parseEcogazSignal(records) {
     let title = 'Réseau gaz normal';
 
     const signalLower = signal.toString().toLowerCase();
-    if (signalLower.includes('rouge') || signal === '3') {
+    if (signalLower.includes('rouge') || signalLower.includes('red') || colorIndex === '3') {
       severity = 'critical';
       title = 'Tension critique réseau gaz';
-    } else if (signalLower.includes('orange') || signal === '2') {
+    } else if (signalLower.includes('orange') || colorIndex === '2') {
       severity = 'high';
       title = 'Tension élevée réseau gaz';
-    } else if (signalLower.includes('jaune') || signal === '1') {
+    } else if (signalLower.includes('jaune') || signalLower.includes('yellow') || colorIndex === '1') {
       severity = 'medium';
       title = 'Tension modérée réseau gaz';
     }
@@ -47,7 +48,7 @@ function parseEcogazSignal(records) {
 
 export async function fetchEnergyData() {
   try {
-    const url = `${API_CONFIG.ODRE.BASE}${API_CONFIG.ODRE.ECOGAZ}?limit=7&order_by=date_de_la_journee%20DESC`;
+    const url = `${API_CONFIG.ODRE.BASE}${API_CONFIG.ODRE.ECOGAZ}?limit=7&order_by=gas_day%20DESC`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`ODRÉ API: ${res.status}`);
     const data = await res.json();
