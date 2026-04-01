@@ -8,6 +8,7 @@ import { downloadRssFeed } from '../../utils/rssFeed';
 import { FileDown, Rss, Crown } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useNavigate } from 'react-router-dom';
+import PremiumGate from '../../components/PremiumGate/PremiumGate';
 import './StatsPage.scss';
 
 export default function StatsPage() {
@@ -90,6 +91,7 @@ export default function StatsPage() {
   };
 
   return (
+    <PremiumGate feature="Statistiques avancées">
     <div className="stats-page">
       <div className="stats-page__header">
         <h1 className="stats-page__title">Statistiques</h1>
@@ -236,5 +238,6 @@ export default function StatsPage() {
         )}
       </section>
     </div>
+    </PremiumGate>
   );
 }

@@ -204,7 +204,8 @@ export const useAlertStore = create((set, get) => ({
     if (results[11].status === 'fulfilled') {
       allEvents.push(...results[11].value);
     } else {
-      errors.geopolitics = results[11].reason?.message;
+      errors.social = results[11].reason?.message;
+      errors.fuel = results[11].reason?.message;
     }
 
     if (results[12].status === 'fulfilled') {

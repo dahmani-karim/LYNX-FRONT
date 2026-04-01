@@ -192,10 +192,51 @@ export function autoTranslate(text) {
 
 // ============================================
 // MyMemory API — real EN→FR translation
+// Persisted cache in localStorage + rate limiting
 // ============================================
 
-const MYMEMORY_CACHE = new Map();
+const STORAGE_KEY = 'lynx-translate-cache';
 const MYMEMORY_MAX_CHARS = 450;
+const MAX_CACHE_SIZE = 500;
+
+// Load cache from localStorage
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return new Map(JSON.parse(raw));
+  } catch { /* corrupted, start fresh */ }
+  return new Map();
+}
+
+function saveCache(cache) {
+  try {
+    // Trim oldest entries if too large
+    const entries = [...cache.entries()];
+    const trimmed = entries.length > MAX_CACHE_SIZE
+      ? entries.slice(entries.length - MAX_CACHE_SIZE)
+      : entries;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
+  } catch { /* quota exceeded, ignore */ }
+}
+
+const MYMEMORY_CACHE = loadCache();
+
+// Simple rate limiter: max 5 requests per second
+let requestQueue = Promise.resolve();
+let lastRequestTime = 0;
+const MIN_INTERVAL = 200; // 200ms between requests = 5/s
+
+function rateLimited(fn) {
+  requestQueue = requestQueue.catch(() => {}).then(async () => {
+    const elapsed = Date.now() - lastRequestTime;
+    if (elapsed < MIN_INTERVAL) {
+      await new Promise((r) => setTimeout(r, MIN_INTERVAL - elapsed));
+    }
+    lastRequestTime = Date.now();
+    return fn();
+  });
+  return requestQueue;
+}
 
 function splitIntoChunks(text) {
   if (text.length <= MYMEMORY_MAX_CHARS) return [text];
@@ -221,31 +262,47 @@ function splitIntoChunks(text) {
 async function translateChunkMyMemory(text) {
   if (!text) return text;
   if (MYMEMORY_CACHE.has(text)) return MYMEMORY_CACHE.get(text);
+
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    const res = await fetch(
-      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|fr`,
-      { signal: controller.signal }
-    );
-    clearTimeout(timeout);
-    if (!res.ok) return text;
-    const json = await res.json();
-    const translated = json.responseData?.translatedText || text;
-    // MyMemory returns uppercase warning when quota exceeded
-    if (translated.includes('MYMEMORY WARNING')) return text;
-    MYMEMORY_CACHE.set(text, translated);
-    return translated;
+    const translated = await rateLimited(async () => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const res = await fetch(
+        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|fr`,
+        { signal: controller.signal }
+      );
+      clearTimeout(timeout);
+      if (!res.ok) return null;
+      const json = await res.json();
+      const result = json.responseData?.translatedText || null;
+      if (result && result.includes('MYMEMORY WARNING')) return null;
+      return result;
+    });
+
+    if (translated) {
+      MYMEMORY_CACHE.set(text, translated);
+      saveCache(MYMEMORY_CACHE);
+      return translated;
+    }
+    // API failed (429, etc.) — use keyword fallback and cache it
+    const fallback = translateToFrench(text);
+    MYMEMORY_CACHE.set(text, fallback);
+    saveCache(MYMEMORY_CACHE);
+    return fallback;
   } catch {
-    return text;
+    // Network/timeout error — keyword fallback, cached to avoid retries
+    const fallback = translateToFrench(text);
+    MYMEMORY_CACHE.set(text, fallback);
+    saveCache(MYMEMORY_CACHE);
+    return fallback;
   }
 }
 
 /**
- * Async EN→FR translation via MyMemory API.
- * Falls back to original text on failure.
+ * Instant EN→FR translation with background cache warming.
+ * Returns keyword translation immediately, queues MyMemory for next cycle.
  */
-export async function asyncTranslate(text) {
+export function asyncTranslate(text) {
   if (!text || typeof text !== 'string') return text || '';
   const trimmed = text.trim();
   if (!trimmed) return '';
@@ -254,15 +311,52 @@ export async function asyncTranslate(text) {
   const frenchIndicators = /[àâäéèêëïîôùûüçœæ]|(?:^|\s)(le|la|les|de|du|des|un|une|en|et|ou|dans|pour|sur|par|avec|aux)\s/i;
   if (frenchIndicators.test(trimmed)) return trimmed;
 
+  // Check cache first — instant return if found
   const chunks = splitIntoChunks(trimmed);
-  const translated = await Promise.all(chunks.map((c) => translateChunkMyMemory(c)));
-  return translated.join(' ');
+  const allCached = chunks.every((c) => MYMEMORY_CACHE.has(c));
+  if (allCached) {
+    return chunks.map((c) => MYMEMORY_CACHE.get(c)).join(' ');
+  }
+
+  // Return keyword translation immediately
+  const keywordResult = translateToFrench(trimmed);
+
+  // Queue background MyMemory call to warm cache for next cycle
+  queueBackgroundTranslation(trimmed);
+
+  return keywordResult;
+}
+
+// Background translation queue — processes one text at a time
+const bgQueue = [];
+let bgProcessing = false;
+
+function queueBackgroundTranslation(text) {
+  if (MYMEMORY_CACHE.has(text)) return;
+  if (bgQueue.includes(text)) return;
+  bgQueue.push(text);
+  if (!bgProcessing) processBackgroundQueue();
+}
+
+async function processBackgroundQueue() {
+  bgProcessing = true;
+  while (bgQueue.length > 0) {
+    const text = bgQueue.shift();
+    if (MYMEMORY_CACHE.has(text)) continue;
+    const chunks = splitIntoChunks(text);
+    for (const chunk of chunks) {
+      if (!MYMEMORY_CACHE.has(chunk)) {
+        await translateChunkMyMemory(chunk);
+      }
+    }
+  }
+  bgProcessing = false;
 }
 
 /**
- * Batch-translate an array of strings via MyMemory.
- * Returns same-length array with translated strings.
+ * Batch-translate an array of strings.
+ * Returns same-length array with translated strings (instant).
  */
-export async function asyncTranslateBatch(texts) {
-  return Promise.all(texts.map((t) => asyncTranslate(t)));
+export function asyncTranslateBatch(texts) {
+  return texts.map((t) => asyncTranslate(t));
 }

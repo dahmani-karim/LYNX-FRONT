@@ -69,11 +69,11 @@ export async function fetchSpaceWeather() {
     console.warn('[spaceWeather] NOAA SWPC failed:', err.message);
   }
 
-  // Batch translate titles and descriptions
-  const titleTranslations = await Promise.all(events.map((e) => asyncTranslate(e.title)));
-  const descTranslations = await Promise.all(events.map((e) => asyncTranslate(e.description)));
-  titleTranslations.forEach((t, i) => { events[i].title = t; });
-  descTranslations.forEach((t, i) => { events[i].description = t; });
+  // Translate titles and descriptions
+  events.forEach((e) => {
+    e.title = asyncTranslate(e.title);
+    e.description = asyncTranslate(e.description);
+  });
 
   return events;
 }

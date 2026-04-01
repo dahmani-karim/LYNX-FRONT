@@ -38,9 +38,7 @@ export async function fetchEarthquakes(timeRange = 'day') {
     rawData: f.properties,
   }));
 
-  // Batch translate titles
-  const translations = await Promise.all(events.map((e) => asyncTranslate(e.title)));
-  translations.forEach((t, i) => { events[i].title = t; });
+  events.forEach((e) => { e.title = asyncTranslate(e.title); });
   return events;
 }
 
@@ -67,7 +65,6 @@ export async function fetchSignificantEarthquakes() {
     pagerAlert: f.properties.alert,
   }));
 
-  const translations = await Promise.all(events.map((e) => asyncTranslate(e.title)));
-  translations.forEach((t, i) => { events[i].title = t; });
+  events.forEach((e) => { e.title = asyncTranslate(e.title); });
   return events;
 }

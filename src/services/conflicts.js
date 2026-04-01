@@ -72,9 +72,8 @@ async function fetchFromGDELT() {
         };
       });
 
-      // Batch translate titles
-      const translations = await Promise.all(events.map((e) => asyncTranslate(e.title)));
-      translations.forEach((t, i) => { events[i].title = t; });
+      // Translate titles
+      events.forEach((e) => { e.title = asyncTranslate(e.title); });
       return events;
     } catch { continue; }
   }
@@ -158,7 +157,7 @@ async function fetchFromReliefWebDirect() {
   return mapReliefWebData(data.data || []);
 }
 
-async function mapReliefWebData(items) {
+function mapReliefWebData(items) {
   const events = items.map((item) => {
     const fields = item.fields || {};
     const country = fields.primary_country?.name || 'Inconnu';
@@ -184,11 +183,11 @@ async function mapReliefWebData(items) {
     };
   });
 
-  // Batch translate titles and descriptions
-  const titleT = await Promise.all(events.map((e) => asyncTranslate(e.title)));
-  const descT = await Promise.all(events.map((e) => asyncTranslate(e.description)));
-  titleT.forEach((t, i) => { events[i].title = t; });
-  descT.forEach((t, i) => { events[i].description = t; });
+  // Translate titles and descriptions
+  events.forEach((e) => {
+    e.title = asyncTranslate(e.title);
+    e.description = asyncTranslate(e.description);
+  });
   return events;
 }
 

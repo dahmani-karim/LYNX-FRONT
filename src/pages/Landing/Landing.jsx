@@ -19,7 +19,7 @@ export default function Landing() {
         <div className="landing__float landing__float--5">🔒</div>
         <div className="landing__float landing__float--6">📡</div>
         <div className="landing__float landing__float--7">⚠️</div>
-        <div className="landing__float landing__float--8">🐆</div>
+        <div className="landing__float landing__float--8">🌋</div>
       </div>
 
       {/* Content */}

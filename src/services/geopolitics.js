@@ -3,59 +3,55 @@ import { asyncTranslate } from '../utils/translate';
 
 /**
  * Fetches geopolitical events from GDELT (social unrest, sanctions, diplomacy).
- * Covers the "social" category that had no data source.
- * Free, no API key, CORS-friendly.
+ * Single combined query for social + fuel to reduce CORS proxy calls.
  */
 export async function fetchGeopolitics() {
   const events = [];
 
-  const queries = [
-    { q: '(protest OR strike OR demonstration OR riot) sourcelang:eng', category: 'social' },
-    { q: '(fuel shortage OR gas price OR petrol crisis OR oil supply) sourcelang:eng', category: 'fuel' },
-  ];
+  // Single combined query to reduce CORS proxy load
+  const params = new URLSearchParams({
+    query: '(protest OR strike OR demonstration OR riot OR fuel shortage OR gas price OR petrol crisis OR oil supply) sourcelang:eng',
+    mode: 'ArtList',
+    maxrecords: '25',
+    format: 'json',
+    sort: 'DateDesc',
+  });
+  const gdeltUrl = `${API_CONFIG.GDELT.DOC_API}?${params}`;
 
-  for (const { q, category } of queries) {
+  let data = null;
+  for (const proxy of API_CONFIG.CORS_PROXIES) {
     try {
-      const params = new URLSearchParams({
-        query: q,
-        mode: 'ArtList',
-        maxrecords: '15',
-        format: 'json',
-        sort: 'DateDesc',
-      });
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 15000);
-      const res = await fetch(`${API_CONFIG.GDELT.DOC_API}?${params}`, { signal: controller.signal });
+      const res = await fetch(`${proxy}${encodeURIComponent(gdeltUrl)}`, { signal: controller.signal });
       clearTimeout(timer);
-      if (!res.ok) continue;
-      const data = await res.json();
-
-      (data.articles || []).forEach((a, i) => {
-        const severity = assessGeoSeverity(a.title || '');
-        events.push({
-          id: `geo-${category}-${i}-${Date.now()}`,
-          type: category,
-          title: a.title || 'Événement géopolitique',
-          description: `Source: ${a.domain || 'GDELT'}${a.seendate ? ` | ${a.seendate.slice(0, 10)}` : ''}`,
-          severity,
-          eventDate: a.seendate ? formatDate(a.seendate) : new Date().toISOString(),
-          latitude: a.sourcelat ? parseFloat(a.sourcelat) : null,
-          longitude: a.sourcelon ? parseFloat(a.sourcelon) : null,
-          country: a.sourcecountry || 'Inconnu',
-          sourceName: a.domain || 'GDELT',
-          sourceUrl: a.url || 'https://www.gdeltproject.org',
-          sourceReliability: 70,
-          metadata: { gdeltUrl: a.url },
-        });
-      });
-    } catch (err) {
-      console.warn(`[geopolitics] GDELT ${category} failed:`, err.message);
-    }
+      if (res.ok) { data = await res.json(); break; }
+    } catch { continue; }
   }
 
-  // Batch translate titles
-  const translations = await Promise.all(events.map((e) => asyncTranslate(e.title)));
-  translations.forEach((t, i) => { events[i].title = t; });
+  if (data) {
+    (data.articles || []).forEach((a, i) => {
+      const title = (a.title || '').toLowerCase();
+      const category = (title.includes('fuel') || title.includes('gas') || title.includes('oil') || title.includes('petrol'))
+        ? 'fuel' : 'social';
+      const severity = assessGeoSeverity(a.title || '');
+      events.push({
+        id: `geo-${category}-${i}-${Date.now()}`,
+        type: category,
+        title: asyncTranslate(a.title || 'Événement géopolitique'),
+        description: `Source: ${a.domain || 'GDELT'}${a.seendate ? ` | ${a.seendate.slice(0, 10)}` : ''}`,
+        severity,
+        eventDate: a.seendate ? formatDate(a.seendate) : new Date().toISOString(),
+        latitude: a.sourcelat ? parseFloat(a.sourcelat) : null,
+        longitude: a.sourcelon ? parseFloat(a.sourcelon) : null,
+        country: a.sourcecountry || 'Inconnu',
+        sourceName: a.domain || 'GDELT',
+        sourceUrl: a.url || 'https://www.gdeltproject.org',
+        sourceReliability: 70,
+        metadata: { gdeltUrl: a.url },
+      });
+    });
+  }
 
   return events;
 }
