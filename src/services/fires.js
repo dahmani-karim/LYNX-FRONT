@@ -1,30 +1,10 @@
 import { API_CONFIG } from '../config/api';
 
 /**
- * Fetches active fire/hotspot data.
- * Strategy 1: NASA FIRMS via CORS proxy
- * Strategy 2: NASA EONET wildfire events (CORS-friendly, no key)
+ * Fetches active fire/hotspot data from NASA EONET (CORS-friendly, no key needed).
+ * FIRMS proxy strategy removed — fires are also fetched server-side via Strapi.
  */
 export async function fetchFires(lat, lng) {
-  // Strategy 1: FIRMS via proxy (real MAP_KEY)
-  try {
-    const delta = 3;
-    const area = `${(lng - delta).toFixed(2)},${(lat - delta).toFixed(2)},${(lng + delta).toFixed(2)},${(lat + delta).toFixed(2)}`;
-    const firmsUrl = `${API_CONFIG.NASA_FIRMS.BASE}/${API_CONFIG.NASA_FIRMS.MAP_KEY}/VIIRS_SNPP_NRT/${area}/1`;
-
-    for (const proxy of API_CONFIG.CORS_PROXIES) {
-      try {
-        const res = await fetch(`${proxy}${encodeURIComponent(firmsUrl)}`);
-        if (!res.ok) continue;
-        const csv = await res.text();
-        if (csv && csv.includes('latitude')) {
-          return parseFireCSV(csv, lat, lng);
-        }
-      } catch { continue; }
-    }
-  } catch { /* FIRMS unavailable */ }
-
-  // Strategy 2: NASA EONET fallback (currently returning 500)
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
@@ -36,9 +16,9 @@ export async function fetchFires(lat, lng) {
     if (!res.ok) return [];
     const data = await res.json();
     return parseEONET(data.events || [], lat, lng);
-  } catch { /* EONET unavailable */ }
-
-  return [];
+  } catch {
+    return [];
+  }
 }
 
 function parseEONET(events, userLat, userLng) {

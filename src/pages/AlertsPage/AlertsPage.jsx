@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useAlertStore } from '../../stores/alertStore';
 import { useSavedAlertStore } from '../../stores/savedAlertStore';
 import { useAuthStore } from '../../stores/authStore';
 import AlertCard from '../../components/AlertCard/AlertCard';
+import SeverityBadge from '../../components/SeverityBadge/SeverityBadge';
 import Loader from '../../components/Loader/Loader';
-import { CATEGORIES } from '../../config/categories';
-import { Search, SlidersHorizontal, X, Bookmark, Radio, Crown } from 'lucide-react';
+import { CATEGORIES, SEVERITY_LEVELS } from '../../config/categories';
+import { Search, SlidersHorizontal, X, Bookmark, Radio, Crown, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import './AlertsPage.scss';
 
 const FREE_TIME_RANGES = ['1h', '6h', '24h'];
@@ -28,13 +30,14 @@ const SEVERITY_OPTIONS = [
 ];
 
 export default function AlertsPage() {
-  const { isLoading, filters, setFilter, getFilteredEvents, resetFilters } = useAlertStore();
+  const { events, isLoading, filters, setFilter, getFilteredEvents, resetFilters } = useAlertStore();
   const { isAuthenticated } = useAuthStore();
   const isPremium = useAuthStore((s) => s.isPremium);
   const { savedAlerts, fetchSaved } = useSavedAlertStore();
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [tab, setTab] = useState('live'); // 'live' | 'saved'
+  const [tab, setTab] = useState('live'); // 'live' | 'saved' | 'timeline'
+  const [expandedGroups, setExpandedGroups] = useState(new Set());
 
   const filteredEvents = getFilteredEvents();
   const displayedEvents = tab === 'saved' ? savedAlerts : filteredEvents;
@@ -55,18 +58,41 @@ export default function AlertsPage() {
   const availableCategories = Object.values(CATEGORIES).filter((c) => c.id !== 'other');
   const hasActiveFilters = filters.categories.length > 0 || filters.severity !== 'all' || filters.timeRange !== '24h';
 
+  // Timeline grouping by date
+  const timelineGroups = useMemo(() => {
+    const groups = {};
+    filteredEvents.forEach((e) => {
+      const d = new Date(e.eventDate);
+      const key = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(e);
+    });
+    return Object.entries(groups);
+  }, [filteredEvents]);
+
+  const toggleGroup = (key) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const isExpanded = (key) => expandedGroups.size === 0 || !expandedGroups.has(key);
+
   return (
     <div className="alerts-page">
       {/* Tabs */}
-      {isAuthenticated && (
-        <div className="alerts-page__tabs">
-          <button
-            onClick={() => setTab('live')}
-            className={`alerts-page__tab ${tab === 'live' ? 'alerts-page__tab--active' : ''}`}
-          >
-            <Radio size={14} />
-            En direct
-          </button>
+      <div className="alerts-page__tabs">
+        <button
+          onClick={() => setTab('live')}
+          className={`alerts-page__tab ${tab === 'live' ? 'alerts-page__tab--active' : ''}`}
+        >
+          <Radio size={14} />
+          En direct
+        </button>
+        {isAuthenticated && (
           <button
             onClick={() => { setTab('saved'); fetchSaved(); }}
             className={`alerts-page__tab ${tab === 'saved' ? 'alerts-page__tab--active' : ''}`}
@@ -77,8 +103,15 @@ export default function AlertsPage() {
               <span className="alerts-page__tab-badge">{savedAlerts.length}</span>
             )}
           </button>
-        </div>
-      )}
+        )}
+        <button
+          onClick={() => setTab('timeline')}
+          className={`alerts-page__tab ${tab === 'timeline' ? 'alerts-page__tab--active' : ''}`}
+        >
+          <Clock size={14} />
+          Chronologie
+        </button>
+      </div>
 
       {/* Search bar */}
       <div className="alerts-page__search-row">
@@ -185,6 +218,66 @@ export default function AlertsPage() {
       {/* Alert list */}
       {isLoading && displayedEvents.length === 0 ? (
         <Loader text="Chargement des alertes..." />
+      ) : tab === 'timeline' ? (
+        timelineGroups.length === 0 ? (
+          <div className="alerts-page__empty">
+            <p className="alerts-page__empty-icon">🕊️</p>
+            <p className="alerts-page__empty-title">Aucun événement dans cette période</p>
+          </div>
+        ) : (
+          <div className="alerts-page__stream">
+            {timelineGroups.map(([dateLabel, dayEvents]) => (
+              <div key={dateLabel} className="alerts-page__tl-group">
+                <button
+                  className="alerts-page__tl-group-header"
+                  onClick={() => toggleGroup(dateLabel)}
+                >
+                  <span className="alerts-page__tl-group-date">{dateLabel}</span>
+                  <span className="alerts-page__tl-group-meta">
+                    <span className="alerts-page__tl-group-count">{dayEvents.length}</span>
+                    {isExpanded(dateLabel) ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                  </span>
+                </button>
+                {isExpanded(dateLabel) && (
+                  <div className="alerts-page__tl-events">
+                    {dayEvents.map((event) => {
+                      const cat = CATEGORIES[event.type] || CATEGORIES.other;
+                      const d = new Date(event.eventDate);
+                      const time = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                      return (
+                        <Link
+                          to={`/alert/${encodeURIComponent(event.id)}`}
+                          key={event.id}
+                          className="alerts-page__tl-event"
+                        >
+                          <div className="alerts-page__tl-line">
+                            <div
+                              className="alerts-page__tl-dot"
+                              style={{ backgroundColor: SEVERITY_LEVELS[event.severity]?.color || '#6B7280' }}
+                            />
+                          </div>
+                          <div className="alerts-page__tl-event-body">
+                            <div className="alerts-page__tl-event-top">
+                              <span className="alerts-page__tl-event-time">{time}</span>
+                              <SeverityBadge severity={event.severity} size="xs" />
+                            </div>
+                            <p className="alerts-page__tl-event-title">{event.title}</p>
+                            <div className="alerts-page__tl-event-meta">
+                              <span className="alerts-page__tl-event-cat">
+                                <span style={{ color: cat.color }}>●</span> {cat.label}
+                              </span>
+                              <span className="alerts-page__tl-event-source">{event.sourceName}</span>
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )
       ) : displayedEvents.length === 0 ? (
         <div className="alerts-page__empty">
           <p className="alerts-page__empty-icon">{tab === 'saved' ? '📌' : '🟢'}</p>

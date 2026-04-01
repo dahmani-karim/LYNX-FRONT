@@ -51,14 +51,17 @@ const TRACKER_TYPES = [
   { key: 'ship', label: 'Navires', icon: Ship, color: '#06B6D4' },
 ];
 
-function createTrackerIcon(type) {
+function createTrackerIcon(type, heading = 0) {
   const colors = { aircraft: '#3B82F6', satellite: '#D946EF', ship: '#06B6D4' };
-  const symbols = { aircraft: '✈', satellite: '🛰', ship: '🚢' };
+  const arrows = { aircraft: '✈️', satellite: '🛰️', ship: '⬆' };
+  const sizes = { aircraft: 28, satellite: 28, ship: 26 };
+  const sz = sizes[type];
+  const isShip = type === 'ship';
   return L.divIcon({
     className: 'tracker-icon',
-    html: `<div style="background:${colors[type]};width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,.4)">${symbols[type]}</div>`,
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
+    html: `<div style="width:${sz}px;height:${sz}px;display:flex;align-items:center;justify-content:center;transform:rotate(${heading}deg);transition:transform 0.5s ease;font-size:${isShip ? 14 : 16}px;${isShip ? `background:${colors[type]};border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,.4);color:white;font-weight:bold` : ''}">${arrows[type]}</div>`,
+    iconSize: [sz, sz],
+    iconAnchor: [sz / 2, sz / 2],
   });
 }
 
@@ -211,7 +214,14 @@ export default function MapPage() {
       )}
 
       {/* Map */}
-      <MapContainer
+      <div className="map-page__map-wrap">
+        {mode === 'tracking' && trackersLoading && allTrackerPoints.length === 0 && (
+          <div className="map-page__loading-overlay">
+            <div className="map-page__loading-spinner" />
+            <p className="map-page__loading-text">Recherche des objets à proximité...</p>
+          </div>
+        )}
+        <MapContainer
         center={[lat, lng]}
         zoom={mode === 'tracking' ? 8 : 4}
         className="map-page__map"
@@ -276,7 +286,7 @@ export default function MapPage() {
             <Marker
               key={point.id}
               position={[point.latitude, point.longitude]}
-              icon={createTrackerIcon(point.type)}
+              icon={createTrackerIcon(point.type, point.heading || 0)}
             >
               <Popup>
                 <div className="map-page__popup">
@@ -343,6 +353,7 @@ export default function MapPage() {
 
         <LocationButton />
       </MapContainer>
+      </div>
 
       {/* Bottom info bar */}
       <div className="map-page__count">
@@ -350,6 +361,9 @@ export default function MapPage() {
           ? `${filteredEvents.length} événement${filteredEvents.length > 1 ? 's' : ''}`
           : `${allTrackerPoints.length} objet${allTrackerPoints.length > 1 ? 's' : ''} suivi${allTrackerPoints.length > 1 ? 's' : ''}`
         }
+        {mode === 'tracking' && ships.length === 0 && activeTrackers.includes('ship') && !trackersLoading && (
+          <span className="map-page__last-update"> · Navires: zone non couverte</span>
+        )}
         {mode === 'tracking' && lastFetch && (
           <span className="map-page__last-update"> · MAJ {new Date(lastFetch).toLocaleTimeString('fr-FR')}</span>
         )}

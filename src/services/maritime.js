@@ -1,10 +1,19 @@
 /**
  * Fetches live ship positions from free AIS sources.
- * Digitraffic.fi — CORS-friendly, no key needed.
+ * Primary: Digitraffic.fi — CORS-friendly, no key needed.
  * Coverage: Nordic/Baltic waters. Returns empty outside coverage area.
+ * Note: global real-time AIS data requires paid APIs (MarineTraffic, VesselFinder).
  */
 
 export async function fetchMaritimeTracker(lat, lng) {
+  // Digitraffic covers roughly 50-70°N, 0-35°E (Nordic/Baltic)
+  const inCoverage = lat >= 50 && lat <= 70 && lng >= 0 && lng <= 35;
+
+  if (!inCoverage) {
+    console.info('[maritime] Position hors couverture Digitraffic (Nordic/Baltic uniquement)');
+    return [];
+  }
+
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);

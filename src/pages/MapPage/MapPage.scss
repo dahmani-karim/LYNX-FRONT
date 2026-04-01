@@ -91,9 +91,48 @@
   }
 
   // Map container
+  &__map-wrap {
+    position: relative;
+    height: 100%;
+    width: 100%;
+  }
+
   &__map {
     height: 100%;
     width: 100%;
+  }
+
+  // Tracking loading overlay
+  &__loading-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: $z-map-controls + 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: $sp-3;
+    background: rgba($lynx-bg, 0.7);
+    backdrop-filter: blur(4px);
+  }
+
+  &__loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid $lynx-border;
+    border-top-color: $lynx-accent;
+    border-radius: 50%;
+    animation: map-spin 0.8s linear infinite;
+  }
+
+  &__loading-text {
+    font-size: $text-sm;
+    color: $lynx-muted;
+    font-weight: 500;
+  }
+
+  @keyframes map-spin {
+    to { transform: rotate(360deg); }
   }
 
   // Popup

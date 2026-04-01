@@ -134,6 +134,19 @@
     color: $lynx-muted;
   }
 
+  &__alerts-link {
+    display: flex;
+    align-items: center;
+    gap: $sp-1;
+    font-size: $text-xs;
+    font-weight: 500;
+    color: $lynx-accent;
+    text-decoration: none;
+    @include transition;
+
+    &:hover { opacity: 0.8; }
+  }
+
   &__alerts-list {
     > * + * { margin-top: $sp-2; }
   }

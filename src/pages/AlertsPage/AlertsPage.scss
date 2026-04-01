@@ -202,4 +202,129 @@
     color: $lynx-dim;
     margin-top: $sp-1;
   }
+
+  // Timeline stream (chronologie tab)
+  &__stream {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-4;
+  }
+
+  &__tl-group-header {
+    @include flex-between;
+    width: 100%;
+    padding: $sp-2 $sp-3;
+    background: $lynx-surface;
+    border: 1px solid $lynx-border;
+    border-radius: $radius-lg;
+    @include transition;
+
+    &:hover { background: $lynx-elevated; }
+  }
+
+  &__tl-group-date {
+    font-size: $text-sm;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+
+  &__tl-group-meta {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    color: $lynx-muted;
+  }
+
+  &__tl-group-count {
+    font-size: $text-xs;
+    font-weight: 600;
+    background: $lynx-elevated;
+    padding: 2px 8px;
+    border-radius: $radius-full;
+  }
+
+  &__tl-events {
+    padding-left: $sp-3;
+  }
+
+  &__tl-event {
+    display: flex;
+    gap: $sp-3;
+    padding: $sp-3 0;
+    @include transition;
+    text-decoration: none;
+    color: inherit;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid rgba($lynx-border, 0.3);
+    }
+
+    &:hover {
+      .alerts-page__tl-event-title { color: $lynx-accent; }
+    }
+  }
+
+  &__tl-line {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 12px;
+    padding-top: 4px;
+    flex-shrink: 0;
+  }
+
+  &__tl-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.15);
+  }
+
+  &__tl-event-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__tl-event-top {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    margin-bottom: $sp-1;
+  }
+
+  &__tl-event-time {
+    font-size: $text-xs;
+    font-weight: 600;
+    color: $lynx-muted;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__tl-event-title {
+    font-size: $text-sm;
+    font-weight: 600;
+    @include line-clamp(2);
+    @include transition(color);
+  }
+
+  &__tl-event-meta {
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+    margin-top: $sp-1;
+    font-size: $text-xs;
+    color: $lynx-dim;
+  }
+
+  &__tl-event-cat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+  }
+
+  &__tl-event-source {
+    @include truncate;
+    max-width: 120px;
+  }
 }

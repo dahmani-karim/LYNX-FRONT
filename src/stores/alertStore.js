@@ -94,6 +94,10 @@ export const useAlertStore = create((set, get) => ({
       );
     }
 
+    // Exclure les événements datés dans le futur
+    const now = Date.now();
+    filtered = filtered.filter((e) => new Date(e.eventDate).getTime() <= now);
+
     filtered.sort((a, b) => new Date(b.eventDate) - new Date(a.eventDate));
     return filtered;
   },

@@ -1,9 +1,7 @@
-import { API_CONFIG } from '../config/api';
-
 /**
  * Fetches live aircraft positions.
- * Primary: ADSB.lol via CORS proxy
- * Fallback: OpenSky Network via CORS proxy
+ * Primary: ADSB.lol (CORS-enabled, no proxy needed)
+ * Fallback: OpenSky Network (CORS-enabled)
  */
 
 function parseAdsbLol(data) {
@@ -51,30 +49,27 @@ export async function fetchAircraftTracker(lat, lng, radiusKm = 200) {
   const delta = radiusKm / 111;
   const openSkyUrl = `https://opensky-network.org/api/states/all?lamin=${lat - delta}&lamax=${lat + delta}&lomin=${lng - delta}&lomax=${lng + delta}`;
 
-  // Try each source through CORS proxies
+  // ADSB.lol and OpenSky both support CORS natively — no proxy needed
   const sources = [
     { url: adsbUrl, parser: parseAdsbLol, name: 'ADSB.lol' },
     { url: openSkyUrl, parser: parseOpenSky, name: 'OpenSky' },
   ];
 
   for (const source of sources) {
-    for (const proxy of API_CONFIG.CORS_PROXIES) {
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 10000);
-        const res = await fetch(`${proxy}${encodeURIComponent(source.url)}`, {
-          signal: controller.signal,
-        });
-        clearTimeout(timeout);
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
+      const res = await fetch(source.url, { signal: controller.signal });
+      clearTimeout(timeout);
 
-        if (res.ok) {
-          const data = await res.json();
-          const aircraft = source.parser(data);
-          if (aircraft.length > 0) return aircraft;
-        }
-      } catch { continue; }
+      if (res.ok) {
+        const data = await res.json();
+        const aircraft = source.parser(data);
+        if (aircraft.length > 0) return aircraft;
+      }
+    } catch (err) {
+      console.warn(`[aircraft] ${source.name} failed:`, err.message);
     }
-    console.warn(`[aircraft] ${source.name} failed via all proxies`);
   }
 
   return [];

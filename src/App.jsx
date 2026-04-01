@@ -21,7 +21,6 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage/SettingsPage'));
 const AlertDetail = lazy(() => import('./pages/AlertDetail/AlertDetail'));
 const Account = lazy(() => import('./pages/Account/Account'));
 const EnergyPrices = lazy(() => import('./pages/EnergyPrices/EnergyPrices'));
-const Timeline = lazy(() => import('./pages/Timeline/Timeline'));
 const About = lazy(() => import('./pages/About/About'));
 
 function RequireAuth({ children }) {
@@ -72,7 +71,7 @@ export default function App() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/account" element={<Account />} />
           <Route path="/energy" element={<EnergyPrices />} />
-          <Route path="/timeline" element={<Timeline />} />
+          <Route path="/timeline" element={<Navigate to="/alerts" replace />} />
           <Route path="/about" element={<About />} />
           <Route path="/alert/:id" element={<AlertDetail />} />
         </Route>

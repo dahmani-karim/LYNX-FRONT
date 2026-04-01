@@ -12,7 +12,8 @@ import { getScoreColor } from '../../services/riskEngine';
 import { findCorrelations, generateInsights } from '../../services/correlationEngine';
 import { getPredictiveAlerts } from '../../services/predictiveEngine';
 import { checkGeofences } from '../../utils/geofencing';
-import { RefreshCw, MapPin, Thermometer, Wind, Droplets, Link2, TrendingUp, Crosshair } from 'lucide-react';
+import { RefreshCw, MapPin, Thermometer, Wind, Droplets, Link2, TrendingUp, Crosshair, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import './Dashboard.scss';
 
 export default function Dashboard() {
@@ -21,12 +22,8 @@ export default function Dashboard() {
   const isPremium = useAuthStore((s) => s.isPremium);
 
   const topAlerts = [...events]
-    .sort((a, b) => {
-      const sevOrder = ['info', 'low', 'medium', 'high', 'critical'];
-      const sevDiff = sevOrder.indexOf(b.severity) - sevOrder.indexOf(a.severity);
-      if (sevDiff !== 0) return sevDiff;
-      return new Date(b.eventDate) - new Date(a.eventDate);
-    })
+    .filter((e) => new Date(e.eventDate).getTime() <= Date.now())
+    .sort((a, b) => new Date(b.eventDate) - new Date(a.eventDate))
     .slice(0, 5);
 
   const moduleKeys = Object.keys(CATEGORIES).filter((k) => k !== 'other');
@@ -122,7 +119,10 @@ export default function Dashboard() {
       {topAlerts.length > 0 && (
         <section>
           <div className="dashboard__alerts-header">
-            <h3 className="dashboard__alerts-title">Alertes actives ({events.length})</h3>
+            <h3 className="dashboard__alerts-title">Alertes récentes ({events.length})</h3>
+            <Link to="/alerts" className="dashboard__alerts-link">
+              Toutes les alertes <ChevronRight size={14} />
+            </Link>
           </div>
           <div className="dashboard__alerts-list">
             {topAlerts.map((event) => (
