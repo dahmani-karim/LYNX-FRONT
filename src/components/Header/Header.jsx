@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { RefreshCw, Menu, X, Home, Map, Bell, BarChart3, Settings, Eye, Radar } from 'lucide-react';
+import { RefreshCw, Menu, X, Home, Map, Bell, BarChart3, Settings, Eye, Radar, Clock } from 'lucide-react';
 import { useAlertStore } from '../../stores/alertStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import LynxLogo from '../LynxLogo/LynxLogo';
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { to: '/alerts', icon: Bell, label: 'Alertes' },
   { to: '/stats', icon: BarChart3, label: 'Stats' },
   { to: '/trackers', icon: Radar, label: 'Trackers' },
+  { to: '/timeline', icon: Clock, label: 'Chronologie' },
   { to: '/settings', icon: Settings, label: 'Réglages' },
 ];
 

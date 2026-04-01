@@ -1,0 +1,187 @@
+.timeline {
+  @include page-container;
+  @include stack($sp-4);
+
+  &__header {
+    @include flex-between;
+    flex-wrap: wrap;
+    gap: $sp-3;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    font-size: $text-xl;
+    font-weight: 700;
+  }
+
+  &__filters {
+    display: flex;
+    gap: $sp-1;
+  }
+
+  &__chip {
+    padding: $sp-1 $sp-3;
+    border-radius: $radius-lg;
+    font-size: $text-xs;
+    font-weight: 500;
+    background: $lynx-surface;
+    color: $lynx-muted;
+    border: 1px solid $lynx-border;
+    @include transition;
+
+    &:hover { color: $lynx-text; }
+
+    &--active {
+      background: $lynx-accent;
+      color: white;
+      border-color: $lynx-accent;
+    }
+  }
+
+  &__count {
+    font-size: $text-sm;
+    color: $lynx-dim;
+  }
+
+  &__empty {
+    text-align: center;
+    padding: $sp-12 0;
+    color: $lynx-muted;
+    font-size: $text-sm;
+
+    p:first-child {
+      font-size: $text-4xl;
+      margin-bottom: $sp-3;
+    }
+  }
+
+  // Groups
+  &__stream {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-4;
+  }
+
+  &__group-header {
+    @include flex-between;
+    width: 100%;
+    padding: $sp-2 $sp-3;
+    background: $lynx-surface;
+    border: 1px solid $lynx-border;
+    border-radius: $radius-lg;
+    @include transition;
+
+    &:hover { background: $lynx-elevated; }
+  }
+
+  &__group-date {
+    font-size: $text-sm;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+
+  &__group-meta {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    color: $lynx-muted;
+  }
+
+  &__group-count {
+    font-size: $text-xs;
+    font-weight: 600;
+    background: $lynx-elevated;
+    padding: 2px 8px;
+    border-radius: $radius-full;
+  }
+
+  // Events list
+  &__events {
+    padding-left: $sp-3;
+  }
+
+  &__event {
+    display: flex;
+    gap: $sp-3;
+    padding: $sp-3 0;
+    @include transition;
+    text-decoration: none;
+    color: inherit;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid rgba($lynx-border, 0.3);
+    }
+
+    &:hover {
+      .timeline__event-title { color: $lynx-accent; }
+    }
+  }
+
+  // Vertical line + dot
+  &__line {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 12px;
+    padding-top: 4px;
+    flex-shrink: 0;
+  }
+
+  &__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.15);
+  }
+
+  // Event body
+  &__event-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__event-top {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    margin-bottom: $sp-1;
+  }
+
+  &__event-time {
+    font-size: $text-xs;
+    font-weight: 600;
+    color: $lynx-muted;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__event-title {
+    font-size: $text-sm;
+    font-weight: 600;
+    @include line-clamp(2);
+    @include transition(color);
+  }
+
+  &__event-meta {
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+    margin-top: $sp-1;
+    font-size: $text-xs;
+    color: $lynx-dim;
+  }
+
+  &__event-cat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+  }
+
+  &__event-source {
+    @include truncate;
+    max-width: 120px;
+  }
+}
