@@ -15,7 +15,7 @@ export const ECOSYSTEM_APPS = [
     emoji: '🏪',
     description: 'Gestion intelligente de vos stocks',
     url: 'https://smartcellar.lacavernedurefractaire.fr',
-    devUrl: 'http://localhost:5173',
+    devUrl: 'https://smartcellar.lacavernedurefractaire.fr',
     color: '#F59E0B',
   },
   {
@@ -24,7 +24,7 @@ export const ECOSYSTEM_APPS = [
     emoji: '🌱',
     description: 'Potager & autoproduction',
     url: 'https://progarden.lacavernedurefractaire.fr',
-    devUrl: 'http://localhost:5174',
+    devUrl: 'https://progarden.lacavernedurefractaire.fr',
     color: '#22c55e',
   },
   {
@@ -33,7 +33,7 @@ export const ECOSYSTEM_APPS = [
     emoji: '🐔',
     description: 'Élevage & autosuffisance animale',
     url: 'https://farmly.lacavernedurefractaire.fr',
-    devUrl: 'http://localhost:5175',
+    devUrl: 'https://farmly.lacavernedurefractaire.fr',
     color: '#8B4513',
   },
   {
@@ -42,7 +42,7 @@ export const ECOSYSTEM_APPS = [
     emoji: '🎒',
     description: 'Scénarios de préparation',
     url: 'https://pret.lacavernedurefractaire.fr',
-    devUrl: 'http://localhost:5177',
+    devUrl: 'https://pret.lacavernedurefractaire.fr',
     color: '#6B8E7A',
   },
 ];
