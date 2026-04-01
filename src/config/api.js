@@ -41,6 +41,7 @@ export const API_CONFIG = {
   },
 
   CORS_PROXIES: [
+    'https://corsproxy.io/?url=',
     'https://api.allorigins.win/raw?url=',
     'https://api.codetabs.com/v1/proxy?quest=',
   ],

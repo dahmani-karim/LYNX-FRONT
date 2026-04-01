@@ -57,25 +57,18 @@
 .landing__nav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   padding: $sp-3 $sp-4;
   flex-shrink: 0;
 
   @include md { padding: $sp-4 $sp-8; }
 }
 
-.landing__logo {
-  @include flex-center;
-  gap: $sp-2;
-  text-decoration: none;
-  color: $lynx-text;
-}
-
 .landing__nav-links {
   display: flex;
   align-items: center;
-  gap: $sp-2;
-  @include md { gap: $sp-4; }
+  gap: $sp-4;
+  @include md { gap: $sp-6; }
 }
 
 .landing__nav-link {
@@ -83,21 +76,7 @@
   color: $lynx-muted;
   text-decoration: none;
   @include transition;
-  display: none;
-  @include md { display: inline; }
   &:hover { color: $lynx-text; }
-}
-
-.landing__nav-cta {
-  font-size: $text-sm;
-  font-weight: 600;
-  color: white;
-  background-color: $lynx-accent;
-  padding: $sp-1-5 $sp-4;
-  border-radius: $radius-lg;
-  text-decoration: none;
-  @include transition;
-  &:hover { filter: brightness(1.1); }
 }
 
 // ── Hero ──
@@ -111,6 +90,10 @@
   padding: $sp-4;
   max-width: 42rem;
   margin: 0 auto;
+}
+
+.landing__hero-logo {
+  margin-bottom: $sp-4;
 }
 
 .landing__badge {

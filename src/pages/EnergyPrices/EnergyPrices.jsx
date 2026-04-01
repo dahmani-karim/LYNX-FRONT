@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { fetchFuelPrices, fetchEnergyPrices } from '../../services/fuelPrices';
+import { useSettingsStore } from '../../stores/settingsStore';
 import Loader from '../../components/Loader/Loader';
-import { Fuel, Zap, Flame, TreePine, Droplets, TrendingUp, TrendingDown, Minus, RefreshCw } from 'lucide-react';
+import { Fuel, Zap, Flame, TreePine, Droplets, TrendingUp, TrendingDown, Minus, RefreshCw, MapPin } from 'lucide-react';
 import './EnergyPrices.scss';
 
 const TYPE_CONFIG = {
@@ -9,6 +10,20 @@ const TYPE_CONFIG = {
   electricity: { icon: Zap, color: '#F59E0B', label: 'Électricité' },
   gas: { icon: Flame, color: '#F97316', label: 'Gaz' },
   wood: { icon: TreePine, color: '#22C55E', label: 'Bois' },
+};
+
+// Rough country detection from coordinates
+function detectCountry(lat, lng) {
+  if (lat >= 41.3 && lat <= 51.1 && lng >= -5.2 && lng <= 9.6) return 'FR';
+  if (lat >= 47.3 && lat <= 55.1 && lng >= 5.9 && lng <= 15.0) return 'DE';
+  if (lat >= 49.5 && lat <= 51.5 && lng >= 2.5 && lng <= 6.4) return 'BE';
+  if (lat >= 36.0 && lat <= 43.8 && lng >= -9.3 && lng <= 3.3) return 'ES';
+  if (lat >= 36.6 && lat <= 47.1 && lng >= 6.6 && lng <= 18.5) return 'IT';
+  return 'FR';
+}
+
+const COUNTRY_NAMES = {
+  FR: 'France', DE: 'Allemagne', BE: 'Belgique', ES: 'Espagne', IT: 'Italie',
 };
 
 function TrendIcon({ trend }) {
@@ -23,12 +38,15 @@ export default function EnergyPrices() {
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'fuel' | 'electricity' | 'gas'
+  const userLocation = useSettingsStore((s) => s.userLocation);
+  const countryCode = detectCountry(userLocation?.lat || 48.85, userLocation?.lng || 2.35);
+  const countryName = COUNTRY_NAMES[countryCode] || 'France';
 
   const loadData = async () => {
     setIsLoading(true);
     const [fuels, energy] = await Promise.allSettled([
-      fetchFuelPrices(),
-      fetchEnergyPrices(),
+      fetchFuelPrices(countryCode),
+      fetchEnergyPrices(countryCode),
     ]);
     setFuelPrices(fuels.status === 'fulfilled' ? fuels.value : []);
     setEnergyPrices(energy.status === 'fulfilled' ? energy.value : []);
@@ -65,7 +83,8 @@ export default function EnergyPrices() {
             Prix Énergie & Carburants
           </h1>
           <p className="energy-prices__subtitle">
-            Fourchettes de prix actuelles en France
+            <MapPin size={14} />
+            Fourchettes de prix actuelles — {countryName}
           </p>
         </div>
         <button

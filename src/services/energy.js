@@ -61,49 +61,45 @@ export async function fetchEnergyData() {
 
 export async function fetchNuclearProduction() {
   try {
-    const url = `${API_CONFIG.ODRE.BASE}${API_CONFIG.ODRE.NUCLEAR}?limit=24&order_by=date_heure%20DESC`;
+    const url = `${API_CONFIG.ODRE.BASE}${API_CONFIG.ODRE.NUCLEAR}?limit=48&order_by=horodate%20DESC`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`ODRÉ Nuclear: ${res.status}`);
     const data = await res.json();
     const records = data.results || [];
 
+    if (records.length < 2) return [];
+
     const alerts = [];
-    const seen = new Set();
+    const latest = records[0];
+    const previous = records[1];
+    const production = latest.production_nette || 0;
+    const prevProd = previous.production_nette || 0;
 
-    for (const r of records) {
-      const plant = r.centrale || r.nom_site || '';
-      if (!plant || seen.has(plant)) continue;
-      seen.add(plant);
-
-      const production = r.puissance_mw || r.production_nette || 0;
-      const capacity = r.puissance_maximale_mw || r.puissance_installee || 0;
-      const ratio = capacity > 0 ? production / capacity : 1;
-
-      // Alert if plant is stopped or producing below 10% capacity
-      if (ratio < 0.1) {
-        const severity = production <= 0 ? 'high' : 'medium';
+    // Alert if production dropped significantly (>15% in one hour)
+    if (prevProd > 0) {
+      const drop = (prevProd - production) / prevProd;
+      if (drop > 0.15) {
+        const severity = drop > 0.3 ? 'high' : 'medium';
         alerts.push({
-          id: `nuclear-${plant}-${Date.now()}`,
+          id: `nuclear-drop-${Date.now()}`,
           type: 'nuclear',
-          title: production <= 0
-            ? `Centrale nucléaire arrêtée — ${plant}`
-            : `Production nucléaire faible — ${plant}`,
-          description: `${plant}: ${production} MW / ${capacity} MW (${Math.round(ratio * 100)}% de capacité).`,
+          title: `Baisse de production nucléaire (${Math.round(drop * 100)}%)`,
+          description: `Production : ${production.toFixed(1)} GWh (précédent : ${prevProd.toFixed(1)} GWh). Baisse de ${Math.round(drop * 100)}% en 1h.`,
           severity,
-          eventDate: r.date_heure ? new Date(r.date_heure).toISOString() : new Date().toISOString(),
-          latitude: r.latitude || 46.6,
-          longitude: r.longitude || 1.9,
+          eventDate: latest.horodate ? new Date(latest.horodate).toISOString() : new Date().toISOString(),
+          latitude: 46.603354,
+          longitude: 1.888334,
           sourceName: 'ODRÉ',
           sourceUrl: 'https://odre.opendatasoft.com/explore/dataset/production-nette-nucleaire/',
           sourceReliability: 95,
-          metadata: { plant, production, capacity, ratio },
+          metadata: { production, previousProduction: prevProd, dropPercent: Math.round(drop * 100) },
         });
       }
     }
 
     return alerts;
-  } catch {
-    console.warn('ODRÉ Nuclear: module indisponible');
+  } catch (err) {
+    console.warn('ODRÉ Nuclear: module indisponible', err.message);
     return [];
   }
 }

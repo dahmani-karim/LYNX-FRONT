@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useAuthStore } from '../../stores/authStore';
 import InstallPrompt from '../../components/InstallPrompt/InstallPrompt';
@@ -6,7 +7,7 @@ import AppSwitcher from '../../components/AppSwitcher/AppSwitcher';
 import { requestPermission } from '../../services/notifications';
 import { fetchZones as apiFetchZones, createZone as apiCreateZone, deleteZone as apiDeleteZone } from '../../services/strapi';
 import {
-  MapPin, Bell, Eye, Trash2, Plus, Shield, ChevronRight, Info, Globe, Loader
+  MapPin, Bell, Eye, Trash2, Plus, ChevronRight, Info, Globe, Loader
 } from 'lucide-react';
 import './SettingsPage.scss';
 
@@ -273,47 +274,16 @@ export default function SettingsPage() {
         </button>
       </section>
 
-      {/* About */}
+      {/* About & Legal */}
       <section className="settings-page__section">
-        <div className="settings-page__section-header">
+        <Link to="/about" className="settings-page__eco-btn">
           <Info size={18} />
-          <h3>À propos</h3>
-        </div>
-        <div className="settings-page__about-text">
-          <p><strong>LYNX</strong> – Voyez ce que les autres ne voient pas</p>
-          <p>Version 1.0.0</p>
-          <p>Plateforme d'anticipation & d'alertes en temps réel</p>
-        </div>
-        <div className="settings-page__sources">
-          <p className="settings-page__sources-label">Sources de données :</p>
-          <div className="settings-page__sources-list">
-            {['USGS', 'Open-Meteo', 'GDACS', 'CERT-FR', 'ODRÉ', 'Statuspage'].map((src) => (
-              <span key={src} className="settings-page__source-tag">{src}</span>
-            ))}
+          <div className="settings-page__eco-body">
+            <h3>À propos & Mentions légales</h3>
+            <p>Guide d'utilisation, CGU, CGV, RGPD</p>
           </div>
-        </div>
-      </section>
-
-      {/* Legal */}
-      <section className="settings-page__legal">
-        <div className="settings-page__legal-inner">
-          <Shield size={16} className="settings-page__legal-icon" />
-          <div className="settings-page__legal-text">
-            <p className="settings-page__legal-title">Avertissement</p>
-            <p>
-              LYNX fournit des informations à titre indicatif uniquement. Cette application ne se substitue
-              en aucun cas aux autorités officielles, services d'urgence ou organismes compétents.
-            </p>
-            <p>
-              En cas de danger immédiat, contactez le <strong>112</strong> (urgences européennes)
-              ou le <strong>114</strong> (urgences par SMS).
-            </p>
-            <p>
-              Les données affichées proviennent de sources publiques et peuvent être incomplètes ou retardées.
-              Aucune garantie n'est apportée quant à l'exactitude des alertes.
-            </p>
-          </div>
-        </div>
+          <ChevronRight size={16} className="settings-page__eco-chevron" />
+        </Link>
       </section>
 
       <p className="settings-page__copyright">© 2026 La Caverne du Réfractaire – Tous droits réservés</p>

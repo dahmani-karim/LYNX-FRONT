@@ -26,22 +26,22 @@ export default function Landing() {
       <div className="landing__content">
         {/* Nav bar */}
         <nav className="landing__nav">
-          <Link to="/" className="landing__logo">
-            <LynxLogo size={28} />
-          </Link>
-          <div className="landing__nav-links">
+          {/* <div className="landing__nav-links">
             <Link to="/discover" className="landing__nav-link">Découvrir</Link>
             <Link to="/pricing" className="landing__nav-link">Tarifs</Link>
             {isAuthenticated ? (
-              <Link to="/dashboard" className="landing__nav-cta">Dashboard</Link>
+              <Link to="/dashboard" className="landing__nav-link">Dashboard</Link>
             ) : (
-              <Link to="/login" className="landing__nav-cta">Connexion</Link>
+              <Link to="/login" className="landing__nav-link">Connexion</Link>
             )}
-          </div>
+          </div> */}
         </nav>
 
         {/* Hero card */}
         <div className="landing__hero">
+          <div className="landing__hero-logo">
+            <LynxLogo size={72} />
+          </div>
           <div className="landing__badge">
             <Eye size={14} />
             <span>Plateforme OSINT d'anticipation</span>

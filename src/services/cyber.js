@@ -122,7 +122,6 @@ export async function fetchCyberAlerts() {
 async function fetchDataBreaches() {
   const breachSources = [
     'https://www.zataz.com/feed/',
-    'https://www.cybermalveillance.gouv.fr/feed',
   ];
 
   const allBreaches = [];

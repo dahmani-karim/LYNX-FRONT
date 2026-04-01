@@ -24,7 +24,7 @@ export async function fetchGeopolitics() {
         sort: 'DateDesc',
       });
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 8000);
+      const timer = setTimeout(() => controller.abort(), 15000);
       const res = await fetch(`${API_CONFIG.GDELT.DOC_API}?${params}`, { signal: controller.signal });
       clearTimeout(timer);
       if (!res.ok) continue;

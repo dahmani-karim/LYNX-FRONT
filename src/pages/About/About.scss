@@ -1,0 +1,187 @@
+.about {
+  min-height: 100dvh;
+  background-color: $lynx-bg;
+  color: $lynx-text;
+  padding-bottom: $sp-8;
+}
+
+.about__nav {
+  position: sticky;
+  top: 0;
+  z-index: $z-header;
+  background-color: rgba($lynx-bg, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba($lynx-border, 0.3);
+}
+
+.about__nav-inner {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: $sp-3 $sp-4;
+  @include flex-between;
+}
+
+.about__back {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  font-size: $text-sm;
+  font-weight: 600;
+  color: $lynx-muted;
+  text-decoration: none;
+  @include transition;
+  &:hover { color: $lynx-text; }
+}
+
+.about__section {
+  max-width: 48rem;
+  margin: 0 auto $sp-6;
+  padding: 0 $sp-4;
+}
+
+.about__section-header {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  margin-bottom: $sp-4;
+  color: $lynx-accent-light;
+
+  h2 {
+    font-size: $text-lg;
+    font-weight: 700;
+    color: $lynx-text;
+  }
+}
+
+.about__card {
+  @include card;
+  padding: $sp-5;
+  font-size: $text-sm;
+  color: $lynx-muted;
+  line-height: 1.7;
+
+  p { margin-bottom: $sp-2; }
+  p:last-child { margin-bottom: 0; }
+
+  strong { color: $lynx-text; }
+
+  a {
+    color: $lynx-accent-light;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+.about__sources {
+  margin-top: $sp-4;
+  padding-top: $sp-4;
+  border-top: 1px solid rgba($lynx-border, 0.3);
+}
+
+.about__sources-label {
+  font-size: $text-xs;
+  color: $lynx-dim;
+  margin-bottom: $sp-2 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.about__sources-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $sp-1-5;
+}
+
+.about__source-tag {
+  padding: $sp-1 $sp-2;
+  background-color: $lynx-elevated;
+  border-radius: $radius-md;
+  font-size: $text-xs;
+  color: $lynx-muted;
+}
+
+// Guide
+.about__guide {
+  display: grid;
+  gap: $sp-3;
+}
+
+.about__guide-item {
+  @include card;
+  padding: $sp-4;
+  display: flex;
+  gap: $sp-3;
+  align-items: flex-start;
+
+  h4 {
+    font-size: $text-sm;
+    font-weight: 700;
+    margin-bottom: $sp-1;
+  }
+
+  p {
+    font-size: $text-xs;
+    color: $lynx-muted;
+    line-height: 1.6;
+  }
+}
+
+.about__guide-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: $radius-lg;
+  background-color: rgba($lynx-accent, 0.12);
+  color: $lynx-accent-light;
+  @include flex-center;
+  flex-shrink: 0;
+}
+
+// Legal sections
+.about__legal {
+  h4 {
+    font-size: $text-sm;
+    font-weight: 700;
+    color: $lynx-text;
+    margin-top: $sp-4;
+    margin-bottom: $sp-2;
+
+    &:first-child { margin-top: 0; }
+  }
+}
+
+// Disclaimer
+.about__disclaimer {
+  @include card;
+  padding: $sp-5;
+  display: flex;
+  gap: $sp-3;
+  border-left: 3px solid #F59E0B;
+
+  > svg {
+    flex-shrink: 0;
+    color: #F59E0B;
+    margin-top: 2px;
+  }
+}
+
+.about__disclaimer-title {
+  font-size: $text-sm;
+  font-weight: 700;
+  color: #F59E0B;
+  margin-bottom: $sp-2;
+}
+
+.about__disclaimer p:not(.about__disclaimer-title) {
+  font-size: $text-xs;
+  color: $lynx-muted;
+  line-height: 1.6;
+}
+
+.about__copyright {
+  max-width: 48rem;
+  margin: $sp-8 auto 0;
+  padding: 0 $sp-4;
+  text-align: center;
+  font-size: $text-xs;
+  color: $lynx-dim;
+}

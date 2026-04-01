@@ -85,7 +85,15 @@ export const useAuthStore = create(
           // Re-check VIP status on refresh
           if (profile?.vipLynx) {
             set({ isPremium: true, premiumPlan: 'VIP' });
+            return;
           }
+          // Re-check Fourthwall membership
+          try {
+            const res = await checkMembership();
+            if (res?.isPremium || res?.premiumApps?.premiumLynx) {
+              set({ isPremium: true, premiumPlan: res.tierName || 'Fourthwall' });
+            }
+          } catch {}
         } catch {
           // silent fail
         }

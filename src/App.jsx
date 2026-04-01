@@ -22,6 +22,7 @@ const AlertDetail = lazy(() => import('./pages/AlertDetail/AlertDetail'));
 const Account = lazy(() => import('./pages/Account/Account'));
 const EnergyPrices = lazy(() => import('./pages/EnergyPrices/EnergyPrices'));
 const Timeline = lazy(() => import('./pages/Timeline/Timeline'));
+const About = lazy(() => import('./pages/About/About'));
 
 function RequireAuth({ children }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -34,6 +35,12 @@ export default function App() {
   const userLocation = useSettingsStore((s) => s.userLocation);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isPremium = useAuthStore((s) => s.isPremium);
+  const refreshProfile = useAuthStore((s) => s.refreshProfile);
+
+  // Re-check VIP/Premium status on app load
+  useEffect(() => {
+    if (isAuthenticated) refreshProfile();
+  }, [isAuthenticated, refreshProfile]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -66,6 +73,7 @@ export default function App() {
           <Route path="/account" element={<Account />} />
           <Route path="/energy" element={<EnergyPrices />} />
           <Route path="/timeline" element={<Timeline />} />
+          <Route path="/about" element={<About />} />
           <Route path="/alert/:id" element={<AlertDetail />} />
         </Route>
 

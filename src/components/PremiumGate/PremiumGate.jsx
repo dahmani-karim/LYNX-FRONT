@@ -9,16 +9,17 @@ export default function PremiumGate({ feature, children }) {
 
   if (isPremium) return children;
 
+  // Don't render real children — prevents devtools bypass
   return (
     <div className="premium-gate" onClick={() => navigate('/pricing')}>
       <div className="premium-gate__overlay">
-        <Lock size={20} />
+        <Lock size={24} />
         <p className="premium-gate__label">
           <Crown size={14} /> Premium requis
         </p>
         {feature && <p className="premium-gate__feature">{feature}</p>}
+        <p className="premium-gate__cta">Voir les offres →</p>
       </div>
-      <div className="premium-gate__blur">{children}</div>
     </div>
   );
 }
