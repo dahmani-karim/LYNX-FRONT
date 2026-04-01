@@ -1,17 +1,10 @@
 import { create } from 'zustand';
-import { fetchEarthquakes } from '../services/earthquakes';
+import { fetchGlobalAlerts } from '../services/globalAlerts';
 import { fetchWeather } from '../services/weather';
-import { fetchGDACSEvents } from '../services/gdacs';
-import { fetchCyberAlerts } from '../services/cyber';
-import { fetchEnergyData, fetchNuclearProduction } from '../services/energy';
-import { fetchServiceStatuses } from '../services/status';
-import { fetchConflicts } from '../services/conflicts';
 import { fetchAirQuality } from '../services/airQuality';
 import { fetchFires } from '../services/fires';
-import { fetchSpaceWeather } from '../services/spaceWeather';
-import { fetchHealthAlerts } from '../services/health';
-import { fetchGeopolitics } from '../services/geopolitics';
-import { fetchRadiationData } from '../services/radiation';
+import { fetchServiceStatuses } from '../services/status';
+import { fetchNuclearProduction } from '../services/energy';
 import { calculateRiskScores } from '../services/riskEngine';
 import { notifyNewAlerts } from '../services/notifications';
 
@@ -114,29 +107,24 @@ export const useAlertStore = create((set, get) => ({
     const errors = {};
     let allEvents = [];
 
+    // 1 appel Strapi (alertes globales pré-traduites) + quelques appels locaux (location-dependent)
     const results = await Promise.allSettled([
-      fetchEarthquakes(),
+      fetchGlobalAlerts({ pageSize: 200, lang: 'fr' }),
       fetchWeather(lat, lng),
-      fetchGDACSEvents(),
-      fetchCyberAlerts(),
-      fetchEnergyData(),
-      fetchServiceStatuses(),
-      fetchConflicts(),
       fetchAirQuality(lat, lng),
       fetchFires(lat, lng),
-      fetchSpaceWeather(),
-      fetchHealthAlerts(),
-      fetchGeopolitics(),
-      fetchRadiationData(),
+      fetchServiceStatuses(),
       fetchNuclearProduction(),
     ]);
 
+    // [0] Alertes globales depuis Strapi (séismes, conflits, géopolitique, GDACS, cyber, énergie, santé, radiation, météo spatiale, feux globaux, statut)
     if (results[0].status === 'fulfilled') {
       allEvents.push(...results[0].value);
     } else {
-      errors.earthquake = results[0].reason?.message;
+      errors.global = results[0].reason?.message;
     }
 
+    // [1] Météo locale
     let weatherData = null;
     if (results[1].status === 'fulfilled') {
       weatherData = results[1].value;
@@ -145,79 +133,34 @@ export const useAlertStore = create((set, get) => ({
       errors.weather = results[1].reason?.message;
     }
 
+    // [2] Qualité de l'air locale
     if (results[2].status === 'fulfilled') {
       allEvents.push(...results[2].value);
     } else {
-      errors.disaster = results[2].reason?.message;
+      errors.air_quality = results[2].reason?.message;
     }
 
+    // [3] Feux locaux (FIRMS — autour position utilisateur)
     if (results[3].status === 'fulfilled') {
       allEvents.push(...results[3].value);
     } else {
-      errors.cyber = results[3].reason?.message;
+      errors.fire = results[3].reason?.message;
     }
 
-    if (results[4].status === 'fulfilled') {
-      allEvents.push(...results[4].value);
-    } else {
-      errors.energy = results[4].reason?.message;
-    }
-
+    // [4] Statut services (GitHub, Cloudflare — pour l'UI serviceStatuses)
     let serviceStatuses = [];
+    if (results[4].status === 'fulfilled') {
+      serviceStatuses = results[4].value.services;
+      allEvents.push(...results[4].value.alerts);
+    } else {
+      errors.blackout = results[4].reason?.message;
+    }
+
+    // [5] Production nucléaire
     if (results[5].status === 'fulfilled') {
-      serviceStatuses = results[5].value.services;
-      allEvents.push(...results[5].value.alerts);
+      allEvents.push(...results[5].value);
     } else {
-      errors.blackout = results[5].reason?.message;
-    }
-
-    if (results[6].status === 'fulfilled') {
-      allEvents.push(...results[6].value);
-    } else {
-      errors.conflict = results[6].reason?.message;
-    }
-
-    if (results[7].status === 'fulfilled') {
-      allEvents.push(...results[7].value);
-    } else {
-      errors.air_quality = results[7].reason?.message;
-    }
-
-    if (results[8].status === 'fulfilled') {
-      allEvents.push(...results[8].value);
-    } else {
-      errors.fire = results[8].reason?.message;
-    }
-
-    if (results[9].status === 'fulfilled') {
-      allEvents.push(...results[9].value);
-    } else {
-      errors.space_weather = results[9].reason?.message;
-    }
-
-    if (results[10].status === 'fulfilled') {
-      allEvents.push(...results[10].value);
-    } else {
-      errors.health = results[10].reason?.message;
-    }
-
-    if (results[11].status === 'fulfilled') {
-      allEvents.push(...results[11].value);
-    } else {
-      errors.social = results[11].reason?.message;
-      errors.fuel = results[11].reason?.message;
-    }
-
-    if (results[12].status === 'fulfilled') {
-      allEvents.push(...results[12].value);
-    } else {
-      errors.radiation = results[12].reason?.message;
-    }
-
-    if (results[13].status === 'fulfilled') {
-      allEvents.push(...results[13].value);
-    } else {
-      errors.nuclear = results[13].reason?.message;
+      errors.nuclear = results[5].reason?.message;
     }
 
     const uniqueEvents = Array.from(
