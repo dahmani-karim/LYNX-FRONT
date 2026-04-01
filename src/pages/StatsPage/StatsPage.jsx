@@ -3,6 +3,8 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pi
 import { useAlertStore } from '../../stores/alertStore';
 import { CATEGORIES, SEVERITY_LEVELS } from '../../config/categories';
 import { getScoreColor } from '../../services/riskEngine';
+import { generateReport } from '../../utils/pdfExport';
+import { FileDown } from 'lucide-react';
 import './StatsPage.scss';
 
 export default function StatsPage() {
@@ -84,7 +86,16 @@ export default function StatsPage() {
 
   return (
     <div className="stats-page">
-      <h1 className="stats-page__title">Statistiques</h1>
+      <div className="stats-page__header">
+        <h1 className="stats-page__title">Statistiques</h1>
+        <button
+          className="stats-page__export-btn"
+          onClick={() => generateReport(events, riskScores)}
+        >
+          <FileDown size={16} />
+          Export PDF
+        </button>
+      </div>
 
       {/* Summary */}
       <div className="stats-page__summary">

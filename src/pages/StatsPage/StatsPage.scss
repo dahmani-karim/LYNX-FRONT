@@ -2,9 +2,29 @@
   @include page-container;
   @include stack($sp-5);
 
+  &__header {
+    @include flex-between;
+  }
+
   &__title {
     font-size: $text-lg;
     font-weight: 700;
+  }
+
+  &__export-btn {
+    display: flex;
+    align-items: center;
+    gap: $sp-1-5;
+    padding: $sp-2 $sp-3;
+    background: rgba($lynx-accent, 0.15);
+    border: 1px solid rgba($lynx-accent, 0.3);
+    border-radius: $radius-lg;
+    font-size: $text-xs;
+    font-weight: 500;
+    color: $lynx-accent;
+    @include transition;
+
+    &:hover { background: rgba($lynx-accent, 0.25); }
   }
 
   // Summary cards
