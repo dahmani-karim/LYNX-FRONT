@@ -5,7 +5,8 @@ import { useSettingsStore } from '../../stores/settingsStore';
 import { CATEGORIES, SEVERITY_LEVELS } from '../../config/categories';
 import SeverityBadge from '../../components/SeverityBadge/SeverityBadge';
 import { timeAgo } from '../../utils/date';
-import { Locate, ExternalLink } from 'lucide-react';
+import { Locate, ExternalLink, Layers } from 'lucide-react';
+import HeatmapLayer from '../../components/HeatmapLayer/HeatmapLayer';
 import './MapPage.scss';
 
 const DARK_TILES = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
@@ -44,6 +45,7 @@ export default function MapPage() {
   const events = useAlertStore((s) => s.events);
   const userLocation = useSettingsStore((s) => s.userLocation);
   const [activeCategories, setActiveCategories] = useState(new Set());
+  const [showHeatmap, setShowHeatmap] = useState(false);
 
   const filteredEvents = useMemo(() => {
     let items = events.filter((e) => e.latitude && e.longitude);
@@ -52,6 +54,15 @@ export default function MapPage() {
     }
     return items;
   }, [events, activeCategories]);
+
+  const heatPoints = useMemo(() => {
+    const intensityMap = { info: 0.2, low: 0.3, medium: 0.5, high: 0.8, critical: 1.0 };
+    return filteredEvents.map((e) => [
+      e.latitude,
+      e.longitude,
+      intensityMap[e.severity] || 0.3,
+    ]);
+  }, [filteredEvents]);
 
   const toggleCategory = (catId) => {
     setActiveCategories((prev) => {
@@ -71,6 +82,13 @@ export default function MapPage() {
     <div className="map-page">
       {/* Filter chips */}
       <div className="map-page__filters">
+        <button
+          onClick={() => setShowHeatmap(!showHeatmap)}
+          className={`map-page__chip ${showHeatmap ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
+        >
+          <Layers size={14} />
+          Heatmap
+        </button>
         {availableCategories.map((cat) => {
           const isActive = activeCategories.size === 0 || activeCategories.has(cat.id);
           const count = events.filter((e) => e.type === cat.id).length;
@@ -96,6 +114,8 @@ export default function MapPage() {
         zoomControl={false}
       >
         <TileLayer url={DARK_TILES} attribution={DARK_ATTRIBUTION} />
+
+        {showHeatmap && <HeatmapLayer points={heatPoints} />}
 
         {filteredEvents.map((event) => {
           const cat = CATEGORIES[event.type] || CATEGORIES.other;
