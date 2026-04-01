@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useAlertStore } from '../../stores/alertStore';
+import { useSavedAlertStore } from '../../stores/savedAlertStore';
+import { useAuthStore } from '../../stores/authStore';
 import AlertCard from '../../components/AlertCard/AlertCard';
 import Loader from '../../components/Loader/Loader';
 import { CATEGORIES } from '../../config/categories';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Bookmark, Radio } from 'lucide-react';
 import './AlertsPage.scss';
 
 const TIME_RANGES = [
@@ -25,10 +27,14 @@ const SEVERITY_OPTIONS = [
 
 export default function AlertsPage() {
   const { isLoading, filters, setFilter, getFilteredEvents, resetFilters } = useAlertStore();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const { savedAlerts, fetchSaved } = useSavedAlertStore();
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [tab, setTab] = useState('live'); // 'live' | 'saved'
 
   const filteredEvents = getFilteredEvents();
+  const displayedEvents = tab === 'saved' ? savedAlerts : filteredEvents;
 
   const handleSearch = (q) => {
     setSearchQuery(q);
@@ -48,6 +54,29 @@ export default function AlertsPage() {
 
   return (
     <div className="alerts-page">
+      {/* Tabs */}
+      {isAuthenticated && (
+        <div className="alerts-page__tabs">
+          <button
+            onClick={() => setTab('live')}
+            className={`alerts-page__tab ${tab === 'live' ? 'alerts-page__tab--active' : ''}`}
+          >
+            <Radio size={14} />
+            En direct
+          </button>
+          <button
+            onClick={() => { setTab('saved'); fetchSaved(); }}
+            className={`alerts-page__tab ${tab === 'saved' ? 'alerts-page__tab--active' : ''}`}
+          >
+            <Bookmark size={14} />
+            Sauvegardées
+            {savedAlerts.length > 0 && (
+              <span className="alerts-page__tab-badge">{savedAlerts.length}</span>
+            )}
+          </button>
+        </div>
+      )}
+
       {/* Search bar */}
       <div className="alerts-page__search-row">
         <div className="alerts-page__search-wrap">
@@ -74,7 +103,7 @@ export default function AlertsPage() {
       </div>
 
       {/* Filters panel */}
-      {showFilters && (
+      {showFilters && tab === 'live' && (
         <div className="alerts-page__filters">
           <div>
             <p className="alerts-page__filter-label">Période</p>
@@ -136,27 +165,33 @@ export default function AlertsPage() {
       {/* Results count */}
       <div className="alerts-page__results">
         <p className="alerts-page__results-count">
-          {filteredEvents.length} alerte{filteredEvents.length > 1 ? 's' : ''}
+          {displayedEvents.length} alerte{displayedEvents.length > 1 ? 's' : ''}
         </p>
-        <p className="alerts-page__results-period">
-          Période : {TIME_RANGES.find((t) => t.value === filters.timeRange)?.label}
-        </p>
+        {tab === 'live' && (
+          <p className="alerts-page__results-period">
+            Période : {TIME_RANGES.find((t) => t.value === filters.timeRange)?.label}
+          </p>
+        )}
       </div>
 
       {/* Alert list */}
-      {isLoading && filteredEvents.length === 0 ? (
+      {isLoading && displayedEvents.length === 0 ? (
         <Loader text="Chargement des alertes..." />
-      ) : filteredEvents.length === 0 ? (
+      ) : displayedEvents.length === 0 ? (
         <div className="alerts-page__empty">
-          <p className="alerts-page__empty-icon">🟢</p>
-          <p className="alerts-page__empty-title">Aucune alerte</p>
+          <p className="alerts-page__empty-icon">{tab === 'saved' ? '📌' : '🟢'}</p>
+          <p className="alerts-page__empty-title">
+            {tab === 'saved' ? 'Aucune alerte sauvegardée' : 'Aucune alerte'}
+          </p>
           <p className="alerts-page__empty-hint">
-            {hasActiveFilters ? 'Modifiez vos filtres' : 'Tout est calme pour le moment'}
+            {tab === 'saved'
+              ? 'Sauvegardez des alertes depuis leur page de détail'
+              : hasActiveFilters ? 'Modifiez vos filtres' : 'Tout est calme pour le moment'}
           </p>
         </div>
       ) : (
         <div className="alerts-page__list">
-          {filteredEvents.map((event) => (
+          {displayedEvents.map((event) => (
             <AlertCard key={event.id} event={event} />
           ))}
         </div>

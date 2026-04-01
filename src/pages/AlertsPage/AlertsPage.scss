@@ -2,6 +2,48 @@
   @include page-container;
   @include stack($sp-4);
 
+  // Tabs
+  &__tabs {
+    display: flex;
+    gap: $sp-1;
+    background: $lynx-surface;
+    border-radius: $radius-xl;
+    padding: 3px;
+    border: 1px solid $lynx-border;
+  }
+
+  &__tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $sp-1-5;
+    padding: $sp-2;
+    border-radius: $radius-lg;
+    font-size: $text-sm;
+    font-weight: 500;
+    color: $lynx-muted;
+    @include transition;
+
+    &:hover { color: $lynx-text; }
+
+    &--active {
+      background: $lynx-elevated;
+      color: $lynx-text;
+    }
+  }
+
+  &__tab-badge {
+    background: $lynx-accent;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: $radius-full;
+    min-width: 18px;
+    text-align: center;
+  }
+
   // Search bar
   &__search-row {
     display: flex;

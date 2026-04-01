@@ -195,6 +195,29 @@
     gap: $sp-3;
   }
 
+  &__save-btn {
+    flex: 1;
+    @include flex-center;
+    gap: $sp-2;
+    padding: $sp-2-5;
+    background-color: $lynx-surface;
+    border: 1px solid $lynx-border;
+    border-radius: $radius-xl;
+    font-size: $text-sm;
+    font-weight: 500;
+    @include transition;
+
+    &:hover { background-color: $lynx-elevated; }
+
+    &--active {
+      background-color: rgba($lynx-warning, 0.15);
+      border-color: rgba($lynx-warning, 0.3);
+      color: $lynx-warning;
+
+      &:hover { background-color: rgba($lynx-warning, 0.25); }
+    }
+  }
+
   &__share-btn {
     flex: 1;
     @include flex-center;

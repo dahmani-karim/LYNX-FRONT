@@ -3,13 +3,17 @@ import { useAlertStore } from '../../stores/alertStore';
 import { CATEGORIES } from '../../config/categories';
 import SeverityBadge from '../../components/SeverityBadge/SeverityBadge';
 import { formatDate, timeAgo } from '../../utils/date';
-import { ArrowLeft, ExternalLink, MapPin, Clock, Shield, Share2 } from 'lucide-react';
+import { ArrowLeft, ExternalLink, MapPin, Clock, Shield, Share2, Bookmark } from 'lucide-react';
+import { useSavedAlertStore } from '../../stores/savedAlertStore';
+import { useAuthStore } from '../../stores/authStore';
 import './AlertDetail.scss';
 
 export default function AlertDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const events = useAlertStore((s) => s.events);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const { isSaved, toggleSave } = useSavedAlertStore();
 
   const event = events.find((e) => e.id === decodeURIComponent(id));
 
@@ -145,6 +149,15 @@ export default function AlertDetail() {
 
       {/* Actions */}
       <div className="alert-detail__actions">
+        {isAuthenticated && (
+          <button
+            onClick={() => toggleSave(event)}
+            className={`alert-detail__save-btn ${isSaved(event.id) ? 'alert-detail__save-btn--active' : ''}`}
+          >
+            <Bookmark size={16} fill={isSaved(event.id) ? 'currentColor' : 'none'} />
+            {isSaved(event.id) ? 'Sauvegardée' : 'Sauvegarder'}
+          </button>
+        )}
         <button onClick={handleShare} className="alert-detail__share-btn">
           <Share2 size={16} />
           Partager
