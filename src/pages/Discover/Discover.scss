@@ -2,6 +2,42 @@
   min-height: 100dvh;
   background-color: $lynx-bg;
   color: $lynx-text;
+
+  // Desktop: widen all inner sections
+  @include lg {
+    .discover__nav-inner,
+    .discover__header,
+    .discover__modules,
+    .discover__section-title,
+    .discover__stats,
+    .discover__features,
+    .discover__premium,
+    .discover__premium-grid,
+    .discover__pwa,
+    .discover__pwa-grid,
+    .discover__ecosystem,
+    .discover__eco-grid {
+      max-width: none;
+      padding-left: $sp-8;
+      padding-right: $sp-8;
+    }
+
+    .discover__modules {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .discover__stats {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .discover__features {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .discover__premium-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
 }
 
 .discover__nav {

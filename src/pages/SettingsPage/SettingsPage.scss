@@ -2,6 +2,15 @@
   @include page-container;
   @include stack($sp-5);
 
+  @include lg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $sp-5;
+    align-items: start;
+
+    > * { grid-column: 1 / -1; }
+  }
+
   &__title {
     font-size: $text-lg;
     font-weight: 700;
@@ -13,6 +22,10 @@
     padding: $sp-4;
 
     > * + * { margin-top: $sp-3; }
+
+    &--half {
+      @include lg { grid-column: span 1; }
+    }
   }
 
   &__section-header {

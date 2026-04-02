@@ -72,6 +72,12 @@
     display: flex;
     flex-direction: column;
     gap: $sp-2;
+
+    @include lg {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: $sp-3;
+    }
   }
 
   &__insight {
@@ -136,6 +142,12 @@
     display: flex;
     flex-direction: column;
     gap: $sp-2;
+
+    @include lg {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: $sp-3;
+    }
   }
 
   &__corr-card {

@@ -3,6 +3,21 @@
   background-color: $lynx-bg;
   color: $lynx-text;
   padding: $sp-8 0;
+
+  // Desktop: widen all sections
+  @include lg {
+    .about__nav-inner,
+    .about__section,
+    .about__copyright {
+      max-width: none;
+      padding-left: $sp-8;
+      padding-right: $sp-8;
+    }
+
+    .about__guide {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
 }
 
 .about__nav {

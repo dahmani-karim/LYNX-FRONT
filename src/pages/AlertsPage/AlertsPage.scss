@@ -178,6 +178,17 @@
   // Alert list
   &__list {
     > * + * { margin-top: $sp-2; }
+
+    @include lg {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: $sp-3;
+      > * + * { margin-top: 0; }
+    }
+
+    @include xl {
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
 
   // Empty state

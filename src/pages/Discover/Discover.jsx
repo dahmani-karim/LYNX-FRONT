@@ -132,10 +132,10 @@ const MODULES = [
     id: 'blackout',
     icon: Wifi,
     color: '#6366F1',
-    title: 'Pannes & Services',
-    source: 'Status Pages',
-    desc: 'Monitoring des grandes plateformes : GitHub, Cloudflare et services critiques. Détection des incidents majeurs.',
-    features: ['GitHub Status', 'Cloudflare Status', 'Détection pannes', 'Historique incidents'],
+    title: 'Pannes & Coupures Internet',
+    source: 'Status Pages / IODA',
+    desc: 'Monitoring des grandes plateformes et détection des coupures internet nationales via IODA (Georgia Tech). 20 pays surveillés.',
+    features: ['GitHub / Cloudflare Status', 'Coupures internet (IODA)', '20 pays monitorés', 'Historique incidents'],
   },
   {
     id: 'social',
@@ -158,7 +158,7 @@ const MODULES = [
 ];
 
 const STATS = [
-  { value: '14+', label: 'Sources de données' },
+  { value: '17+', label: 'Sources de données' },
   { value: '24/7', label: 'Monitoring continu' },
   { value: '16', label: 'Catégories de risque' },
   { value: '5 min', label: 'Rafraîchissement' },
@@ -232,6 +232,34 @@ export default function Discover() {
           <div>
             <h4>Alertes en temps réel</h4>
             <p>Notifications push pour les événements critiques dans vos zones surveillées.</p>
+          </div>
+        </div>
+        <div className="discover__feature-item">
+          <Globe size={20} />
+          <div>
+            <h4>Dossier pays & choropleth</h4>
+            <p>Carte mondiale des niveaux de risque par pays avec dossier détaillé par nation.</p>
+          </div>
+        </div>
+        <div className="discover__feature-item">
+          <Satellite size={20} />
+          <div>
+            <h4>Imagerie satellite NASA</h4>
+            <p>Couches NASA GIBS et terminateur jour/nuit en temps réel sur la carte interactive.</p>
+          </div>
+        </div>
+        <div className="discover__feature-item">
+          <Filter size={20} />
+          <div>
+            <h4>Triage FLASH / PRIORITY</h4>
+            <p>Classification automatique des alertes par urgence grâce au Delta Engine.</p>
+          </div>
+        </div>
+        <div className="discover__feature-item">
+          <Monitor size={20} />
+          <div>
+            <h4>News Ticker & Delta</h4>
+            <p>Bandeau d'actualité défilant et panneau de variation des alertes en temps réel.</p>
           </div>
         </div>
       </section>

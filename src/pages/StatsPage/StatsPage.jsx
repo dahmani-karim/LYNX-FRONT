@@ -189,7 +189,7 @@ export default function StatsPage() {
       </section>
 
       {/* Category breakdown */}
-      <section className="stats-page__section">
+      <section className="stats-page__section stats-page__section--half">
         <h3 className="stats-page__section-title" style={{ marginBottom: '0.75rem' }}>Répartition par catégorie</h3>
         {categoryData.length > 0 ? (
           <div className="stats-page__cat-row">
@@ -218,7 +218,7 @@ export default function StatsPage() {
       </section>
 
       {/* Severity breakdown */}
-      <section className="stats-page__section">
+      <section className="stats-page__section stats-page__section--half">
         <h3 className="stats-page__section-title" style={{ marginBottom: '0.75rem' }}>Répartition par sévérité</h3>
         {severityData.length > 0 ? (
           <ResponsiveContainer width="100%" height={140}>

@@ -294,7 +294,7 @@ export default function SettingsPage() {
       </section>
 
       {/* Notifications */}
-      <section className="settings-page__section">
+      <section className="settings-page__section settings-page__section--half">
         <div className="settings-page__section-header">
           <Bell size={18} />
           <h3>Notifications</h3>
@@ -329,7 +329,7 @@ export default function SettingsPage() {
       </section>
 
       {/* Sons */}
-      <section className="settings-page__section">
+      <section className="settings-page__section settings-page__section--half">
         <div className="settings-page__section-header">
           {soundEnabled !== false ? <Volume2 size={18} /> : <VolumeX size={18} />}
           <h3>Sons de notification</h3>

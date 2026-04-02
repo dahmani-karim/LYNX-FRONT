@@ -2,6 +2,15 @@
   @include page-container;
   @include stack($sp-4);
 
+  @include lg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $sp-5;
+    align-items: start;
+
+    > * { grid-column: 1 / -1; }
+  }
+
   // Back button
   &__back {
     display: flex;
@@ -78,6 +87,15 @@
     color: $lynx-dim;
   }
 
+  &__tier {
+    font-size: 0.625rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: $radius-full;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
   &__title {
     font-size: $text-lg;
     font-weight: 700;
@@ -111,6 +129,8 @@
     padding: $sp-4;
 
     > * + * { margin-top: $sp-3; }
+
+    @include lg { grid-column: 2 / 3; grid-row: 2 / 3; }
   }
 
   &__source-title {
@@ -153,6 +173,8 @@
     @include card;
     padding: 0;
     overflow: hidden;
+
+    @include lg { grid-column: 1 / 2; grid-row: 2 / 4; }
   }
 
   &__preview-toggle {

@@ -44,11 +44,20 @@
   border: 1px solid rgba($lynx-border, 0.5);
 }
 
-// Page container
+// Page container — centered on mobile, full width on desktop
 @mixin page-container {
   max-width: 42rem;
   margin: 0 auto;
   padding: $sp-4;
+
+  @include lg {
+    max-width: none;
+    padding: $sp-6 $sp-8;
+  }
+
+  @include xl {
+    padding: $sp-6 $sp-10;
+  }
 }
 
 // Stacked children spacing

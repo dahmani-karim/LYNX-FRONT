@@ -133,6 +133,27 @@ export default function Account() {
         </section>
       )}
 
+      {/* Account info */}
+      <section className="account__section">
+        <h3 className="account__section-title">Informations</h3>
+
+        <div className="account__row">
+          <User size={18} />
+          <div className="account__row-body">
+            <p className="account__row-label">Nom</p>
+            <p className="account__row-value">{user.username}</p>
+          </div>
+        </div>
+
+        <div className="account__row">
+          <Mail size={18} />
+          <div className="account__row-body">
+            <p className="account__row-label">Email</p>
+            <p className="account__row-value">{user.email}</p>
+          </div>
+        </div>
+      </section>
+
       {/* Settings summary */}
       <section className="account__section">
         <h3 className="account__section-title">Paramètres rapides</h3>
@@ -162,27 +183,6 @@ export default function Account() {
             <p className="account__row-value">Gérer</p>
           </div>
           <ChevronRight size={16} />
-        </div>
-      </section>
-
-      {/* Account info */}
-      <section className="account__section">
-        <h3 className="account__section-title">Informations</h3>
-
-        <div className="account__row">
-          <User size={18} />
-          <div className="account__row-body">
-            <p className="account__row-label">Nom</p>
-            <p className="account__row-value">{user.username}</p>
-          </div>
-        </div>
-
-        <div className="account__row">
-          <Mail size={18} />
-          <div className="account__row-body">
-            <p className="account__row-label">Email</p>
-            <p className="account__row-value">{user.email}</p>
-          </div>
         </div>
       </section>
 

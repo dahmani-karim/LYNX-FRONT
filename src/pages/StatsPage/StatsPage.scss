@@ -2,6 +2,16 @@
   @include page-container;
   @include stack($sp-5);
 
+  // Desktop: grid for chart sections
+  @include lg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $sp-5;
+    align-items: start;
+
+    > * { grid-column: 1 / -1; }
+  }
+
   &__header {
     @include flex-between;
   }
@@ -39,6 +49,17 @@
     gap: $sp-3;
   }
 
+  // Category breakdown — side-by-side pie + legend on desktop
+  &__cat-row {
+    display: flex;
+    align-items: center;
+    gap: $sp-4;
+
+    @include lg {
+      flex-direction: row;
+    }
+  }
+
   &__summary-card {
     @include card;
     padding: $sp-3;
@@ -61,6 +82,10 @@
   &__section {
     @include card;
     padding: $sp-4;
+
+    &--half {
+      @include lg { grid-column: span 1; }
+    }
   }
 
   &__section-header {
@@ -127,12 +152,6 @@
   }
 
   // Category breakdown
-  &__cat-row {
-    display: flex;
-    align-items: center;
-    gap: $sp-4;
-  }
-
   &__cat-legend {
     flex: 1;
     > * + * { margin-top: $sp-1-5; }

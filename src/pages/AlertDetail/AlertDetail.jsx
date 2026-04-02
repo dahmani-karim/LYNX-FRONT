@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAlertStore } from '../../stores/alertStore';
 import { CATEGORIES } from '../../config/categories';
 import SeverityBadge from '../../components/SeverityBadge/SeverityBadge';
+import { getAlertTier, TIER_CONFIG } from '../../services/deltaEngine';
 import { formatDate, timeAgo } from '../../utils/date';
 import { ArrowLeft, ExternalLink, MapPin, Clock, Shield, Share2, Bookmark, Globe, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
 import { useSavedAlertStore } from '../../stores/savedAlertStore';
@@ -66,6 +67,8 @@ export default function AlertDetail() {
 
   const category = CATEGORIES[event.type] || CATEGORIES.other;
   const Icon = category.icon;
+  const tier = getAlertTier(event);
+  const tierCfg = TIER_CONFIG[tier];
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -98,6 +101,11 @@ export default function AlertDetail() {
           <div className="alert-detail__header-body">
             <div className="alert-detail__meta">
               <SeverityBadge severity={event.severity} size="sm" />
+              {tier !== 'routine' && (
+                <span className="alert-detail__tier" style={{ backgroundColor: tierCfg.bg, color: tierCfg.color }}>
+                  {tierCfg.label}
+                </span>
+              )}
               <span className="alert-detail__category">{category.label}</span>
             </div>
             <h1 className="alert-detail__title">{event.title}</h1>

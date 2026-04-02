@@ -2,10 +2,23 @@
   @include page-container;
   @include stack($sp-5);
 
+  // Desktop: 2-column top row (risk + weather)
+  @include lg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $sp-5;
+    align-items: start;
+
+    // Full-width elements span both columns
+    > * { grid-column: 1 / -1; }
+  }
+
   // Risk score card
   &__risk-card {
     @include card-lg;
     padding: $sp-5;
+
+    @include lg { grid-column: 1 / 2; }
   }
 
   &__risk-header {
@@ -36,6 +49,8 @@
   &__weather {
     @include card-lg;
     padding: $sp-4;
+
+    @include lg { grid-column: 2 / 3; }
   }
 
   &__weather-title {
@@ -92,6 +107,15 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: $sp-2;
+
+    @include lg {
+      grid-template-columns: repeat(5, 1fr);
+      gap: $sp-3;
+    }
+
+    @include xl {
+      grid-template-columns: repeat(8, 1fr);
+    }
   }
 
   &__module-card {
@@ -167,6 +191,13 @@
 
   &__alerts-list {
     > * + * { margin-top: $sp-2; }
+
+    @include lg {
+      display: grid;
+      grid-template-columns: repeat(1, 1fr);
+      gap: $sp-2;
+      > * + * { margin-top: 0; }
+    }
   }
 
   // Errors section

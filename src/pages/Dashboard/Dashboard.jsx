@@ -50,9 +50,12 @@ export default function Dashboard() {
   if (isLoading && events.length === 0) {
     return <Loader text="Analyse des données en cours..." />;
   }
-
+  
   return (
     <div className="dashboard">
+      {/* News Ticker */}
+      <NewsTicker events={events} />
+
       {/* Global Risk Score */}
       <section className="dashboard__risk-card">
         <div className="dashboard__risk-header">
@@ -69,12 +72,6 @@ export default function Dashboard() {
           <ScoreGauge score={riskScores.global} size={140} strokeWidth={10} />
         </div>
       </section>
-
-      {/* News Ticker */}
-      <NewsTicker events={events} />
-
-      {/* Delta Panel */}
-      <DeltaPanel delta={delta} events={events} />
 
       {/* Weather Widget */}
       {weatherData?.current && (
@@ -106,6 +103,9 @@ export default function Dashboard() {
           <p className="dashboard__weather-desc">{weatherData.current.description}</p>
         </section>
       )}
+
+      {/* Delta Panel */}
+      <DeltaPanel delta={delta} events={events} />
 
       {/* Module Scores Grid */}
       <section>
