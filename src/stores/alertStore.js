@@ -6,6 +6,7 @@ import { fetchFires } from '../services/fires';
 import { fetchServiceStatuses } from '../services/status';
 import { fetchNuclearProduction } from '../services/energy';
 import { fetchInternetOutages } from '../services/internetOutages';
+import { fetchSpaceWeather } from '../services/spaceWeather';
 import { calculateRiskScores } from '../services/riskEngine';
 import { useSettingsStore } from './settingsStore';
 import { asyncTranslate } from '../utils/translate';
@@ -21,6 +22,7 @@ export const useAlertStore = create((set, get) => ({
   events: [],
   weatherData: null,
   serviceStatuses: [],
+  spaceWeatherData: [],
   riskScores: {
     global: 0,
     earthquake: 0,
@@ -132,6 +134,7 @@ export const useAlertStore = create((set, get) => ({
       fetchServiceStatuses(),
       fetchNuclearProduction(),
       fetchInternetOutages(),
+      fetchSpaceWeather(),
     ]);
 
     // [0] Alertes globales depuis Strapi (séismes, conflits, géopolitique, GDACS, cyber, énergie, santé, radiation, météo spatiale, feux globaux, statut)
@@ -187,6 +190,15 @@ export const useAlertStore = create((set, get) => ({
       errors.internet_outage = results[6].reason?.message;
     }
 
+    // [7] Space Weather (NOAA SWPC — Kp index, solar flares, CME)
+    let spaceWeatherData = [];
+    if (results[7].status === 'fulfilled') {
+      spaceWeatherData = results[7].value;
+      allEvents.push(...results[7].value);
+    } else {
+      errors.space_weather = results[7].reason?.message;
+    }
+
     const uniqueEvents = Array.from(
       new Map(allEvents.map((e) => [e.id, e])).values()
     );
@@ -232,6 +244,7 @@ export const useAlertStore = create((set, get) => ({
       events: filteredEvents,
       weatherData,
       serviceStatuses,
+      spaceWeatherData,
       riskScores,
       previousGlobalScore: prevScores.global,
       delta,

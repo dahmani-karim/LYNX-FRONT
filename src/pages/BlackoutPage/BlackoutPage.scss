@@ -466,4 +466,87 @@
     color: $lynx-success;
     margin-top: $sp-2;
   }
+
+  // ─── Solar Weather (Kp gauge) ─────────────────────
+  &__solar-content {
+    padding: $sp-3;
+    @include stack($sp-3);
+  }
+
+  &__kp-gauge {
+    @include stack($sp-2);
+    padding: $sp-3;
+    border-radius: $radius-lg;
+    background: rgba($lynx-surface, 0.5);
+    border: 1px solid rgba($lynx-border, 0.4);
+  }
+
+  &__kp-bar {
+    display: flex;
+    gap: 2px;
+    height: 2rem;
+    border-radius: $radius-md;
+    overflow: hidden;
+  }
+
+  &__kp-segment {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.25;
+    transition: opacity 0.3s, transform 0.2s;
+    position: relative;
+
+    &--green  { background: $lynx-success; }
+    &--yellow { background: #eab308; }
+    &--orange { background: $lynx-warning; }
+    &--red    { background: $lynx-danger; }
+
+    &--active {
+      opacity: 1;
+    }
+  }
+
+  &__kp-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: rgba(0, 0, 0, 0.7);
+  }
+
+  &__kp-info {
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+    flex-wrap: wrap;
+  }
+
+  &__kp-value {
+    font-size: $text-lg;
+    font-weight: 800;
+    font-family: monospace;
+
+    &--low      { color: $lynx-success; }
+    &--medium   { color: #eab308; }
+    &--high     { color: $lynx-warning; }
+    &--critical { color: $lynx-danger; }
+  }
+
+  &__kp-desc {
+    font-size: $text-xs;
+    color: $lynx-dim;
+  }
+
+  &__solar-alerts {
+    @include stack($sp-2);
+  }
+
+  &__solar-subtitle {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    font-size: $text-sm;
+    font-weight: 600;
+    color: $lynx-warning;
+  }
 }

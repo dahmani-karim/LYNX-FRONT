@@ -5,7 +5,7 @@ import { timeAgo } from '../../utils/date';
 import {
   Wifi, WifiOff, Cloud, Globe, MessageCircle, Server,
   CheckCircle, AlertTriangle, XCircle, HelpCircle, ExternalLink, ShieldAlert,
-  CreditCard, Wrench, Truck, Heart, ChevronDown, ChevronUp
+  CreditCard, Wrench, Truck, Heart, ChevronDown, ChevronUp, Sun, Zap
 } from 'lucide-react';
 import './BlackoutPage.scss';
 
@@ -69,10 +69,11 @@ function getSeverityColor(sev) {
 export default function BlackoutPage() {
   const serviceStatuses = useAlertStore((s) => s.serviceStatuses);
   const events = useAlertStore((s) => s.events);
+  const spaceWeatherData = useAlertStore((s) => s.spaceWeatherData);
   const lastFetch = useAlertStore((s) => s.lastFetch);
   const [collapsedCats, setCollapsedCats] = useState(() => {
     const all = Object.keys(SERVICE_CATEGORIES);
-    all.push('ioda');
+    all.push('ioda', 'solar');
     return new Set(all);
   });
 
@@ -91,6 +92,11 @@ export default function BlackoutPage() {
   // Separate IODA alerts from service status alerts
   const iodaAlerts = useMemo(() => blackoutAlerts.filter((e) => e.sourceName === 'IODA'), [blackoutAlerts]);
   const serviceAlerts = useMemo(() => blackoutAlerts.filter((e) => e.sourceName !== 'IODA'), [blackoutAlerts]);
+
+  // Space weather: extract Kp event and alert events
+  const kpEvent = useMemo(() => (spaceWeatherData || []).find((e) => e.metadata?.kp_index != null), [spaceWeatherData]);
+  const solarAlerts = useMemo(() => (spaceWeatherData || []).filter((e) => !e.metadata?.kp_index), [spaceWeatherData]);
+  const kpValue = kpEvent?.metadata?.kp_index ?? null;
 
   // Build country status map from IODA alerts
   const countryStatus = useMemo(() => {
@@ -308,6 +314,101 @@ export default function BlackoutPage() {
             {iodaAlerts.length === 0 && (
               <p className="blackout-page__ioda-ok">
                 <CheckCircle size={14} /> Aucune perturbation internet détectée sur les {IODA_COUNTRIES.length} pays surveillés
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Solar Weather — NOAA SWPC */}
+      <div className="blackout-page__cat-group">
+        <button
+          className="blackout-page__cat-header"
+          onClick={() => toggleCategory('solar')}
+        >
+          <Sun size={16} className="blackout-page__cat-icon" />
+          <span className="blackout-page__cat-label">Météo Spatiale — NOAA SWPC</span>
+          <span className="blackout-page__cat-count">
+            {kpValue != null && kpValue >= 5 ? (
+              <span className="blackout-page__cat-badge blackout-page__cat-badge--danger">Kp {kpValue.toFixed(0)}</span>
+            ) : kpValue != null ? (
+              <span className="blackout-page__cat-badge blackout-page__cat-badge--ok">Kp {kpValue.toFixed(0)}</span>
+            ) : (
+              <span className="blackout-page__cat-badge blackout-page__cat-badge--ok">OK</span>
+            )}
+          </span>
+          {collapsedCats.has('solar') ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+        </button>
+
+        {!collapsedCats.has('solar') && (
+          <div className="blackout-page__solar-content">
+            <p className="blackout-page__ioda-desc">
+              Données temps réel du <a href="https://www.swpc.noaa.gov" target="_blank" rel="noopener noreferrer" className="blackout-page__ioda-link">Space Weather Prediction Center</a> (NOAA) — Tempêtes géomagnétiques, éruptions solaires, Kp index.
+            </p>
+
+            {/* Kp Gauge */}
+            <div className="blackout-page__kp-gauge">
+              <div className="blackout-page__kp-bar">
+                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((level) => (
+                  <div
+                    key={level}
+                    className={`blackout-page__kp-segment blackout-page__kp-segment--${level <= 3 ? 'green' : level <= 4 ? 'yellow' : level <= 6 ? 'orange' : 'red'}${kpValue != null && Math.floor(kpValue) >= level ? ' blackout-page__kp-segment--active' : ''}`}
+                  >
+                    <span className="blackout-page__kp-label">{level}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="blackout-page__kp-info">
+                {kpValue != null ? (
+                  <>
+                    <span className={`blackout-page__kp-value blackout-page__kp-value--${kpValue >= 7 ? 'critical' : kpValue >= 5 ? 'high' : kpValue >= 4 ? 'medium' : 'low'}`}>
+                      Kp {kpValue.toFixed(1)}
+                    </span>
+                    <span className="blackout-page__kp-desc">
+                      {kpValue >= 8 ? '⚠️ Tempête extrême — Risque blackout réseau' :
+                       kpValue >= 7 ? '⚠️ Tempête forte — Perturbations GPS/radio' :
+                       kpValue >= 6 ? '🔶 Tempête modérée — Aurores visibles à basse latitude' :
+                       kpValue >= 5 ? '🟡 Tempête mineure — Activité géomagnétique élevée' :
+                       kpValue >= 4 ? '🟢 Activité légèrement élevée' :
+                       '🟢 Activité normale'}
+                    </span>
+                  </>
+                ) : (
+                  <span className="blackout-page__kp-desc">Données Kp en cours de chargement…</span>
+                )}
+              </div>
+            </div>
+
+            {/* Solar alerts list */}
+            {solarAlerts.length > 0 && (
+              <div className="blackout-page__solar-alerts">
+                <h3 className="blackout-page__solar-subtitle">
+                  <Zap size={14} /> Bulletins SWPC récents ({solarAlerts.length})
+                </h3>
+                {solarAlerts.slice(0, 8).map((alert) => {
+                  const color = getSeverityColor(alert.severity);
+                  return (
+                    <div key={alert.id} className={`blackout-page__incident blackout-page__incident--${color}`}>
+                      <Zap size={16} />
+                      <div className="blackout-page__incident-body">
+                        <p className="blackout-page__incident-title">{alert.title}</p>
+                        <p className="blackout-page__incident-desc">{alert.description?.slice(0, 200)}</p>
+                        <p className="blackout-page__incident-time">{timeAgo(alert.eventDate)}</p>
+                      </div>
+                      {alert.sourceUrl && (
+                        <a href={alert.sourceUrl} target="_blank" rel="noopener noreferrer" className="blackout-page__card-link">
+                          <ExternalLink size={12} />
+                        </a>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {solarAlerts.length === 0 && kpValue != null && kpValue < 4 && (
+              <p className="blackout-page__ioda-ok">
+                <CheckCircle size={14} /> Aucune alerte solaire — Activité géomagnétique calme
               </p>
             )}
           </div>
