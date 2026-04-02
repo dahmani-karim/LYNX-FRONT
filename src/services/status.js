@@ -1,16 +1,14 @@
 import { API_CONFIG } from '../config/api';
 
 const MONITORED_SERVICES = [
-  {
-    name: 'GitHub',
-    category: 'cloud',
-    url: API_CONFIG.STATUS_PAGES.GITHUB,
-  },
-  {
-    name: 'Cloudflare',
-    category: 'internet',
-    url: API_CONFIG.STATUS_PAGES.CLOUDFLARE,
-  },
+  { name: 'GitHub', category: 'cloud', icon: 'github', url: API_CONFIG.STATUS_PAGES.GITHUB },
+  { name: 'Cloudflare', category: 'internet', icon: 'cloudflare', url: API_CONFIG.STATUS_PAGES.CLOUDFLARE },
+  { name: 'Discord', category: 'communication', icon: 'discord', url: API_CONFIG.STATUS_PAGES.DISCORD },
+  { name: 'OpenAI', category: 'cloud', icon: 'openai', url: API_CONFIG.STATUS_PAGES.OPENAI },
+  { name: 'Vercel', category: 'cloud', icon: 'vercel', url: API_CONFIG.STATUS_PAGES.VERCEL },
+  { name: 'Netlify', category: 'cloud', icon: 'netlify', url: API_CONFIG.STATUS_PAGES.NETLIFY },
+  { name: 'Render', category: 'cloud', icon: 'render', url: API_CONFIG.STATUS_PAGES.RENDER },
+  { name: 'Dropbox', category: 'cloud', icon: 'dropbox', url: API_CONFIG.STATUS_PAGES.DROPBOX },
 ];
 
 function statusToSeverity(indicator) {
@@ -43,7 +41,7 @@ export async function fetchServiceStatuses() {
 
       if (indicator !== 'none') {
         results.push({
-          id: `status-${service.name.toLowerCase()}-${Date.now()}`,
+          id: `status-${service.name.toLowerCase()}`,
           type: 'blackout',
           title: `${service.name} : ${description}`,
           description: `Service ${service.name} en état dégradé (${indicator === 'minor' ? 'mineur' : indicator === 'major' ? 'majeur' : indicator === 'critical' ? 'critique' : indicator})`,
@@ -66,6 +64,8 @@ export async function fetchServiceStatuses() {
       return {
         name: service.name,
         category: service.category,
+        icon: service.icon,
+        pageUrl: service.url.replace('/api/v2/status.json', ''),
         status: indicator === 'none' ? 'operational' : indicator,
         description,
         lastChecked: new Date().toISOString(),
@@ -74,6 +74,8 @@ export async function fetchServiceStatuses() {
       return {
         name: service.name,
         category: service.category,
+        icon: service.icon,
+        pageUrl: service.url.replace('/api/v2/status.json', ''),
         status: 'unknown',
         description: 'Impossible de vérifier',
         lastChecked: new Date().toISOString(),

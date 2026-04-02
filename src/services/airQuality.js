@@ -54,7 +54,7 @@ export async function fetchAirQuality(lat, lng) {
     if (so2 != null) parts.push(`SO₂=${so2}µg/m³`);
 
     return [{
-      id: `aq-${lat.toFixed(2)}-${lng.toFixed(2)}-${Date.now()}`,
+      id: `aq-${lat.toFixed(2)}-${lng.toFixed(2)}`,
       type: 'air_quality',
       title: `Qualité de l'air: AQI ${euAqi} — ${label}`,
       description: `Indice européen de qualité de l'air: ${euAqi} (${label}). ${parts.join(', ')}`,

@@ -24,6 +24,7 @@ const Account = lazy(() => import('./pages/Account/Account'));
 const EnergyPrices = lazy(() => import('./pages/EnergyPrices/EnergyPrices'));
 const About = lazy(() => import('./pages/About/About'));
 const AnalysisPage = lazy(() => import('./pages/AnalysisPage/AnalysisPage'));
+const BlackoutPage = lazy(() => import('./pages/BlackoutPage/BlackoutPage'));
 
 function RequireAuth({ children }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -101,6 +102,7 @@ export default function App() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/account" element={<Account />} />
           <Route path="/energy" element={<EnergyPrices />} />
+          <Route path="/blackout" element={<BlackoutPage />} />
           <Route path="/analysis" element={<AnalysisPage />} />
           <Route path="/timeline" element={<Navigate to="/alerts" replace />} />
           <Route path="/about" element={<About />} />

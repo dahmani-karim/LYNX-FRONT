@@ -1,5 +1,5 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAlertStore } from '../../stores/alertStore';
 import { CATEGORIES } from '../../config/categories';
 import SeverityBadge from '../../components/SeverityBadge/SeverityBadge';
@@ -22,6 +22,35 @@ export default function AlertDetail() {
   const [previewLoading, setPreviewLoading] = useState(true);
   const [previewError, setPreviewError] = useState(false);
   const iframeRef = useRef(null);
+  const timeoutRef = useRef(null);
+
+  // Timeout: if iframe doesn't load within 5s, assume blocked
+  useEffect(() => {
+    if (previewOpen && previewLoading && !previewError) {
+      timeoutRef.current = setTimeout(() => {
+        setPreviewLoading(false);
+        setPreviewError(true);
+      }, 5000);
+      return () => clearTimeout(timeoutRef.current);
+    }
+  }, [previewOpen, previewLoading, previewError]);
+
+  const handleIframeLoad = useCallback(() => {
+    clearTimeout(timeoutRef.current);
+    setPreviewLoading(false);
+    // X-Frame-Options blocks still fire onLoad. Detect by checking contentDocument:
+    // - Cross-origin success: contentDocument is null (can't access)
+    // - X-Frame-Options block: browser renders own error page, contentDocument may be accessible
+    try {
+      const doc = iframeRef.current?.contentDocument;
+      // If we CAN read the document, it's same-origin = browser error page = blocked
+      if (doc && doc.URL && !doc.URL.startsWith(event?.sourceUrl?.slice(0, 20))) {
+        setPreviewError(true);
+      }
+    } catch {
+      // SecurityError = cross-origin = loaded OK (or at least rendered external content)
+    }
+  }, [event?.sourceUrl]);
 
   if (!event) {
     return (
@@ -120,11 +149,11 @@ export default function AlertDetail() {
                 </div>
               )}
 
-              {previewError && (
+              {previewError ? (
                 <div className="alert-detail__preview-error">
                   <AlertTriangle size={24} />
                   <p>Aperçu non disponible</p>
-                  <span>Ce site empêche l'intégration dans un cadre externe.</span>
+                  <span>Ce site ne permet pas l'affichage dans un cadre intégré.</span>
                   <a
                     href={event.sourceUrl}
                     target="_blank"
@@ -134,20 +163,33 @@ export default function AlertDetail() {
                     Ouvrir dans un nouvel onglet <ExternalLink size={14} />
                   </a>
                 </div>
+              ) : (
+                <>
+                  <iframe
+                    ref={iframeRef}
+                    src={event.sourceUrl}
+                    title="Aperçu de la source"
+                    sandbox="allow-scripts allow-same-origin"
+                    className="alert-detail__preview-iframe"
+                    onLoad={handleIframeLoad}
+                    onError={() => {
+                      clearTimeout(timeoutRef.current);
+                      setPreviewLoading(false);
+                      setPreviewError(true);
+                    }}
+                  />
+                  {!previewLoading && (
+                    <a
+                      href={event.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="alert-detail__preview-open-link"
+                    >
+                      Ouvrir dans un nouvel onglet <ExternalLink size={12} />
+                    </a>
+                  )}
+                </>
               )}
-
-              <iframe
-                ref={iframeRef}
-                src={event.sourceUrl}
-                title="Aperçu de la source"
-                sandbox="allow-scripts allow-same-origin"
-                className={`alert-detail__preview-iframe ${previewError ? 'alert-detail__preview-iframe--hidden' : ''}`}
-                onLoad={() => setPreviewLoading(false)}
-                onError={() => {
-                  setPreviewLoading(false);
-                  setPreviewError(true);
-                }}
-              />
             </div>
           )}
         </div>

@@ -81,7 +81,7 @@ export async function fetchNuclearProduction() {
       if (drop > 0.15) {
         const severity = drop > 0.3 ? 'high' : 'medium';
         alerts.push({
-          id: `nuclear-drop-${Date.now()}`,
+          id: `nuclear-drop`,
           type: 'nuclear',
           title: `Baisse de production nucléaire (${Math.round(drop * 100)}%)`,
           description: `Production : ${production.toFixed(1)} GWh (précédent : ${prevProd.toFixed(1)} GWh). Baisse de ${Math.round(drop * 100)}% en 1h.`,

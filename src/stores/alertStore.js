@@ -57,7 +57,8 @@ export const useAlertStore = create((set, get) => ({
 
   getFilteredEvents: () => {
     const { events, filters } = get();
-    let filtered = [...events];
+    // Exclure les alertes de type 'blackout' du flux principal (page Blackout Watcher dédiée)
+    let filtered = events.filter((e) => e.type !== 'blackout');
 
     if (filters.categories.length > 0) {
       filtered = filtered.filter((e) => filters.categories.includes(e.type));
@@ -175,10 +176,10 @@ export const useAlertStore = create((set, get) => ({
 
     const riskScores = calculateRiskScores(uniqueEvents);
 
-    // Detect new events by comparing against previous known IDs
+    // Detect new events by comparing against previous known IDs (exclude blackout — separate page)
     const wasFirstFetch = isFirstFetch;
     const prevEventIds = new Set(get().events.map((e) => e.id));
-    const newAlerts = uniqueEvents.filter((e) => !prevEventIds.has(e.id));
+    const newAlerts = uniqueEvents.filter((e) => !prevEventIds.has(e.id) && e.type !== 'blackout');
 
     // Send push notifications for new high/critical alerts (skip first fetch)
     try {

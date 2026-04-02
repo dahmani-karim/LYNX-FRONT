@@ -1,0 +1,262 @@
+.blackout-page {
+  @include page-container;
+  @include stack($sp-4);
+
+  // Header
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+  }
+
+  &__header-icon {
+    width: 3rem;
+    height: 3rem;
+    @include flex-center;
+    border-radius: $radius-xl;
+    background: linear-gradient(135deg, rgba($lynx-iris, 0.2), rgba($lynx-accent, 0.2));
+    color: $lynx-accent;
+  }
+
+  &__title {
+    font-size: $text-lg;
+    font-weight: 700;
+  }
+
+  &__subtitle {
+    font-size: $text-xs;
+    color: $lynx-dim;
+  }
+
+  // Status banner
+  &__banner {
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+    padding: $sp-3 $sp-4;
+    border-radius: $radius-xl;
+    border: 1px solid;
+
+    &--ok {
+      background-color: rgba($lynx-success, 0.08);
+      border-color: rgba($lynx-success, 0.2);
+      color: $lynx-success;
+    }
+
+    &--degraded {
+      background-color: rgba($lynx-warning, 0.08);
+      border-color: rgba($lynx-warning, 0.2);
+      color: $lynx-warning;
+    }
+
+    &--critical {
+      background-color: rgba($lynx-danger, 0.08);
+      border-color: rgba($lynx-danger, 0.2);
+      color: $lynx-danger;
+    }
+
+    &--unknown {
+      background-color: rgba($lynx-dim, 0.08);
+      border-color: rgba($lynx-dim, 0.2);
+      color: $lynx-dim;
+    }
+  }
+
+  &__banner-title {
+    font-size: $text-sm;
+    font-weight: 600;
+  }
+
+  &__banner-sub {
+    font-size: $text-xs;
+    opacity: 0.7;
+  }
+
+  // Section
+  &__section-title {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    font-size: $text-sm;
+    font-weight: 600;
+    color: $lynx-muted;
+    margin-bottom: $sp-3;
+
+    svg { color: $lynx-accent; }
+  }
+
+  // Incidents
+  &__incidents {
+    @include card;
+    padding: $sp-4;
+  }
+
+  &__incident-list {
+    @include stack($sp-2);
+  }
+
+  &__incident {
+    display: flex;
+    gap: $sp-3;
+    padding: $sp-3;
+    border-radius: $radius-lg;
+    border-left: 3px solid;
+
+    &--warning {
+      background-color: rgba($lynx-warning, 0.05);
+      border-left-color: $lynx-warning;
+      svg { color: $lynx-warning; }
+    }
+
+    &--danger, &--critical {
+      background-color: rgba($lynx-danger, 0.05);
+      border-left-color: $lynx-danger;
+      svg { color: $lynx-danger; }
+    }
+
+    svg { flex-shrink: 0; margin-top: 2px; }
+  }
+
+  &__incident-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__incident-title {
+    font-size: $text-sm;
+    font-weight: 600;
+  }
+
+  &__incident-desc {
+    font-size: $text-xs;
+    color: $lynx-muted;
+    margin-top: 2px;
+  }
+
+  &__incident-time {
+    font-size: 10px;
+    color: $lynx-dim;
+    margin-top: $sp-1;
+  }
+
+  // Grid
+  &__grid-section {
+    // no card wrapper — cards are individual
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: $sp-3;
+  }
+
+  &__card {
+    @include card;
+    padding: $sp-3;
+    @include stack($sp-2);
+    @include transition;
+
+    &:hover { border-color: rgba($lynx-accent, 0.3); }
+
+    &--success { border-left: 3px solid $lynx-success; }
+    &--warning { border-left: 3px solid $lynx-warning; }
+    &--danger { border-left: 3px solid $lynx-danger; }
+    &--critical { border-left: 3px solid $lynx-danger; }
+    &--dim { border-left: 3px solid $lynx-dim; }
+  }
+
+  &__card-header {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+
+    svg { color: $lynx-dim; }
+  }
+
+  &__card-name {
+    flex: 1;
+    font-size: $text-sm;
+    font-weight: 600;
+  }
+
+  &__card-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: $radius-full;
+    flex-shrink: 0;
+
+    &--success { background-color: $lynx-success; box-shadow: 0 0 6px rgba($lynx-success, 0.5); }
+    &--warning { background-color: $lynx-warning; box-shadow: 0 0 6px rgba($lynx-warning, 0.5); }
+    &--danger { background-color: $lynx-danger; box-shadow: 0 0 6px rgba($lynx-danger, 0.5); }
+    &--critical { background-color: $lynx-danger; box-shadow: 0 0 6px rgba($lynx-danger, 0.5); animation: pulse-dot 1.5s infinite; }
+    &--dim { background-color: $lynx-dim; }
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  &__card-status {
+    display: flex;
+    align-items: center;
+    gap: $sp-1-5;
+    font-size: $text-xs;
+    font-weight: 500;
+
+    .blackout-page__card--success & { color: $lynx-success; }
+    .blackout-page__card--warning & { color: $lynx-warning; }
+    .blackout-page__card--danger &,
+    .blackout-page__card--critical & { color: $lynx-danger; }
+    .blackout-page__card--dim & { color: $lynx-dim; }
+  }
+
+  &__card-desc {
+    font-size: $text-xs;
+    color: $lynx-muted;
+    line-height: 1.4;
+  }
+
+  &__card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: $sp-1;
+    border-top: 1px solid $lynx-border;
+  }
+
+  &__card-time {
+    font-size: 10px;
+    color: $lynx-dim;
+  }
+
+  &__card-link {
+    color: $lynx-dim;
+    @include transition(color);
+    &:hover { color: $lynx-accent; }
+  }
+
+  // Legend
+  &__legend {
+    display: flex;
+    justify-content: center;
+    gap: $sp-4;
+    padding: $sp-2 0;
+  }
+
+  &__legend-item {
+    display: flex;
+    align-items: center;
+    gap: $sp-1-5;
+    font-size: $text-xs;
+    color: $lynx-dim;
+  }
+
+  // Footer
+  &__footer {
+    text-align: center;
+    font-size: 10px;
+    color: $lynx-dim;
+    padding-bottom: $sp-4;
+  }
+}

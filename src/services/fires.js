@@ -29,7 +29,7 @@ function parseEONET(events, userLat, userLng) {
     const dist = haversine(userLat, userLng, fireLat, fireLng);
 
     return {
-      id: `fire-eonet-${e.id || i}-${Date.now()}`,
+      id: `fire-eonet-${e.id || i}`,
       type: 'fire',
       title: e.title || 'Feu de forêt détecté',
       description: `${e.title || 'Feu'} à ${dist.toFixed(0)}km. Source: ${e.sources?.[0]?.id || 'NASA EONET'}`,
@@ -82,7 +82,7 @@ function parseFireCSV(csv, userLat, userLng) {
     const severity = assessFireSeverity(frp, confidence, dist);
 
     events.push({
-      id: `fire-${i}-${Date.now()}`,
+      id: `fire-${fireLat.toFixed(2)}-${fireLng.toFixed(2)}-${date}`,
       type: 'fire',
       title: `Foyer détecté (FRP: ${frp.toFixed(1)} MW)`,
       description: `Feu à ${dist.toFixed(0)}km. Puissance: ${frp.toFixed(1)} MW, Luminosité: ${brightness.toFixed(0)}K, Confiance: ${confidence}`,

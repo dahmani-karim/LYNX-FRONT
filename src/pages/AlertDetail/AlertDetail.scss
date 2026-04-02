@@ -250,8 +250,20 @@
     height: 28rem;
     border: 0;
     background-color: #fff;
+  }
 
-    &--hidden { display: none; }
+  &__preview-open-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $sp-1-5;
+    padding: $sp-2;
+    font-size: $text-xs;
+    color: $lynx-dim;
+    border-top: 1px solid $lynx-border;
+    @include transition(color);
+
+    &:hover { color: $lynx-accent; }
   }
 
   // Seismic data

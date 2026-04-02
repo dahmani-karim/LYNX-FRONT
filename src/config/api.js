@@ -38,6 +38,12 @@ export const API_CONFIG = {
   STATUS_PAGES: {
     GITHUB: 'https://www.githubstatus.com/api/v2/status.json',
     CLOUDFLARE: 'https://www.cloudflarestatus.com/api/v2/status.json',
+    DISCORD: 'https://discordstatus.com/api/v2/status.json',
+    OPENAI: 'https://status.openai.com/api/v2/status.json',
+    VERCEL: 'https://www.vercel-status.com/api/v2/status.json',
+    NETLIFY: 'https://www.netlifystatus.com/api/v2/status.json',
+    RENDER: 'https://status.render.com/api/v2/status.json',
+    DROPBOX: 'https://status.dropbox.com/api/v2/status.json',
   },
 
   CORS_PROXIES: [
