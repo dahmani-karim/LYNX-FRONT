@@ -48,8 +48,6 @@ export const API_CONFIG = {
     NETLIFY: 'https://www.netlifystatus.com/api/v2/status.json',
     RENDER: 'https://status.render.com/api/v2/status.json',
     DIGITALOCEAN: 'https://status.digitalocean.com/api/v2/status.json',
-    DOCKER: 'https://www.dockerstatus.com/api/v2/status.json',
-    HEROKU: 'https://status.heroku.com/api/v2/status.json',
     // Communication & Réseaux sociaux
     DISCORD: 'https://discordstatus.com/api/v2/status.json',
     SLACK: 'https://status.slack.com/api/v2.0.0/current',
@@ -86,9 +84,8 @@ export const API_CONFIG = {
   },
 
   CORS_PROXIES: [
-    'https://corsproxy.io/?url=',
     'https://api.allorigins.win/raw?url=',
-    'https://api.codetabs.com/v1/proxy?quest=',
+    'https://corsproxy.io/?url=',
   ],
 
   RSS2JSON: 'https://api.rss2json.com/v1/api.json?rss_url=',

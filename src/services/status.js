@@ -25,8 +25,6 @@ const STATUSPAGE_SERVICES = [
   { name: 'Netlify',      category: 'cloud',         url: API_CONFIG.STATUS_PAGES.NETLIFY },
   { name: 'Render',       category: 'cloud',         url: API_CONFIG.STATUS_PAGES.RENDER },
   { name: 'DigitalOcean', category: 'cloud',         url: API_CONFIG.STATUS_PAGES.DIGITALOCEAN },
-  { name: 'Docker',       category: 'cloud',         url: API_CONFIG.STATUS_PAGES.DOCKER },
-  { name: 'Heroku',       category: 'cloud',         url: API_CONFIG.STATUS_PAGES.HEROKU },
   // Communication
   { name: 'Discord',      category: 'communication', url: API_CONFIG.STATUS_PAGES.DISCORD },
   { name: 'Zoom',         category: 'communication', url: API_CONFIG.STATUS_PAGES.ZOOM },
@@ -100,65 +98,76 @@ function indicatorToFrench(indicator) {
 // ─── Statuspage.io fetcher ─────────────────────────────────
 
 async function fetchStatuspageService(service) {
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-    const res = await fetch(service.url, { signal: controller.signal });
-    clearTimeout(timeout);
-    if (!res.ok) throw new Error(`${res.status}`);
-    const data = await res.json();
-
+  const makeResult = (data) => {
     const indicator = data.status?.indicator || 'none';
     const rawDesc = data.status?.description || 'Operational';
-    const description = translateDesc(rawDesc);
-
     return {
       name: service.name,
       category: service.category,
       method: 'statuspage',
       pageUrl: service.url.replace('/api/v2/status.json', '').replace('/api/v2.0.0/current', ''),
       status: indicator === 'none' ? 'operational' : indicator,
-      description,
+      description: translateDesc(rawDesc),
       indicator,
       lastChecked: new Date().toISOString(),
     };
+  };
+
+  // Try direct fetch first
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000);
+    const res = await fetch(service.url, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) return makeResult(await res.json());
   } catch {
-    return {
-      name: service.name,
-      category: service.category,
-      method: 'statuspage',
-      pageUrl: service.url.replace('/api/v2/status.json', '').replace('/api/v2.0.0/current', ''),
-      status: 'unknown',
-      description: 'Impossible de vérifier',
-      indicator: 'unknown',
-      lastChecked: new Date().toISOString(),
-    };
+    // CORS or network error — try proxy
   }
-}
 
-// ─── HTTP ping fetcher (via CORS proxy) ────────────────────
-
-async function fetchPingService(service) {
-  const proxies = API_CONFIG.CORS_PROXIES;
-  let reachable = false;
-
-  for (const proxy of proxies) {
+  // Fallback via CORS proxy
+  for (const proxy of API_CONFIG.CORS_PROXIES) {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 6000);
-      const res = await fetch(`${proxy}${encodeURIComponent(service.url)}`, {
-        method: 'HEAD',
-        signal: controller.signal,
-      });
+      const res = await fetch(`${proxy}${encodeURIComponent(service.url)}`, { signal: controller.signal });
       clearTimeout(timeout);
-      // Consider 2xx and 3xx as reachable
-      if (res.ok || (res.status >= 300 && res.status < 400)) {
-        reachable = true;
-        break;
-      }
+      if (res.ok) return makeResult(await res.json());
     } catch {
       // try next proxy
     }
+  }
+
+  return {
+    name: service.name,
+    category: service.category,
+    method: 'statuspage',
+    pageUrl: service.url.replace('/api/v2/status.json', '').replace('/api/v2.0.0/current', ''),
+    status: 'unknown',
+    description: 'Impossible de vérifier',
+    indicator: 'unknown',
+    lastChecked: new Date().toISOString(),
+  };
+}
+
+// ─── HTTP ping fetcher (no-cors mode — opaque response = reachable) ────
+
+async function fetchPingService(service) {
+  let reachable = false;
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    // mode: 'no-cors' returns an opaque response if server is reachable
+    // A TypeError/AbortError means the server is unreachable
+    await fetch(service.url, {
+      method: 'HEAD',
+      mode: 'no-cors',
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    reachable = true;
+  } catch {
+    // network error → server unreachable
   }
 
   return {
