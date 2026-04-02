@@ -96,8 +96,23 @@ function indicatorToFrench(indicator) {
 }
 
 // ─── Statuspage.io fetcher ─────────────────────────────────
+// Uses allorigins.win/get (JSON wrapper) to bypass CORS — always works
+// because allorigins returns its own CORS headers regardless of the target.
+
+const ALLORIGINS_GET = 'https://api.allorigins.win/get?url=';
 
 async function fetchStatuspageService(service) {
+  const fallbackResult = {
+    name: service.name,
+    category: service.category,
+    method: 'statuspage',
+    pageUrl: service.url.replace('/api/v2/status.json', '').replace('/api/v2.0.0/current', ''),
+    status: 'unknown',
+    description: 'Impossible de vérifier',
+    indicator: 'unknown',
+    lastChecked: new Date().toISOString(),
+  };
+
   const makeResult = (data) => {
     const indicator = data.status?.indicator || 'none';
     const rawDesc = data.status?.description || 'Operational';
@@ -113,62 +128,49 @@ async function fetchStatuspageService(service) {
     };
   };
 
-  // Try direct fetch first
+  // Strategy: use allorigins.win/get which wraps any response in a JSON
+  // envelope { contents: "...", status: { ... } } — always CORS-safe
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6000);
-    const res = await fetch(service.url, { signal: controller.signal });
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    const res = await fetch(
+      `${ALLORIGINS_GET}${encodeURIComponent(service.url)}`,
+      { signal: controller.signal }
+    );
     clearTimeout(timeout);
-    if (res.ok) return makeResult(await res.json());
+    if (!res.ok) return fallbackResult;
+
+    const wrapper = await res.json();
+    if (!wrapper.contents) return fallbackResult;
+
+    const data = JSON.parse(wrapper.contents);
+    return makeResult(data);
   } catch {
-    // CORS or network error — try proxy
+    return fallbackResult;
   }
-
-  // Fallback via CORS proxy
-  for (const proxy of API_CONFIG.CORS_PROXIES) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 6000);
-      const res = await fetch(`${proxy}${encodeURIComponent(service.url)}`, { signal: controller.signal });
-      clearTimeout(timeout);
-      if (res.ok) return makeResult(await res.json());
-    } catch {
-      // try next proxy
-    }
-  }
-
-  return {
-    name: service.name,
-    category: service.category,
-    method: 'statuspage',
-    pageUrl: service.url.replace('/api/v2/status.json', '').replace('/api/v2.0.0/current', ''),
-    status: 'unknown',
-    description: 'Impossible de vérifier',
-    indicator: 'unknown',
-    lastChecked: new Date().toISOString(),
-  };
 }
 
-// ─── HTTP ping fetcher (no-cors mode — opaque response = reachable) ────
+// ─── HTTP ping fetcher (favicon image probe — zero console errors) ─────
+// Loads /favicon.ico as an Image. If the server responds at all (even with
+// an error page), onload or onerror fires quickly → reachable.
+// Only a genuine network failure (DNS, timeout) means unreachable.
+
+function probeViaImage(url, timeoutMs = 6000) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const timer = setTimeout(() => { img.src = ''; resolve(false); }, timeoutMs);
+    const done = (ok) => { clearTimeout(timer); resolve(ok); };
+    img.onload = () => done(true);
+    // onerror fires when server responds but content isn't a valid image
+    // — that still means the server IS reachable
+    img.onerror = () => done(true);
+    // Cache-bust to ensure a real network request
+    img.src = `${url}/favicon.ico?_cb=${Date.now()}`;
+  });
+}
 
 async function fetchPingService(service) {
-  let reachable = false;
-
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-    // mode: 'no-cors' returns an opaque response if server is reachable
-    // A TypeError/AbortError means the server is unreachable
-    await fetch(service.url, {
-      method: 'HEAD',
-      mode: 'no-cors',
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    reachable = true;
-  } catch {
-    // network error → server unreachable
-  }
+  const reachable = await probeViaImage(service.url);
 
   return {
     name: service.name,
