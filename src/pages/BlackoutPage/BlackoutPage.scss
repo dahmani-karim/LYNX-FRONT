@@ -72,6 +72,73 @@
     opacity: 0.7;
   }
 
+  // Top summary: 2 blocks side by side
+  &__top-summary {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $sp-3;
+
+    @include lg {
+      grid-template-columns: 1fr 2fr;
+    }
+  }
+
+  &__degraded-block,
+  &__incidents-block {
+    @include card;
+    padding: $sp-4;
+  }
+
+  &__degraded-list {
+    list-style: none;
+    @include stack($sp-2);
+  }
+
+  &__degraded-item {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    padding: $sp-2 $sp-3;
+    border-radius: $radius-lg;
+    font-size: $text-xs;
+
+    &--warning { background-color: rgba($lynx-warning, 0.06); }
+    &--danger, &--critical { background-color: rgba($lynx-danger, 0.06); }
+    &--dim { background-color: rgba($lynx-dim, 0.06); }
+  }
+
+  &__degraded-name {
+    flex: 1;
+    font-weight: 600;
+  }
+
+  &__degraded-status {
+    font-size: 10px;
+    color: $lynx-dim;
+  }
+
+  &__degraded-ok {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    font-size: $text-xs;
+    color: $lynx-success;
+    padding: $sp-3;
+  }
+
+  &__degraded-ioda {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    margin-top: $sp-2;
+    padding: $sp-2 $sp-3;
+    border-radius: $radius-lg;
+    background-color: rgba($lynx-warning, 0.06);
+    font-size: $text-xs;
+    color: $lynx-warning;
+    font-weight: 500;
+  }
+
   // Section
   &__section-title {
     display: flex;
@@ -316,10 +383,9 @@
     padding-bottom: $sp-4;
   }
 
-  // IODA Internet Outages section
-  &__ioda {
-    @include card;
-    padding: $sp-4;
+  // IODA Internet Outages section (inside collapsible cat-group)
+  &__ioda-content {
+    padding: 0 $sp-3 $sp-3;
   }
 
   &__ioda-desc {

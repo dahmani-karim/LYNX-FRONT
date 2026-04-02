@@ -70,7 +70,11 @@ export default function BlackoutPage() {
   const serviceStatuses = useAlertStore((s) => s.serviceStatuses);
   const events = useAlertStore((s) => s.events);
   const lastFetch = useAlertStore((s) => s.lastFetch);
-  const [collapsedCats, setCollapsedCats] = useState(new Set());
+  const [collapsedCats, setCollapsedCats] = useState(() => {
+    const all = Object.keys(SERVICE_CATEGORIES);
+    all.push('ioda');
+    return new Set(all);
+  });
 
   const toggleCategory = (cat) => {
     setCollapsedCats((prev) => {
@@ -176,98 +180,139 @@ export default function BlackoutPage() {
         )}
       </div>
 
-      {/* IODA Internet Outages — 20 monitored countries */}
-      <section className="blackout-page__ioda">
-        <h2 className="blackout-page__section-title">
-          <Globe size={16} />
-          Coupures Internet — IODA ({IODA_COUNTRIES.length} pays)
-        </h2>
-        <p className="blackout-page__ioda-desc">
-          Surveillance de la connectivité nationale via <a href="https://ioda.inetintel.cc.gatech.edu" target="_blank" rel="noopener noreferrer" className="blackout-page__ioda-link">IODA</a> (Georgia Tech) — BGP, Active Probing, Telescope.
-        </p>
-        <div className="blackout-page__ioda-grid">
-          {IODA_COUNTRIES.map((c) => {
-            const alert = countryStatus[c.name];
-            const color = alert ? getSeverityColor(alert.severity) : 'success';
-            return (
-              <a
-                key={c.code}
-                href={`https://ioda.inetintel.cc.gatech.edu/country/${c.code}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`blackout-page__ioda-card blackout-page__ioda-card--${color}`}
-              >
-                <span className="blackout-page__ioda-flag">{c.flag}</span>
-                <span className="blackout-page__ioda-name">{c.name}</span>
-                <span className={`blackout-page__card-dot blackout-page__card-dot--${color}`} />
-                {alert && (
-                  <span className="blackout-page__ioda-alert">{alert.title.replace(`Coupure internet ${c.name} `, '')}</span>
-                )}
-              </a>
-            );
-          })}
-        </div>
-        {iodaAlerts.length === 0 && (
-          <p className="blackout-page__ioda-ok">
-            <CheckCircle size={14} /> Aucune perturbation internet détectée sur les {IODA_COUNTRIES.length} pays surveillés
-          </p>
-        )}
-      </section>
-
-      {/* Active IODA incidents */}
-      {iodaAlerts.length > 0 && (
-        <section className="blackout-page__incidents">
-          <h2 className="blackout-page__section-title">
-            <WifiOff size={16} />
-            Coupures internet en cours ({iodaAlerts.length})
-          </h2>
-          <div className="blackout-page__incident-list">
-            {iodaAlerts.map((alert) => {
-              const color = getSeverityColor(alert.severity);
-              return (
-                <div key={alert.id} className={`blackout-page__incident blackout-page__incident--${color}`}>
-                  <WifiOff size={16} />
-                  <div className="blackout-page__incident-body">
-                    <p className="blackout-page__incident-title">{alert.title}</p>
-                    <p className="blackout-page__incident-desc">{alert.description}</p>
-                    <p className="blackout-page__incident-time">{timeAgo(alert.eventDate)}</p>
-                  </div>
-                  {alert.sourceUrl && (
-                    <a href={alert.sourceUrl} target="_blank" rel="noopener noreferrer" className="blackout-page__card-link">
-                      <ExternalLink size={12} />
-                    </a>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* Service incidents */}
-      {serviceAlerts.length > 0 && (
-        <section className="blackout-page__incidents">
+      {/* Top summary: degraded (1/3) + incidents (2/3) */}
+      <div className="blackout-page__top-summary">
+        <div className="blackout-page__degraded-block">
           <h2 className="blackout-page__section-title">
             <AlertTriangle size={16} />
-            Incidents services ({serviceAlerts.length})
+            Services dégradés ({degraded.length})
           </h2>
-          <div className="blackout-page__incident-list">
-            {serviceAlerts.map((alert) => {
-              const cfg = getStatusConfig(alert.serviceInfo?.indicator || 'minor');
-              return (
-                <div key={alert.id} className={`blackout-page__incident blackout-page__incident--${cfg.color}`}>
-                  <cfg.Icon size={16} />
-                  <div className="blackout-page__incident-body">
-                    <p className="blackout-page__incident-title">{alert.title}</p>
-                    <p className="blackout-page__incident-desc">{alert.description}</p>
-                    <p className="blackout-page__incident-time">{timeAgo(alert.eventDate)}</p>
+          {degraded.length === 0 ? (
+            <p className="blackout-page__degraded-ok">
+              <CheckCircle size={14} /> Tous les services sont opérationnels
+            </p>
+          ) : (
+            <ul className="blackout-page__degraded-list">
+              {degraded.map((svc) => {
+                const cfg = getStatusConfig(svc.status === 'unreachable' ? 'major' : svc.status);
+                return (
+                  <li key={svc.name} className={`blackout-page__degraded-item blackout-page__degraded-item--${cfg.color}`}>
+                    <span className={`blackout-page__card-dot blackout-page__card-dot--${cfg.color}`} />
+                    <span className="blackout-page__degraded-name">{svc.name}</span>
+                    <span className="blackout-page__degraded-status">{cfg.label}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          {iodaAlerts.length > 0 && (
+            <div className="blackout-page__degraded-ioda">
+              <WifiOff size={14} />
+              <span>{iodaAlerts.length} coupure{iodaAlerts.length > 1 ? 's' : ''} internet</span>
+            </div>
+          )}
+        </div>
+
+        <div className="blackout-page__incidents-block">
+          <h2 className="blackout-page__section-title">
+            <WifiOff size={16} />
+            Incidents ({iodaAlerts.length + serviceAlerts.length})
+          </h2>
+          {iodaAlerts.length === 0 && serviceAlerts.length === 0 ? (
+            <p className="blackout-page__degraded-ok">
+              <CheckCircle size={14} /> Aucun incident en cours
+            </p>
+          ) : (
+            <div className="blackout-page__incident-list">
+              {iodaAlerts.map((alert) => {
+                const color = getSeverityColor(alert.severity);
+                return (
+                  <div key={alert.id} className={`blackout-page__incident blackout-page__incident--${color}`}>
+                    <WifiOff size={16} />
+                    <div className="blackout-page__incident-body">
+                      <p className="blackout-page__incident-title">{alert.title}</p>
+                      <p className="blackout-page__incident-desc">{alert.description}</p>
+                      <p className="blackout-page__incident-time">{timeAgo(alert.eventDate)}</p>
+                    </div>
+                    {alert.sourceUrl && (
+                      <a href={alert.sourceUrl} target="_blank" rel="noopener noreferrer" className="blackout-page__card-link">
+                        <ExternalLink size={12} />
+                      </a>
+                    )}
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+              {serviceAlerts.map((alert) => {
+                const cfg = getStatusConfig(alert.serviceInfo?.indicator || 'minor');
+                return (
+                  <div key={alert.id} className={`blackout-page__incident blackout-page__incident--${cfg.color}`}>
+                    <cfg.Icon size={16} />
+                    <div className="blackout-page__incident-body">
+                      <p className="blackout-page__incident-title">{alert.title}</p>
+                      <p className="blackout-page__incident-desc">{alert.description}</p>
+                      <p className="blackout-page__incident-time">{timeAgo(alert.eventDate)}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* IODA Internet Outages — collapsible */}
+      <div className="blackout-page__cat-group">
+        <button
+          className="blackout-page__cat-header"
+          onClick={() => toggleCategory('ioda')}
+        >
+          <Globe size={16} className="blackout-page__cat-icon" />
+          <span className="blackout-page__cat-label">Coupures Internet — IODA ({IODA_COUNTRIES.length} pays)</span>
+          <span className="blackout-page__cat-count">
+            {iodaAlerts.length > 0 ? (
+              <span className="blackout-page__cat-badge blackout-page__cat-badge--danger">{iodaAlerts.length} alerte{iodaAlerts.length > 1 ? 's' : ''}</span>
+            ) : (
+              <span className="blackout-page__cat-badge blackout-page__cat-badge--ok">{IODA_COUNTRIES.length} pays</span>
+            )}
+          </span>
+          {collapsedCats.has('ioda') ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+        </button>
+
+        {!collapsedCats.has('ioda') && (
+          <div className="blackout-page__ioda-content">
+            <p className="blackout-page__ioda-desc">
+              Surveillance de la connectivité nationale via <a href="https://ioda.inetintel.cc.gatech.edu" target="_blank" rel="noopener noreferrer" className="blackout-page__ioda-link">IODA</a> (Georgia Tech) — BGP, Active Probing, Telescope.
+            </p>
+            <div className="blackout-page__ioda-grid">
+              {IODA_COUNTRIES.map((c) => {
+                const alert = countryStatus[c.name];
+                const color = alert ? getSeverityColor(alert.severity) : 'success';
+                return (
+                  <a
+                    key={c.code}
+                    href={`https://ioda.inetintel.cc.gatech.edu/country/${c.code}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`blackout-page__ioda-card blackout-page__ioda-card--${color}`}
+                  >
+                    <span className="blackout-page__ioda-flag">{c.flag}</span>
+                    <span className="blackout-page__ioda-name">{c.name}</span>
+                    <span className={`blackout-page__card-dot blackout-page__card-dot--${color}`} />
+                    {alert && (
+                      <span className="blackout-page__ioda-alert">{alert.title.replace(`Coupure internet ${c.name} `, '')}</span>
+                    )}
+                  </a>
+                );
+              })}
+            </div>
+            {iodaAlerts.length === 0 && (
+              <p className="blackout-page__ioda-ok">
+                <CheckCircle size={14} /> Aucune perturbation internet détectée sur les {IODA_COUNTRIES.length} pays surveillés
+              </p>
+            )}
           </div>
-        </section>
-      )}
+        )}
+      </div>
 
       {/* Service grid — grouped by category */}
       <section className="blackout-page__grid-section">
