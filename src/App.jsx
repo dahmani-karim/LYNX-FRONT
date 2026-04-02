@@ -48,14 +48,19 @@ export default function App() {
     if (isAuthenticated) refreshProfile();
   }, [isAuthenticated, refreshProfile]);
 
+  const premiumPlan = useAuthStore((s) => s.premiumPlan);
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchAllData(userLocation, weatherLocation);
-      const ms = isPremium ? 60 * 1000 : 5 * 60 * 1000;
+      // Pro: 30s, Premium: 1min, Free: 5min
+      const ms = isPremium
+        ? (premiumPlan === 'Pro' ? 30 * 1000 : 60 * 1000)
+        : 5 * 60 * 1000;
       const interval = setInterval(() => fetchAllData(userLocation, weatherLocation), ms);
       return () => clearInterval(interval);
     }
-  }, [fetchAllData, userLocation, weatherLocation, isAuthenticated, isPremium]);
+  }, [fetchAllData, userLocation, weatherLocation, isAuthenticated, isPremium, premiumPlan]);
 
   return (
     <>
