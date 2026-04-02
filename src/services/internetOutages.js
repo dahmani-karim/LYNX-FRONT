@@ -1,7 +1,8 @@
 /**
  * Internet Outage fetcher — IODA (Internet Outage Detection & Analysis)
  * Georgia Tech / INetIntel — Free, no API key required.
- * Uses /v2/signals/raw/country/{CC} to detect drops via BGP + active probing.
+ * Uses /v2/outages/alerts?entityType=country — IODA's own anomaly detection
+ * (BGP prefix withdrawals + active probing). Much more reliable than raw signals.
  */
 
 const IODA_API = 'https://api.ioda.inetintel.cc.gatech.edu/v2';
@@ -30,84 +31,61 @@ const MONITORED_COUNTRIES = {
   ET: { name: 'Éthiopie', lat: 9.1, lng: 40.5 },
 };
 
-// Priority countries to check (limit API calls)
-const PRIORITY_CODES = ['IR', 'UA', 'RU', 'SY', 'SD', 'MM', 'CN', 'VE', 'PK', 'FR'];
-
-function severityFromNorm(normValue) {
-  if (normValue <= 0.2) return 'critical';
-  if (normValue <= 0.4) return 'high';
-  if (normValue <= 0.6) return 'medium';
-  return 'low';
-}
-
-/**
- * Fetch recent signals for a country and detect drops
- */
-async function fetchCountrySignals(code) {
-  const now = Math.floor(Date.now() / 1000);
-  const twoHoursAgo = now - 2 * 3600;
-
-  const url = `${IODA_API}/signals/raw/country/${code}?from=${twoHoursAgo}&until=${now}`;
-  const resp = await fetch(url, {
-    signal: AbortSignal.timeout(12000),
-    headers: { Accept: 'application/json' },
-  });
-
-  if (!resp.ok) return null;
-  const data = await resp.json();
-
-  const signals = data?.data?.[0] || [];
-  if (!Array.isArray(signals)) return null;
-
-  // Look for normalized signal (gtr-norm) which is 0–1
-  const normSignal = signals.find((s) => s.datasource === 'gtr-norm');
-  if (!normSignal?.values?.length) return null;
-
-  // Get the most recent normalized value
-  const values = normSignal.values.filter((v) => v != null && typeof v === 'number');
-  if (values.length === 0) return null;
-
-  const latestValue = values[values.length - 1];
-  return { code, latestValue };
+function severityFromLevel(level, pctDrop) {
+  if (level === 'critical' && pctDrop >= 50) return 'critical';
+  if (level === 'critical') return 'high';
+  return 'medium';
 }
 
 export async function fetchInternetOutages() {
   const alerts = [];
 
   try {
-    // Fetch priority countries in parallel (batches of 5 to avoid flooding)
-    const results = [];
-    for (let i = 0; i < PRIORITY_CODES.length; i += 5) {
-      const batch = PRIORITY_CODES.slice(i, i + 5);
-      const batchResults = await Promise.allSettled(
-        batch.map((code) => fetchCountrySignals(code))
-      );
-      results.push(...batchResults);
+    const now = Math.floor(Date.now() / 1000);
+    const sixHoursAgo = now - 6 * 3600;
+
+    const resp = await fetch(
+      `${IODA_API}/outages/alerts?entityType=country&from=${sixHoursAgo}&until=${now}&limit=200`,
+      { signal: AbortSignal.timeout(15000), headers: { Accept: 'application/json' } }
+    );
+    if (!resp.ok) return alerts;
+
+    const json = await resp.json();
+    const data = json?.data || [];
+
+    // Keep only the most recent alert per country code
+    // and only if we monitor that country
+    const latestByCountry = {};
+    for (const entry of data) {
+      const code = entry.entity?.code;
+      if (!code || !MONITORED_COUNTRIES[code]) continue;
+
+      const existing = latestByCountry[code];
+      if (!existing || entry.time > existing.time) {
+        latestByCountry[code] = entry;
+      }
     }
 
-    for (const result of results) {
-      if (result.status !== 'fulfilled' || !result.value) continue;
-      const { code, latestValue } = result.value;
-
-      // Only alert if normalized value drops below 0.7 (30%+ drop)
-      if (latestValue >= 0.7) continue;
+    // Only report countries whose latest state is NOT "normal"
+    for (const [code, entry] of Object.entries(latestByCountry)) {
+      if (entry.level === 'normal') continue;
 
       const country = MONITORED_COUNTRIES[code];
-      if (!country) continue;
-
-      const severity = severityFromNorm(latestValue);
-      const pctDrop = Math.round((1 - latestValue) * 100);
+      const pctDrop = entry.historyValue > 0
+        ? Math.round((1 - entry.value / entry.historyValue) * 100)
+        : 0;
+      const severity = severityFromLevel(entry.level, pctDrop);
 
       alerts.push({
-        id: `ioda-${code}-signals`,
+        id: `ioda-${code}-${entry.datasource}`,
         type: 'blackout',
         severity,
         title: `Coupure internet ${country.name} (−${pctDrop}%)`,
-        description: `Baisse de connectivité de ${pctDrop}% détectée en ${country.name} via Google Transparency Report normalisé. Source: IODA.`,
+        description: `Anomalie ${entry.datasource.toUpperCase()} détectée en ${country.name} : ${entry.value}/${entry.historyValue} (baisse de ${pctDrop}%). Source: IODA.`,
         latitude: country.lat,
         longitude: country.lng,
         country: country.name,
-        eventDate: new Date().toISOString(),
+        eventDate: new Date(entry.time * 1000).toISOString(),
         sourceName: 'IODA',
         sourceUrl: `https://ioda.inetintel.cc.gatech.edu/country/${code}`,
       });

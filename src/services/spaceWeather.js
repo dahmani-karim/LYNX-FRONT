@@ -43,26 +43,29 @@ export async function fetchSpaceWeather() {
     // Parse Kp index (geomagnetic activity)
     if (kpRes.status === 'fulfilled' && kpRes.value.ok) {
       const kpData = await kpRes.value.json();
-      // Last entry is most recent
+      // API returns [{time_tag, Kp, a_running, station_count}, ...]
       const latest = kpData[kpData.length - 1];
       if (latest) {
-        const kp = parseFloat(latest[1]) || 0;
-        if (kp >= 4) {
-          events.push({
-            id: `sw-kp-${Date.now()}`,
-            type: 'space_weather',
-            title: `Indice Kp: ${kp.toFixed(0)} — ${kpLabel(kp)}`,
-            description: `Activité géomagnétique ${kpLabel(kp)}. Kp=${kp.toFixed(1)}. Risques: perturbations GPS, communications radio, réseaux électriques.`,
-            severity: kpSeverity(kp),
-            eventDate: latest[0] || new Date().toISOString(),
-            latitude: 64.8,
-            longitude: -18.0,
-            sourceName: 'NOAA SWPC',
-            sourceUrl: 'https://www.swpc.noaa.gov/products/planetary-k-index',
-            sourceReliability: 98,
-            metadata: { kp_index: kp },
-          });
-        }
+        const kp = parseFloat(latest.Kp) || 0;
+        const severity = kp >= 4 ? kpSeverity(kp) : 'info';
+        events.push({
+          id: `sw-kp-${Date.now()}`,
+          type: 'space_weather',
+          title: kp >= 4
+            ? `Indice Kp: ${kp.toFixed(0)} — ${kpLabel(kp)}`
+            : `Indice Kp: ${kp.toFixed(1)} — Activité normale`,
+          description: kp >= 4
+            ? `Activité géomagnétique ${kpLabel(kp)}. Kp=${kp.toFixed(1)}. Risques: perturbations GPS, communications radio, réseaux électriques.`
+            : `Activité géomagnétique calme. Kp=${kp.toFixed(1)}.`,
+          severity,
+          eventDate: latest.time_tag || new Date().toISOString(),
+          latitude: 64.8,
+          longitude: -18.0,
+          sourceName: 'NOAA SWPC',
+          sourceUrl: 'https://www.swpc.noaa.gov/products/planetary-k-index',
+          sourceReliability: 98,
+          metadata: { kp_index: kp },
+        });
       }
     }
   } catch (err) {

@@ -96,10 +96,8 @@ function indicatorToFrench(indicator) {
 }
 
 // ─── Statuspage.io fetcher ─────────────────────────────────
-// Uses allorigins.win/get (JSON wrapper) to bypass CORS — always works
-// because allorigins returns its own CORS headers regardless of the target.
-
-const ALLORIGINS_GET = 'https://api.allorigins.win/get?url=';
+// All Atlassian Statuspage.io APIs return Access-Control-Allow-Origin: *
+// so we can fetch them directly — no proxy needed.
 
 async function fetchStatuspageService(service) {
   const fallbackResult = {
@@ -129,21 +127,14 @@ async function fetchStatuspageService(service) {
   };
 
   // Strategy: use allorigins.win/get which wraps any response in a JSON
-  // envelope { contents: "...", status: { ... } } — always CORS-safe
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
-    const res = await fetch(
-      `${ALLORIGINS_GET}${encodeURIComponent(service.url)}`,
-      { signal: controller.signal }
-    );
+    const res = await fetch(service.url, { signal: controller.signal });
     clearTimeout(timeout);
     if (!res.ok) return fallbackResult;
 
-    const wrapper = await res.json();
-    if (!wrapper.contents) return fallbackResult;
-
-    const data = JSON.parse(wrapper.contents);
+    const data = await res.json();
     return makeResult(data);
   } catch {
     return fallbackResult;
