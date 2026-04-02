@@ -5,8 +5,10 @@ import { fetchAirQuality } from '../services/airQuality';
 import { fetchFires } from '../services/fires';
 import { fetchServiceStatuses } from '../services/status';
 import { fetchNuclearProduction } from '../services/energy';
+import { fetchInternetOutages } from '../services/internetOutages';
 import { calculateRiskScores } from '../services/riskEngine';
 import { notifyNewAlerts } from '../services/notifications';
+import { computeDelta } from '../services/deltaEngine';
 
 let knownEventSigs = new Set();
 let isFirstFetch = true;
@@ -36,6 +38,7 @@ export const useAlertStore = create((set, get) => ({
   errors: {},
   lastFetch: null,
   selectedEvent: null,
+  delta: { newEvents: [], resolved: [], escalated: [], deescalated: [] },
   filters: {
     categories: [],
     severity: 'all',
@@ -122,6 +125,7 @@ export const useAlertStore = create((set, get) => ({
       fetchFires(lat, lng),
       fetchServiceStatuses(),
       fetchNuclearProduction(),
+      fetchInternetOutages(),
     ]);
 
     // [0] Alertes globales depuis Strapi (séismes, conflits, géopolitique, GDACS, cyber, énergie, santé, radiation, météo spatiale, feux globaux, statut)
@@ -170,11 +174,22 @@ export const useAlertStore = create((set, get) => ({
       errors.nuclear = results[5].reason?.message;
     }
 
+    // [6] Internet Outages (IODA)
+    if (results[6].status === 'fulfilled') {
+      allEvents.push(...results[6].value);
+    } else {
+      errors.internet_outage = results[6].reason?.message;
+    }
+
     const uniqueEvents = Array.from(
       new Map(allEvents.map((e) => [e.id, e])).values()
     );
 
     const riskScores = calculateRiskScores(uniqueEvents);
+
+    // Compute delta between previous and current events
+    const previousEvents = get().events;
+    const delta = isFirstFetch ? { newEvents: [], resolved: [], escalated: [], deescalated: [] } : computeDelta(previousEvents, uniqueEvents);
 
     // Detect new events by comparing against previous known IDs (exclude blackout — separate page)
     const wasFirstFetch = isFirstFetch;
@@ -200,6 +215,7 @@ export const useAlertStore = create((set, get) => ({
       serviceStatuses,
       riskScores,
       previousGlobalScore: prevScores.global,
+      delta,
       isLoading: false,
       errors,
       lastFetch: new Date().toISOString(),

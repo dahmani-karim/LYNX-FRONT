@@ -107,4 +107,23 @@
   &__chevron {
     color: $lynx-dim;
   }
+
+  &__tier {
+    font-size: 0.625rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: $radius-full;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.4;
+
+    &--flash {
+      animation: tierPulse 1.5s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes tierPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }

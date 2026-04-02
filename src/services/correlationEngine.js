@@ -13,6 +13,12 @@ const CAUSAL_PATTERNS = [
   { source: 'fire', impacts: ['air_quality', 'health', 'energy'], label: 'Incendies → qualité de l\'air' },
   { source: 'space_weather', impacts: ['blackout', 'cyber'], label: 'Météo spatiale → communications' },
   { source: 'social', impacts: ['fuel', 'energy', 'blackout'], label: 'Troubles sociaux → approvisionnement' },
+  // New V5 patterns
+  { source: 'blackout', impacts: ['cyber', 'health', 'social'], label: 'Coupure internet → instabilité' },
+  { source: 'radiation', impacts: ['health', 'air_quality'], label: 'Radiation → risque sanitaire' },
+  { source: 'nuclear', impacts: ['energy', 'radiation', 'health', 'blackout'], label: 'Nucléaire → cascade énergétique' },
+  { source: 'earthquake', impacts: ['nuclear', 'fire'], label: 'Séisme → risque nucléaire/incendie' },
+  { source: 'conflict', impacts: ['blackout', 'nuclear'], label: 'Conflit → coupures & risque nucléaire' },
 ];
 
 // Max time window for correlation (hours)

@@ -4,6 +4,8 @@ import { useSettingsStore } from '../../stores/settingsStore';
 import { useAuthStore } from '../../stores/authStore';
 import ScoreGauge from '../../components/ScoreGauge/ScoreGauge';
 import AlertCard from '../../components/AlertCard/AlertCard';
+import DeltaPanel from '../../components/DeltaPanel/DeltaPanel';
+import NewsTicker from '../../components/NewsTicker/NewsTicker';
 import EcosystemBridge from '../../components/EcosystemBridge/EcosystemBridge';
 import PremiumGate from '../../components/PremiumGate/PremiumGate';
 import Loader from '../../components/Loader/Loader';
@@ -17,7 +19,7 @@ import { Link } from 'react-router-dom';
 import './Dashboard.scss';
 
 export default function Dashboard() {
-  const { events, riskScores, weatherData, isLoading, errors } = useAlertStore();
+  const { events, riskScores, weatherData, isLoading, errors, delta } = useAlertStore();
   const { userLocation, zones } = useSettingsStore();
   const isPremium = useAuthStore((s) => s.isPremium);
 
@@ -67,6 +69,12 @@ export default function Dashboard() {
           <ScoreGauge score={riskScores.global} size={140} strokeWidth={10} />
         </div>
       </section>
+
+      {/* News Ticker */}
+      <NewsTicker events={events} />
+
+      {/* Delta Panel */}
+      <DeltaPanel delta={delta} events={events} />
 
       {/* Weather Widget */}
       {weatherData?.current && (
@@ -155,7 +163,6 @@ export default function Dashboard() {
 
       {/* Correlations & Insights */}
       {insights.length > 0 && (
-        <PremiumGate feature="Analyse de corrélations">
         <section className="dashboard__insights">
           <div className="dashboard__alerts-header">
             <h3 className="dashboard__insights-title">
@@ -167,15 +174,19 @@ export default function Dashboard() {
             </Link>
           </div>
           <div className="dashboard__insights-list">
-            {insights.slice(0, 2).map((insight, i) => (
+            {insights.slice(0, isPremium ? 5 : 1).map((insight, i) => (
               <div key={i} className={`dashboard__insight dashboard__insight--${insight.severity}`}>
                 <p className="dashboard__insight-label">{insight.title}</p>
                 <p className="dashboard__insight-desc">{insight.description}</p>
               </div>
             ))}
+            {!isPremium && insights.length > 1 && (
+              <p className="dashboard__insight-premium">
+                +{insights.length - 1} corrélation{insights.length > 2 ? 's' : ''} — Premium pour tout voir
+              </p>
+            )}
           </div>
         </section>
-        </PremiumGate>
       )}
 
       {/* Predictive Alerts */}

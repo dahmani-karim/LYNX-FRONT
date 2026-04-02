@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Circle, Marker, Popup, useMap } from 'react-leaflet';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { MapContainer, TileLayer, CircleMarker, Circle, Marker, Popup, useMap, useMapEvents, GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
 import { useAlertStore } from '../../stores/alertStore';
 import { useSettingsStore } from '../../stores/settingsStore';
@@ -8,13 +8,17 @@ import { useAuthStore } from '../../stores/authStore';
 import { CATEGORIES, SEVERITY_LEVELS } from '../../config/categories';
 import SeverityBadge from '../../components/SeverityBadge/SeverityBadge';
 import PremiumGate from '../../components/PremiumGate/PremiumGate';
+import CountryDossier from '../../components/CountryDossier/CountryDossier';
 import { timeAgo } from '../../utils/date';
-import { Locate, ExternalLink, Layers, Radio, Plane, Satellite, Ship, Eye, EyeOff, SlidersHorizontal, X } from 'lucide-react';
+import { Locate, ExternalLink, Layers, Radio, Plane, Satellite, Ship, Eye, EyeOff, SlidersHorizontal, X, Globe, Sun, Moon } from 'lucide-react';
 import HeatmapLayer from '../../components/HeatmapLayer/HeatmapLayer';
+import { computeTerminator } from '../../services/terminator';
+import { loadCountryBoundaries, computeCountryRisks, getRiskColor, getRiskOpacity } from '../../services/choropleth';
 import './MapPage.scss';
 
 const DARK_TILES = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 const DARK_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>';
+const GIBS_TILES = 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/{time}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg';
 
 function severityToRadius(severity) {
   const map = { info: 4, low: 5, medium: 7, high: 9, critical: 12 };
@@ -41,6 +45,16 @@ function LocationButton() {
       <Locate size={20} />
     </button>
   );
+}
+
+function MapContextMenu({ onContextMenu }) {
+  useMapEvents({
+    contextmenu: (e) => {
+      e.originalEvent.preventDefault();
+      onContextMenu({ lat: e.latlng.lat, lng: e.latlng.lng });
+    },
+  });
+  return null;
 }
 
 const TRACKER_TYPES = [
@@ -77,6 +91,48 @@ export default function MapPage() {
   const [showCatPanel, setShowCatPanel] = useState(false);
   const [mode, setMode] = useState('alerts'); // 'alerts' | 'tracking'
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [showSatellite, setShowSatellite] = useState(false);
+  const [showTerminator, setShowTerminator] = useState(false);
+  const [showChoropleth, setShowChoropleth] = useState(false);
+  const [countryGeoJSON, setCountryGeoJSON] = useState(null);
+  const [dossierPos, setDossierPos] = useState(null); // { lat, lng }
+
+  // GIBS date (yesterday — imagery has 24-48h delay)
+  const gibsDate = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return d.toISOString().split('T')[0];
+  }, []);
+
+  // Terminator GeoJSON
+  const terminatorGeoJSON = useMemo(() => {
+    if (!showTerminator) return null;
+    return computeTerminator();
+  }, [showTerminator]);
+
+  // Load country boundaries for choropleth
+  useEffect(() => {
+    if (showChoropleth && !countryGeoJSON) {
+      loadCountryBoundaries().then((data) => { if (data) setCountryGeoJSON(data); });
+    }
+  }, [showChoropleth, countryGeoJSON]);
+
+  // Compute country risks
+  const countryRisks = useMemo(() => computeCountryRisks(events), [events]);
+
+  // Choropleth style per feature
+  const choroplethStyle = useCallback((feature) => {
+    const name = (feature.properties.ADMIN || feature.properties.NAME || feature.properties.name || '').toLowerCase();
+    const risk = countryRisks.get(name);
+    const score = risk?.score || 0;
+    return {
+      fillColor: getRiskColor(score),
+      fillOpacity: getRiskOpacity(score),
+      color: score > 0 ? getRiskColor(score) : '#334155',
+      weight: score > 0 ? 1.5 : 0.3,
+      opacity: score > 0 ? 0.7 : 0.2,
+    };
+  }, [countryRisks]);
 
   // Tracker store
   const { aircraft, satellites, ships, maritimeCoverage, activeTrackers, isLoading: trackersLoading, lastFetch, fetchTrackers, toggleTracker } =
@@ -175,6 +231,31 @@ export default function MapPage() {
             </PremiumGate>
           </div>
 
+          {/* Extra map layers — below heatmap */}
+          <div className="map-page__extra-layers">
+            <button
+              onClick={() => setShowSatellite(!showSatellite)}
+              className={`map-page__chip ${showSatellite ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
+            >
+              <Globe size={14} />
+              Satellite
+            </button>
+            <button
+              onClick={() => setShowTerminator(!showTerminator)}
+              className={`map-page__chip ${showTerminator ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
+            >
+              <Moon size={14} />
+              Jour/Nuit
+            </button>
+            <button
+              onClick={() => setShowChoropleth(!showChoropleth)}
+              className={`map-page__chip ${showChoropleth ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
+            >
+              <Globe size={14} />
+              Risques
+            </button>
+          </div>
+
           {/* Filter toggle — top right */}
           <button
             className={`map-page__filter-toggle ${activeCategories.size > 0 ? 'map-page__filter-toggle--active' : ''}`}
@@ -259,6 +340,37 @@ export default function MapPage() {
         zoomControl={false}
       >
         <TileLayer url={DARK_TILES} attribution={DARK_ATTRIBUTION} />
+
+        {/* NASA GIBS MODIS satellite imagery */}
+        {showSatellite && (
+          <TileLayer
+            url={GIBS_TILES.replace('{time}', gibsDate)}
+            attribution="NASA GIBS"
+            opacity={0.5}
+            maxZoom={9}
+          />
+        )}
+
+        {/* Day/Night terminator */}
+        {terminatorGeoJSON && (
+          <GeoJSON
+            key={Date.now()}
+            data={terminatorGeoJSON}
+            style={{ fillColor: '#000', fillOpacity: 0.25, stroke: true, color: '#F59E0B', weight: 1, opacity: 0.5 }}
+          />
+        )}
+
+        {/* Country Risk Choropleth */}
+        {showChoropleth && countryGeoJSON && (
+          <GeoJSON
+            key="choropleth"
+            data={countryGeoJSON}
+            style={choroplethStyle}
+          />
+        )}
+
+        {/* Context menu handler — long press / right click for Country Dossier */}
+        <MapContextMenu onContextMenu={(latlng) => setDossierPos(latlng)} />
 
         {/* Alert markers */}
         {mode === 'alerts' && (
@@ -385,6 +497,11 @@ export default function MapPage() {
         <LocationButton />
       </MapContainer>
       </div>
+
+      {/* Country Dossier — right-click / long-press */}
+      {dossierPos && (
+        <CountryDossier lat={dossierPos.lat} lng={dossierPos.lng} onClose={() => setDossierPos(null)} />
+      )}
 
       {/* Bottom info bar */}
       <div className="map-page__count">

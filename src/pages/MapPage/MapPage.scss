@@ -64,6 +64,17 @@
     z-index: $z-map-controls;
   }
 
+  // Extra map layers — below heatmap
+  &__extra-layers {
+    position: absolute;
+    top: calc($sp-3 + 2.25rem);
+    left: $sp-3;
+    z-index: $z-map-controls;
+    display: flex;
+    flex-direction: column;
+    gap: $sp-1-5;
+  }
+
   // Filter toggle button — top right
   &__filter-toggle {
     position: absolute;

@@ -7,6 +7,7 @@ import AlertCard from '../../components/AlertCard/AlertCard';
 import SeverityBadge from '../../components/SeverityBadge/SeverityBadge';
 import Loader from '../../components/Loader/Loader';
 import { CATEGORIES, SEVERITY_LEVELS } from '../../config/categories';
+import { getAlertTier, TIER_CONFIG } from '../../services/deltaEngine';
 import { Search, SlidersHorizontal, X, Bookmark, Radio, Crown, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import './AlertsPage.scss';
 
@@ -37,6 +38,7 @@ export default function AlertsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [tab, setTab] = useState('live'); // 'live' | 'saved' | 'timeline'
+  const [tierFilter, setTierFilter] = useState('all'); // 'all' | 'flash' | 'priority' | 'routine'
   const [expandedGroups, setExpandedGroups] = useState(new Set());
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -52,7 +54,11 @@ export default function AlertsPage() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filteredEvents = getFilteredEvents();
-  const displayedEvents = tab === 'saved' ? savedAlerts : filteredEvents;
+  const tierFilteredEvents = useMemo(() => {
+    if (tierFilter === 'all') return filteredEvents;
+    return filteredEvents.filter((e) => getAlertTier(e) === tierFilter);
+  }, [filteredEvents, tierFilter]);
+  const displayedEvents = tab === 'saved' ? savedAlerts : tierFilteredEvents;
 
   const handleSearch = (q) => {
     setSearchQuery(q);
@@ -68,19 +74,19 @@ export default function AlertsPage() {
   };
 
   const availableCategories = Object.values(CATEGORIES).filter((c) => c.id !== 'other');
-  const hasActiveFilters = filters.categories.length > 0 || filters.severity !== 'all' || filters.timeRange !== '24h';
+  const hasActiveFilters = filters.categories.length > 0 || filters.severity !== 'all' || filters.timeRange !== '24h' || tierFilter !== 'all';
 
   // Timeline grouping by date
   const timelineGroups = useMemo(() => {
     const groups = {};
-    filteredEvents.forEach((e) => {
+    tierFilteredEvents.forEach((e) => {
       const d = new Date(e.eventDate);
       const key = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
       if (!groups[key]) groups[key] = [];
       groups[key].push(e);
     });
     return Object.entries(groups);
-  }, [filteredEvents]);
+  }, [tierFilteredEvents]);
 
   const toggleGroup = (key) => {
     setExpandedGroups((prev) => {
@@ -189,6 +195,25 @@ export default function AlertsPage() {
           </div>
 
           <div>
+            <p className="alerts-page__filter-label">Priorité</p>
+            <div className="alerts-page__chip-group">
+              {['all', 'flash', 'priority', 'routine'].map((t) => {
+                const label = t === 'all' ? 'Toutes' : TIER_CONFIG[t].label;
+                return (
+                  <button
+                    key={t}
+                    onClick={() => setTierFilter(t)}
+                    className={`alerts-page__chip ${tierFilter === t ? 'alerts-page__chip--active' : ''}`}
+                    style={tierFilter === t && t !== 'all' ? { backgroundColor: TIER_CONFIG[t].bg, color: TIER_CONFIG[t].color, borderColor: TIER_CONFIG[t].color } : {}}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div>
             <p className="alerts-page__filter-label">Catégories</p>
             <div className="alerts-page__chip-group">
               {availableCategories.map((cat) => {
@@ -208,7 +233,7 @@ export default function AlertsPage() {
           </div>
 
           {hasActiveFilters && (
-            <button onClick={resetFilters} className="alerts-page__reset">
+            <button onClick={() => { resetFilters(); setTierFilter('all'); }} className="alerts-page__reset">
               Réinitialiser les filtres
             </button>
           )}

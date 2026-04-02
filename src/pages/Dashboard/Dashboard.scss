@@ -226,6 +226,14 @@
     color: $lynx-muted;
   }
 
+  &__insight-premium {
+    font-size: $text-xs;
+    color: $lynx-dim;
+    text-align: center;
+    padding: $sp-2;
+    font-style: italic;
+  }
+
   // Disclaimer
   &__disclaimer {
     text-align: center;
