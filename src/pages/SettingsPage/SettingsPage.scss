@@ -194,6 +194,60 @@
     &--active { @include chip(true); }
   }
 
+  // Sound preview
+  &__sound-preview-label {
+    font-size: $text-xs;
+    color: $lynx-muted;
+    margin-bottom: $sp-2;
+  }
+
+  &__sound-list {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-2;
+  }
+
+  &__sound-item {
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+    padding: $sp-2-5 $sp-3;
+    background-color: $lynx-elevated;
+    border-radius: $radius-lg;
+    @include transition;
+
+    &:hover { background-color: $lynx-surface; }
+
+    svg:first-child {
+      flex-shrink: 0;
+      width: 1.75rem;
+      height: 1.75rem;
+      padding: 5px;
+      border-radius: $radius-full;
+      color: white;
+    }
+
+    div {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    &--success svg:first-child { background-color: $lynx-success; }
+    &--attention svg:first-child { background-color: $lynx-warning; }
+    &--error svg:first-child { background-color: $lynx-danger; }
+  }
+
+  &__sound-name {
+    font-size: $text-sm;
+    font-weight: 600;
+  }
+
+  &__sound-desc {
+    font-size: $text-xs;
+    color: $lynx-dim;
+  }
+
   // Ecosystem button
   &__eco-btn {
     width: 100%;

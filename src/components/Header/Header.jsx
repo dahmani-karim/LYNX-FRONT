@@ -39,9 +39,12 @@ export default function Header() {
     ? { lat: zones[0].lat, lng: zones[0].lng }
     : userLocation;
 
+  const soundEnabled = useSettingsStore((s) => s.soundEnabled !== false);
+
   const handleManualRefresh = async () => {
     try {
       const result = await fetchAllData(userLocation, weatherLocation);
+      if (!soundEnabled) return;
       if (!result?.ok) {
         playErrorSound();
       } else if (result.newCount > 0) {
@@ -50,7 +53,7 @@ export default function Header() {
         playSuccessSound();
       }
     } catch {
-      playErrorSound();
+      if (soundEnabled) playErrorSound();
     }
   };
 

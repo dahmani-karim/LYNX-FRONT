@@ -16,6 +16,7 @@ export const useSettingsStore = create(
         minSeverity: 'medium',
         categories: [],
       },
+      soundEnabled: true,
       isPremium: false,
       hasSeenOnboarding: false,
       mapStyle: 'dark',
@@ -53,6 +54,7 @@ export const useSettingsStore = create(
           notifications: { ...state.notifications, ...notifs },
         })),
 
+      setSoundEnabled: (v) => set({ soundEnabled: v }),
       setHasSeenOnboarding: (v) => set({ hasSeenOnboarding: v }),
       setMapStyle: (style) => set({ mapStyle: style }),
     }),

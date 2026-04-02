@@ -5,10 +5,11 @@ import { useAuthStore } from '../../stores/authStore';
 import InstallPrompt from '../../components/InstallPrompt/InstallPrompt';
 import AppSwitcher from '../../components/AppSwitcher/AppSwitcher';
 import { requestPermission } from '../../services/notifications';
+import { playSuccessSound, playAttentionSound, playErrorSound } from '../../services/sounds';
 import { fetchZones as apiFetchZones, createZone as apiCreateZone, deleteZone as apiDeleteZone } from '../../services/strapi';
 import {
   MapPin, Bell, Eye, Trash2, Plus, ChevronRight, Info, Globe, Loader,
-  User, Crown, LogOut, Crosshair
+  User, Crown, LogOut, Crosshair, Volume2, VolumeX, Play
 } from 'lucide-react';
 import './SettingsPage.scss';
 
@@ -25,6 +26,7 @@ export default function SettingsPage() {
     userLocation, setUserLocation,
     zones, addZone, removeZone,
     notifications, setNotifications,
+    soundEnabled, setSoundEnabled,
   } = useSettingsStore();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isPremium = useAuthStore((s) => s.isPremium);
@@ -326,7 +328,48 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* Ecosystem */}
+      {/* Sons */}
+      <section className="settings-page__section">
+        <div className="settings-page__section-header">
+          {soundEnabled !== false ? <Volume2 size={18} /> : <VolumeX size={18} />}
+          <h3>Sons de notification</h3>
+        </div>
+        <div className="settings-page__toggle-row">
+          <span className="settings-page__toggle-label">Retour sonore lors du rafraîchissement</span>
+          <button
+            onClick={() => setSoundEnabled(!(soundEnabled !== false))}
+            className={`settings-page__toggle ${soundEnabled !== false ? 'settings-page__toggle--on' : 'settings-page__toggle--off'}`}
+          >
+            <span className={`settings-page__toggle-knob ${soundEnabled !== false ? 'settings-page__toggle-knob--on' : ''}`} />
+          </button>
+        </div>
+        <div className="settings-page__sound-preview">
+          <p className="settings-page__sound-preview-label">Écouter les sons</p>
+          <div className="settings-page__sound-list">
+            <button className="settings-page__sound-item settings-page__sound-item--success" onClick={playSuccessSound}>
+              <Play size={14} />
+              <div>
+                <span className="settings-page__sound-name">Succès</span>
+                <span className="settings-page__sound-desc">Rafraîchissement OK, aucune nouvelle alerte</span>
+              </div>
+            </button>
+            <button className="settings-page__sound-item settings-page__sound-item--attention" onClick={playAttentionSound}>
+              <Play size={14} />
+              <div>
+                <span className="settings-page__sound-name">Attention</span>
+                <span className="settings-page__sound-desc">Nouvelles alertes détectées</span>
+              </div>
+            </button>
+            <button className="settings-page__sound-item settings-page__sound-item--error" onClick={playErrorSound}>
+              <Play size={14} />
+              <div>
+                <span className="settings-page__sound-name">Erreur</span>
+                <span className="settings-page__sound-desc">Échec du rafraîchissement</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </section>
       <section className="settings-page__section">
         <button onClick={() => setShowSwitcher(true)} className="settings-page__eco-btn">
           <Globe size={18} />

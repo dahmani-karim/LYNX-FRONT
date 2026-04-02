@@ -50,11 +50,12 @@ export default function App() {
   }, [isAuthenticated, refreshProfile]);
 
   const premiumPlan = useAuthStore((s) => s.premiumPlan);
-  const soundEnabled = useSettingsStore((s) => s.notifications?.enabled !== false);
+  const soundEnabled = useSettingsStore((s) => s.soundEnabled !== false);
 
   const fetchWithSound = async () => {
     try {
       const result = await fetchAllData(userLocation, weatherLocation);
+      if (!soundEnabled) return;
       if (!result?.ok) {
         playErrorSound();
       } else if (result.newCount > 0) {
@@ -63,7 +64,7 @@ export default function App() {
         playSuccessSound();
       }
     } catch {
-      playErrorSound();
+      if (soundEnabled) playErrorSound();
     }
   };
 
