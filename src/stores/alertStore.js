@@ -175,6 +175,11 @@ export const useAlertStore = create((set, get) => ({
 
     const riskScores = calculateRiskScores(uniqueEvents);
 
+    // Detect new events by comparing against previous known IDs
+    const wasFirstFetch = isFirstFetch;
+    const prevEventIds = new Set(get().events.map((e) => e.id));
+    const newAlerts = uniqueEvents.filter((e) => !prevEventIds.has(e.id));
+
     // Send push notifications for new high/critical alerts (skip first fetch)
     try {
       if (isFirstFetch) {
@@ -198,5 +203,9 @@ export const useAlertStore = create((set, get) => ({
       errors,
       lastFetch: new Date().toISOString(),
     });
+
+    // Return fetch result for sound feedback
+    const allFailed = results.every((r) => r.status === 'rejected');
+    return { ok: !allFailed, newCount: wasFirstFetch ? 0 : newAlerts.length };
   },
 }));

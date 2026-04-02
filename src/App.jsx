@@ -9,6 +9,7 @@ import Loader from './components/Loader/Loader';
 import { useAlertStore } from './stores/alertStore';
 import { useSettingsStore } from './stores/settingsStore';
 import { useAuthStore } from './stores/authStore';
+import { playSuccessSound, playAttentionSound, playErrorSound } from './services/sounds';
 
 // Lazy-loaded pages (code-splitting)
 const Discover = lazy(() => import('./pages/Discover/Discover'));
@@ -49,15 +50,31 @@ export default function App() {
   }, [isAuthenticated, refreshProfile]);
 
   const premiumPlan = useAuthStore((s) => s.premiumPlan);
+  const soundEnabled = useSettingsStore((s) => s.notifications?.enabled !== false);
+
+  const fetchWithSound = async () => {
+    try {
+      const result = await fetchAllData(userLocation, weatherLocation);
+      if (!result?.ok) {
+        playErrorSound();
+      } else if (result.newCount > 0) {
+        playAttentionSound();
+      } else {
+        playSuccessSound();
+      }
+    } catch {
+      playErrorSound();
+    }
+  };
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetchAllData(userLocation, weatherLocation);
+      fetchAllData(userLocation, weatherLocation); // silent first load
       // Pro: 30s, Premium: 1min, Free: 5min
       const ms = isPremium
         ? (premiumPlan === 'Pro' ? 30 * 1000 : 60 * 1000)
         : 5 * 60 * 1000;
-      const interval = setInterval(() => fetchAllData(userLocation, weatherLocation), ms);
+      const interval = setInterval(fetchWithSound, ms);
       return () => clearInterval(interval);
     }
   }, [fetchAllData, userLocation, weatherLocation, isAuthenticated, isPremium, premiumPlan]);

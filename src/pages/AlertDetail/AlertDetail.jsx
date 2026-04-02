@@ -1,9 +1,10 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useState, useRef } from 'react';
 import { useAlertStore } from '../../stores/alertStore';
 import { CATEGORIES } from '../../config/categories';
 import SeverityBadge from '../../components/SeverityBadge/SeverityBadge';
 import { formatDate, timeAgo } from '../../utils/date';
-import { ArrowLeft, ExternalLink, MapPin, Clock, Shield, Share2, Bookmark } from 'lucide-react';
+import { ArrowLeft, ExternalLink, MapPin, Clock, Shield, Share2, Bookmark, Globe, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
 import { useSavedAlertStore } from '../../stores/savedAlertStore';
 import { useAuthStore } from '../../stores/authStore';
 import './AlertDetail.scss';
@@ -16,6 +17,11 @@ export default function AlertDetail() {
   const { isSaved, toggleSave } = useSavedAlertStore();
 
   const event = events.find((e) => e.id === decodeURIComponent(id));
+
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(true);
+  const [previewError, setPreviewError] = useState(false);
+  const iframeRef = useRef(null);
 
   if (!event) {
     return (
@@ -88,6 +94,64 @@ export default function AlertDetail() {
         </div>
       </div>
 
+
+      {/* Source Preview */}
+      {event.sourceUrl && (
+        <div className="alert-detail__preview">
+          <button
+            className="alert-detail__preview-toggle"
+            onClick={() => {
+              setPreviewOpen((o) => !o);
+              setPreviewLoading(true);
+              setPreviewError(false);
+            }}
+          >
+            <Globe size={16} />
+            <span>Aperçu de la source</span>
+            {previewOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+
+          {previewOpen && (
+            <div className="alert-detail__preview-container">
+              {previewLoading && !previewError && (
+                <div className="alert-detail__preview-loading">
+                  <div className="alert-detail__preview-spinner" />
+                  <p>Chargement de l'aperçu…</p>
+                </div>
+              )}
+
+              {previewError && (
+                <div className="alert-detail__preview-error">
+                  <AlertTriangle size={24} />
+                  <p>Aperçu non disponible</p>
+                  <span>Ce site empêche l'intégration dans un cadre externe.</span>
+                  <a
+                    href={event.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="alert-detail__preview-error-link"
+                  >
+                    Ouvrir dans un nouvel onglet <ExternalLink size={14} />
+                  </a>
+                </div>
+              )}
+
+              <iframe
+                ref={iframeRef}
+                src={event.sourceUrl}
+                title="Aperçu de la source"
+                sandbox="allow-scripts allow-same-origin"
+                className={`alert-detail__preview-iframe ${previewError ? 'alert-detail__preview-iframe--hidden' : ''}`}
+                onLoad={() => setPreviewLoading(false)}
+                onError={() => {
+                  setPreviewLoading(false);
+                  setPreviewError(true);
+                }}
+              />
+            </div>
+          )}
+        </div>
+      )}
       {/* Source */}
       <div className="alert-detail__source">
         <h3 className="alert-detail__source-title">Source</h3>

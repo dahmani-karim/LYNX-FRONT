@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { RefreshCw, Menu, X, Home, Map, Bell, BarChart3, Settings, Eye, Zap, Info, Compass, CreditCard, Link2, User } from 'lucide-react';
 import { useAlertStore } from '../../stores/alertStore';
 import { useSettingsStore } from '../../stores/settingsStore';
+import { playSuccessSound, playAttentionSound, playErrorSound } from '../../services/sounds';
 import LynxLogo from '../LynxLogo/LynxLogo';
 import AppSwitcher from '../AppSwitcher/AppSwitcher';
 import './Header.scss';
@@ -29,9 +30,29 @@ export default function Header() {
   const isLoading = useAlertStore((s) => s.isLoading);
   const fetchAllData = useAlertStore((s) => s.fetchAllData);
   const userLocation = useSettingsStore((s) => s.userLocation);
+  const zones = useSettingsStore((s) => s.zones);
   const events = useAlertStore((s) => s.events);
   const [showSwitcher, setShowSwitcher] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
+
+  const weatherLocation = zones.length > 0
+    ? { lat: zones[0].lat, lng: zones[0].lng }
+    : userLocation;
+
+  const handleManualRefresh = async () => {
+    try {
+      const result = await fetchAllData(userLocation, weatherLocation);
+      if (!result?.ok) {
+        playErrorSound();
+      } else if (result.newCount > 0) {
+        playAttentionSound();
+      } else {
+        playSuccessSound();
+      }
+    } catch {
+      playErrorSound();
+    }
+  };
 
   const criticalCount = events.filter(
     (e) => e.severity === 'critical' || e.severity === 'high'
@@ -61,7 +82,7 @@ export default function Header() {
               <span className="header__badge">{criticalCount}</span>
             )} */}
             <button
-              onClick={() => fetchAllData(userLocation)}
+              onClick={handleManualRefresh}
               disabled={isLoading}
               className="header__icon-btn"
               aria-label="Rafraîchir"
