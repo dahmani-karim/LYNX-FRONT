@@ -5,7 +5,7 @@ import { API_CONFIG } from '../config/api';
  * Backend fetches from ADSB.lol / OpenSky server-side (no CORS issues).
  */
 
-export async function fetchAircraftTracker(lat, lng, radiusKm = 200) {
+export async function fetchAircraftTracker(lat, lng, radiusKm = 450) {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);

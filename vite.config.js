@@ -112,6 +112,11 @@ export default defineConfig({
   server: {
     port: 5176
   },
+  resolve: {
+    alias: {
+      'satellite.js': path.resolve('node_modules/satellite.js/dist/satellite.es.js'),
+    },
+  },
   build: {
     sourcemap: false,
     rollupOptions: {

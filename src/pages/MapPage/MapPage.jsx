@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Circle, Marker, Popup, useMap, useMapEvents, GeoJSON } from 'react-leaflet';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { MapContainer, TileLayer, CircleMarker, Circle, Popup, useMap, useMapEvents, GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
 import { useAlertStore } from '../../stores/alertStore';
 import { useSettingsStore } from '../../stores/settingsStore';
@@ -14,6 +14,7 @@ import { Locate, ExternalLink, Layers, Radio, Plane, Satellite, Ship, Eye, EyeOf
 import HeatmapLayer from '../../components/HeatmapLayer/HeatmapLayer';
 import { computeTerminator } from '../../services/terminator';
 import { loadCountryBoundaries, computeCountryRisks, getRiskColor, getRiskOpacity } from '../../services/choropleth';
+import TrackerClusterLayer from '../../components/TrackerClusterLayer/TrackerClusterLayer';
 import './MapPage.scss';
 
 const DARK_TILES = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
@@ -63,19 +64,30 @@ const TRACKER_TYPES = [
   { key: 'ship', label: 'Navires', icon: Ship, color: '#06B6D4' },
 ];
 
+function MapCenterTracker({ onCenterChange }) {
+  useMapEvents({
+    moveend: (e) => {
+      const c = e.target.getCenter();
+      onCenterChange(c.lat, c.lng);
+    },
+  });
+  return null;
+}
+
 function createTrackerIcon(type, heading = 0) {
   const colors = { aircraft: '#3B82F6', satellite: '#D946EF', ship: '#06B6D4' };
-  const sz = 30;
+  const sz = type === 'satellite' ? 24 : 30;
+  const glow = colors[type] || colors.aircraft;
 
-  // SVG arrows that actually rotate (emojis don't rotate in most browsers)
   const svgs = {
-    aircraft: `<svg viewBox="0 0 24 24" width="18" height="18" fill="${colors.aircraft}" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))"><path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>`,
-    satellite: `<svg viewBox="0 0 24 24" width="16" height="16" fill="${colors.satellite}" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))"><circle cx="12" cy="12" r="3"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14M7.76 7.76a6 6 0 0 0 0 8.49M19.07 4.93a10 10 0 0 1 0 14.14M16.24 7.76a6 6 0 0 1 0 8.49" stroke="${colors.satellite}" fill="none" stroke-width="1.5"/></svg>`,
-    ship: `<svg viewBox="0 0 24 24" width="16" height="16" fill="${colors.ship}" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))"><path d="M12 2L4 12h5v6h6v-6h5L12 2z"/></svg>`,
+    aircraft: `<svg viewBox="0 0 24 24" width="18" height="18" fill="${colors.aircraft}" style="filter:drop-shadow(0 0 6px ${glow}99)"><path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>`,
+    satellite: `<svg viewBox="0 0 24 24" width="14" height="14" fill="${colors.satellite}" style="filter:drop-shadow(0 0 8px ${glow}AA)"><circle cx="12" cy="12" r="3"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14M7.76 7.76a6 6 0 0 0 0 8.49M19.07 4.93a10 10 0 0 1 0 14.14M16.24 7.76a6 6 0 0 1 0 8.49" stroke="${colors.satellite}" fill="none" stroke-width="1.5"/></svg>`,
+    ship: `<svg viewBox="0 0 24 24" width="16" height="16" fill="${colors.ship}" style="filter:drop-shadow(0 0 6px ${glow}99)"><path d="M3 18h1l2-7h12l2 7h1a1 1 0 0 1 0 2H3a1 1 0 0 1 0-2zM6 8h12l1 3H5l1-3zm3-5h6v3H9V3z"/></svg>`,
   };
 
+  const animClass = type === 'satellite' ? 'tracker-icon--sat' : '';
   return L.divIcon({
-    className: 'tracker-icon',
+    className: `tracker-icon ${animClass}`,
     html: `<div style="width:${sz}px;height:${sz}px;display:flex;align-items:center;justify-content:center;transform:rotate(${heading}deg);transition:transform 0.6s ease">${svgs[type]}</div>`,
     iconSize: [sz, sz],
     iconAnchor: [sz / 2, sz / 2],
@@ -141,14 +153,31 @@ export default function MapPage() {
   const lat = userLocation?.lat || 48.8566;
   const lng = userLocation?.lng || 2.3522;
 
+  // Map center tracking for viewport-based refetch
+  const mapCenterRef = useRef({ lat, lng });
+  const lastPanFetchRef = useRef(0);
+
+  const handleCenterChange = useCallback((newLat, newLng) => {
+    mapCenterRef.current = { lat: newLat, lng: newLng };
+    if (mode !== 'tracking') return;
+    const now = Date.now();
+    if (now - lastPanFetchRef.current > 5000) {
+      lastPanFetchRef.current = now;
+      fetchTrackers(newLat, newLng);
+    }
+  }, [mode, fetchTrackers]);
+
   // Auto-fetch trackers when in tracking mode
   useEffect(() => {
     if (mode !== 'tracking') return;
-    fetchTrackers(lat, lng);
+    fetchTrackers(mapCenterRef.current.lat, mapCenterRef.current.lng);
     if (!autoRefresh) return;
-    const interval = setInterval(() => fetchTrackers(lat, lng), 30 * 1000);
+    const interval = setInterval(() => {
+      const c = mapCenterRef.current;
+      fetchTrackers(c.lat, c.lng);
+    }, 30 * 1000);
     return () => clearInterval(interval);
-  }, [lat, lng, autoRefresh, fetchTrackers, mode]);
+  }, [autoRefresh, fetchTrackers, mode]);
 
   const trackerCounts = {
     aircraft: aircraft.length,
@@ -335,7 +364,7 @@ export default function MapPage() {
         )}
         <MapContainer
         center={[lat, lng]}
-        zoom={mode === 'tracking' ? 8 : 4}
+        zoom={mode === 'tracking' ? 3 : 4}
         className="map-page__map"
         zoomControl={false}
       >
@@ -371,6 +400,9 @@ export default function MapPage() {
 
         {/* Context menu handler — long press / right click for Country Dossier */}
         <MapContextMenu onContextMenu={(latlng) => setDossierPos(latlng)} />
+
+        {/* Viewport tracking for refetch */}
+        {mode === 'tracking' && <MapCenterTracker onCenterChange={handleCenterChange} />}
 
         {/* Alert markers */}
         {mode === 'alerts' && (
@@ -422,50 +454,10 @@ export default function MapPage() {
           </>
         )}
 
-        {/* Tracker markers */}
-        {mode === 'tracking' && allTrackerPoints
-          .filter((p) => p.latitude && p.longitude)
-          .map((point) => (
-            <Marker
-              key={point.id}
-              position={[point.latitude, point.longitude]}
-              icon={createTrackerIcon(point.type, point.heading || 0)}
-            >
-              <Popup>
-                <div className="map-page__popup">
-                  {point.type === 'aircraft' && (
-                    <>
-                      <h4 className="map-page__popup-title">{point.callsign || point.icao24}</h4>
-                      <p className="map-page__popup-desc">
-                        Altitude: {Math.round(point.altitude)}m<br />
-                        Vitesse: {Math.round(point.velocity * 3.6)} km/h<br />
-                        Origine: {point.origin}
-                      </p>
-                    </>
-                  )}
-                  {point.type === 'satellite' && (
-                    <>
-                      <h4 className="map-page__popup-title">{point.name}</h4>
-                      <p className="map-page__popup-desc">
-                        Altitude: {Math.round(point.altitude)} km<br />
-                        ID: {point.satid}
-                      </p>
-                    </>
-                  )}
-                  {point.type === 'ship' && (
-                    <>
-                      <h4 className="map-page__popup-title">{point.name}</h4>
-                      <p className="map-page__popup-desc">
-                        Vitesse: {point.speed} kn<br />
-                        Cap: {Math.round(point.heading)}°
-                      </p>
-                    </>
-                  )}
-                </div>
-              </Popup>
-            </Marker>
-          ))
-        }
+        {/* Tracker markers — clustered */}
+        {mode === 'tracking' && (
+          <TrackerClusterLayer points={allTrackerPoints} createIcon={createTrackerIcon} />
+        )}
 
         {/* User location */}
         <CircleMarker

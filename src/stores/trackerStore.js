@@ -26,7 +26,7 @@ export const useTrackerStore = create((set, get) => ({
 
     const results = await Promise.allSettled([
       activeTrackers.includes('aircraft') ? fetchAircraftTracker(lat, lng) : Promise.resolve([]),
-      activeTrackers.includes('satellite') ? fetchSatelliteTracker(lat, lng) : Promise.resolve([]),
+      activeTrackers.includes('satellite') ? fetchSatelliteTracker() : Promise.resolve([]),
       activeTrackers.includes('ship') ? fetchMaritimeTracker(lat, lng) : Promise.resolve([]),
     ]);
 
