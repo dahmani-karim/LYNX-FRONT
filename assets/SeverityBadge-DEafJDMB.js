@@ -1,0 +1,1 @@
+import{j as t}from"./motion-CHZ5obgJ.js";import{p as r}from"./index-CoZN2nPu.js";function n({severity:e,size:s="sm"}){const o=r[e]||r.info;return t.jsx("span",{className:`severity-badge severity-badge--${s}`,style:{backgroundColor:`${o.color}20`,color:o.color},children:o.label})}export{n as S};
