@@ -175,6 +175,65 @@
     color: $lynx-warning;
     white-space: nowrap;
   }
+
+  // History chart
+  &__history-toggle {
+    display: flex;
+    align-items: center;
+    gap: $sp-1;
+    background: none;
+    border: 1px solid $lynx-border;
+    border-radius: $radius;
+    color: $lynx-muted;
+    font-size: 10px;
+    padding: $sp-1 $sp-2;
+    cursor: pointer;
+    @include transition;
+    margin-top: $sp-2;
+    &:hover { color: $lynx-accent; border-color: $lynx-accent; }
+  }
+
+  &__history {
+    margin-top: $sp-2;
+    padding: $sp-2;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: $radius;
+  }
+
+  &__history-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 50px;
+  }
+
+  &__history-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  &__history-bar {
+    width: 100%;
+    min-width: 3px;
+    border-radius: 1px;
+    @include transition;
+  }
+
+  &__history-label {
+    font-size: 8px;
+    color: $lynx-dim;
+  }
+
+  &__history-empty {
+    font-size: 10px;
+    color: $lynx-dim;
+    text-align: center;
+    padding: $sp-2;
+    font-style: italic;
+  }
 }
 
 @keyframes tierPulse {

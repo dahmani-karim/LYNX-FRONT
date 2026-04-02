@@ -259,4 +259,89 @@
     color: $lynx-dim;
     padding-bottom: $sp-4;
   }
+
+  // IODA Internet Outages section
+  &__ioda {
+    @include card;
+    padding: $sp-4;
+  }
+
+  &__ioda-desc {
+    font-size: $text-xs;
+    color: $lynx-muted;
+    margin-bottom: $sp-3;
+  }
+
+  &__ioda-link {
+    color: $lynx-accent;
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
+  }
+
+  &__ioda-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $sp-2;
+
+    @include sm {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    @include md {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    @include lg {
+      grid-template-columns: repeat(5, 1fr);
+    }
+  }
+
+  &__ioda-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $sp-1-5;
+    padding: $sp-2 $sp-3;
+    border-radius: $radius-lg;
+    background: $lynx-surface;
+    border: 1px solid $lynx-border;
+    text-decoration: none;
+    color: inherit;
+    @include transition;
+
+    &:hover { border-color: $lynx-accent; }
+
+    &--success { border-left: 3px solid $lynx-success; }
+    &--warning { border-left: 3px solid $lynx-warning; }
+    &--danger { border-left: 3px solid $lynx-danger; }
+    &--critical { border-left: 3px solid $lynx-danger; }
+  }
+
+  &__ioda-flag {
+    font-size: $text-lg;
+  }
+
+  &__ioda-name {
+    flex: 1;
+    font-size: $text-xs;
+    font-weight: 600;
+  }
+
+  &__ioda-alert {
+    width: 100%;
+    font-size: 10px;
+    color: $lynx-warning;
+    font-weight: 500;
+  }
+
+  &__ioda-ok {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $sp-2;
+    padding: $sp-3;
+    font-size: $text-xs;
+    color: $lynx-success;
+    margin-top: $sp-2;
+  }
 }

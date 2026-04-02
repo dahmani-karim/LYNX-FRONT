@@ -27,6 +27,23 @@
     font-weight: 600;
   }
 
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: $sp-1;
+  }
+
+  &__export {
+    background: none;
+    border: none;
+    color: $lynx-accent;
+    cursor: pointer;
+    padding: $sp-1;
+    border-radius: $radius;
+    @include transition;
+    &:hover { background: $lynx-elevated; }
+  }
+
   &__close {
     background: none;
     border: none;

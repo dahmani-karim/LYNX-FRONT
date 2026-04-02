@@ -1,4 +1,5 @@
 @use 'variables' as *;
+@use 'theme';
 
 * {
   margin: 0;
@@ -13,10 +14,11 @@ html {
 }
 
 body {
-  background-color: $lynx-bg;
-  color: $lynx-text;
+  background-color: var(--lynx-bg);
+  color: var(--lynx-text);
   min-height: 100dvh;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #root {
@@ -45,9 +47,9 @@ img, svg {
 
 // Scrollbar
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: $lynx-bg; }
+::-webkit-scrollbar-track { background: var(--lynx-scrollbar-track); }
 ::-webkit-scrollbar-thumb {
-  background: $lynx-border;
+  background: var(--lynx-scrollbar-thumb);
   border-radius: 3px;
 }
 

@@ -61,3 +61,28 @@ export function playErrorSound() {
   playTone(220, 0.3, 'sawtooth', 0.1);
   setTimeout(() => playTone(180, 0.4, 'sawtooth', 0.08), 250);
 }
+
+/**
+ * FLASH alert — urgent siren, two rapid descending tones.
+ */
+export function playFlashSound() {
+  playTone(1200, 0.1, 'square', 0.14);
+  setTimeout(() => playTone(900, 0.1, 'square', 0.14), 120);
+  setTimeout(() => playTone(1200, 0.1, 'square', 0.14), 240);
+  setTimeout(() => playTone(900, 0.15, 'square', 0.12), 360);
+}
+
+/**
+ * PRIORITY alert — firm double-beep notification.
+ */
+export function playPrioritySound() {
+  playTone(800, 0.12, 'triangle', 0.16);
+  setTimeout(() => playTone(1000, 0.18, 'triangle', 0.14), 150);
+}
+
+/**
+ * ROUTINE alert — soft single ding (same as success but lower pitch).
+ */
+export function playRoutineSound() {
+  playTone(660, 0.2, 'sine', 0.1);
+}

@@ -34,14 +34,14 @@
 
 // Card base style
 @mixin card {
-  background-color: $lynx-surface;
+  background-color: var(--lynx-surface, $lynx-surface);
   border-radius: $radius-xl;
-  border: 1px solid rgba($lynx-border, 0.5);
+  border: 1px solid var(--lynx-border, rgba($lynx-border, 0.5));
 }
 @mixin card-lg {
-  background-color: $lynx-surface;
+  background-color: var(--lynx-surface, $lynx-surface);
   border-radius: $radius-2xl;
-  border: 1px solid rgba($lynx-border, 0.5);
+  border: 1px solid var(--lynx-border, rgba($lynx-border, 0.5));
 }
 
 // Page container — centered on mobile, full width on desktop

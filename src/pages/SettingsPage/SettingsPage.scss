@@ -247,6 +247,9 @@
     }
 
     &--success svg:first-child { background-color: $lynx-success; }
+    &--flash svg:first-child { background-color: $lynx-danger; }
+    &--priority svg:first-child { background-color: $lynx-warning; }
+    &--routine svg:first-child { background-color: $lynx-accent; }
     &--attention svg:first-child { background-color: $lynx-warning; }
     &--error svg:first-child { background-color: $lynx-danger; }
   }
@@ -259,6 +262,36 @@
   &__sound-desc {
     font-size: $text-xs;
     color: $lynx-dim;
+  }
+
+  // Theme toggle
+  &__theme-group {
+    display: flex;
+    gap: $sp-2;
+  }
+
+  &__theme-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $sp-2;
+    padding: $sp-2-5 $sp-3;
+    background-color: $lynx-elevated;
+    border-radius: $radius-lg;
+    font-size: $text-sm;
+    font-weight: 500;
+    color: $lynx-muted;
+    border: 2px solid transparent;
+    @include transition;
+
+    &:hover { background-color: $lynx-surface; }
+
+    &--active {
+      border-color: $lynx-accent;
+      color: $lynx-accent;
+      background-color: rgba($lynx-accent, 0.1);
+    }
   }
 
   // Ecosystem button

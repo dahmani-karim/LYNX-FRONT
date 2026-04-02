@@ -1,0 +1,35 @@
+// ============================================
+// Theme System — CSS Custom Properties for Dark/Light
+// ============================================
+@use 'variables' as *;
+
+// Dark theme (default)
+:root,
+[data-theme="dark"] {
+  --lynx-bg: #{$lynx-bg};
+  --lynx-surface: #{$lynx-surface};
+  --lynx-elevated: #{$lynx-elevated};
+  --lynx-border: #{$lynx-border};
+  --lynx-text: #{$lynx-text};
+  --lynx-muted: #{$lynx-muted};
+  --lynx-dim: #{$lynx-dim};
+  --lynx-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --lynx-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --lynx-scrollbar-track: #{$lynx-bg};
+  --lynx-scrollbar-thumb: #{$lynx-border};
+}
+
+// Light theme
+[data-theme="light"] {
+  --lynx-bg: #F1F5F9;
+  --lynx-surface: #FFFFFF;
+  --lynx-elevated: #F8FAFC;
+  --lynx-border: #CBD5E1;
+  --lynx-text: #0F172A;
+  --lynx-muted: #475569;
+  --lynx-dim: #94A3B8;
+  --lynx-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --lynx-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --lynx-scrollbar-track: #F1F5F9;
+  --lynx-scrollbar-thumb: #CBD5E1;
+}

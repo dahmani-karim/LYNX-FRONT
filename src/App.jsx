@@ -9,7 +9,7 @@ import Loader from './components/Loader/Loader';
 import { useAlertStore } from './stores/alertStore';
 import { useSettingsStore } from './stores/settingsStore';
 import { useAuthStore } from './stores/authStore';
-import { playSuccessSound, playAttentionSound, playErrorSound } from './services/sounds';
+import { playSuccessSound, playErrorSound, playFlashSound, playPrioritySound, playRoutineSound } from './services/sounds';
 
 // Lazy-loaded pages (code-splitting)
 const Discover = lazy(() => import('./pages/Discover/Discover'));
@@ -50,8 +50,16 @@ export default function App() {
     if (isAuthenticated) refreshProfile();
   }, [isAuthenticated, refreshProfile]);
 
+  // Apply persisted theme on mount
+  const theme = useSettingsStore((s) => s.theme);
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme || 'dark');
+  }, [theme]);
+
   const premiumPlan = useAuthStore((s) => s.premiumPlan);
   const soundEnabled = useSettingsStore((s) => s.soundEnabled !== false);
+
+  const loadOfflineData = useAlertStore((s) => s.loadOfflineData);
 
   const fetchWithSound = async () => {
     try {
@@ -60,7 +68,10 @@ export default function App() {
       if (!result?.ok) {
         playErrorSound();
       } else if (result.newCount > 0) {
-        playAttentionSound();
+        // Tier-based sound differentiation
+        if (result.highestTier === 'flash') playFlashSound();
+        else if (result.highestTier === 'priority') playPrioritySound();
+        else playRoutineSound();
       } else {
         playSuccessSound();
       }
@@ -71,6 +82,8 @@ export default function App() {
 
   useEffect(() => {
     if (isAuthenticated) {
+      // Load cached data first for instant display, then fetch fresh
+      loadOfflineData().catch(() => {});
       fetchAllData(userLocation, weatherLocation); // silent first load
       // Pro: 30s, Premium: 1min, Free: 5min
       const ms = isPremium

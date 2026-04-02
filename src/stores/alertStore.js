@@ -8,7 +8,9 @@ import { fetchNuclearProduction } from '../services/energy';
 import { fetchInternetOutages } from '../services/internetOutages';
 import { calculateRiskScores } from '../services/riskEngine';
 import { notifyNewAlerts } from '../services/notifications';
-import { computeDelta } from '../services/deltaEngine';
+import { computeDelta, getAlertTier } from '../services/deltaEngine';
+import { cacheAlertData, loadCachedData } from '../services/offlineCache';
+import { recordDeltaSnapshot } from '../services/deltaHistory';
 
 let knownEventSigs = new Set();
 let isFirstFetch = true;
@@ -32,6 +34,8 @@ export const useAlertStore = create((set, get) => ({
     air_quality: 0,
     fire: 0,
     space_weather: 0,
+    nuclear: 0,
+    radiation: 0,
   },
   previousGlobalScore: null,
   isLoading: false,
@@ -221,8 +225,40 @@ export const useAlertStore = create((set, get) => ({
       lastFetch: new Date().toISOString(),
     });
 
-    // Return fetch result for sound feedback
+    // Persist to IndexedDB for offline access
+    cacheAlertData(uniqueEvents, riskScores, weatherData).catch(() => {});
+
+    // Record delta snapshot for history graph
+    if (!wasFirstFetch) {
+      recordDeltaSnapshot(uniqueEvents.length, riskScores.global, delta);
+    }
+
+    // Return fetch result for sound feedback (include highest tier of new alerts)
     const allFailed = results.every((r) => r.status === 'rejected');
-    return { ok: !allFailed, newCount: wasFirstFetch ? 0 : newAlerts.length };
+    let highestTier = 'routine';
+    if (!wasFirstFetch && newAlerts.length > 0) {
+      for (const a of newAlerts) {
+        const t = getAlertTier(a);
+        if (t === 'flash') { highestTier = 'flash'; break; }
+        if (t === 'priority') highestTier = 'priority';
+      }
+    }
+    return { ok: !allFailed, newCount: wasFirstFetch ? 0 : newAlerts.length, highestTier };
+  },
+
+  /**
+   * Load cached data from IndexedDB (offline fallback).
+   * Called on initial mount if network is unavailable.
+   */
+  loadOfflineData: async () => {
+    const cached = await loadCachedData();
+    if (!cached) return false;
+    set({
+      events: cached.events,
+      riskScores: cached.riskScores || get().riskScores,
+      weatherData: cached.weatherData || null,
+      lastFetch: cached.lastCached,
+    });
+    return true;
   },
 }));

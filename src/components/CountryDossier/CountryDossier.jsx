@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAlertStore } from '../../stores/alertStore';
 import { CATEGORIES } from '../../config/categories';
-import { X, MapPin, Users, Globe, Landmark, Clock, Languages, Banknote, AlertTriangle } from 'lucide-react';
+import { X, MapPin, Users, Globe, Landmark, Clock, Languages, Banknote, AlertTriangle, FileDown } from 'lucide-react';
+import { generateCountryDossierPDF } from '../../utils/countryDossierPdf';
 import './CountryDossier.scss';
 
 const REST_COUNTRIES_API = 'https://restcountries.com/v3.1';
@@ -130,9 +131,20 @@ export default function CountryDossier({ lat, lng, onClose }) {
           <Globe size={16} />
           Dossier Région
         </h3>
-        <button className="country-dossier__close" onClick={onClose}>
-          <X size={16} />
-        </button>
+        <div className="country-dossier__actions">
+          {country && (
+            <button
+              className="country-dossier__export"
+              onClick={() => generateCountryDossierPDF(country, nearbyAlerts, alertsByCategory, riskLevel, CATEGORIES)}
+              title="Exporter en PDF"
+            >
+              <FileDown size={14} />
+            </button>
+          )}
+          <button className="country-dossier__close" onClick={onClose}>
+            <X size={16} />
+          </button>
+        </div>
       </div>
 
       {loading && <p className="country-dossier__loading">Chargement...</p>}

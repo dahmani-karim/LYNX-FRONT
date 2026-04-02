@@ -5,11 +5,11 @@ import { useAuthStore } from '../../stores/authStore';
 import InstallPrompt from '../../components/InstallPrompt/InstallPrompt';
 import AppSwitcher from '../../components/AppSwitcher/AppSwitcher';
 import { requestPermission } from '../../services/notifications';
-import { playSuccessSound, playAttentionSound, playErrorSound } from '../../services/sounds';
+import { playSuccessSound, playErrorSound, playFlashSound, playPrioritySound, playRoutineSound } from '../../services/sounds';
 import { fetchZones as apiFetchZones, createZone as apiCreateZone, deleteZone as apiDeleteZone } from '../../services/strapi';
 import {
   MapPin, Bell, Eye, Trash2, Plus, ChevronRight, Info, Globe, Loader,
-  User, Crown, LogOut, Crosshair, Volume2, VolumeX, Play
+  User, Crown, LogOut, Crosshair, Volume2, VolumeX, Play, Sun, Moon, Monitor
 } from 'lucide-react';
 import './SettingsPage.scss';
 
@@ -27,6 +27,7 @@ export default function SettingsPage() {
     zones, addZone, removeZone,
     notifications, setNotifications,
     soundEnabled, setSoundEnabled,
+    theme, setTheme,
   } = useSettingsStore();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isPremium = useAuthStore((s) => s.isPremium);
@@ -353,11 +354,25 @@ export default function SettingsPage() {
                 <span className="settings-page__sound-desc">Rafraîchissement OK, aucune nouvelle alerte</span>
               </div>
             </button>
-            <button className="settings-page__sound-item settings-page__sound-item--attention" onClick={playAttentionSound}>
+            <button className="settings-page__sound-item settings-page__sound-item--flash" onClick={playFlashSound}>
               <Play size={14} />
               <div>
-                <span className="settings-page__sound-name">Attention</span>
-                <span className="settings-page__sound-desc">Nouvelles alertes détectées</span>
+                <span className="settings-page__sound-name">⚡ FLASH</span>
+                <span className="settings-page__sound-desc">Alerte critique urgente (séisme, catastrophe…)</span>
+              </div>
+            </button>
+            <button className="settings-page__sound-item settings-page__sound-item--priority" onClick={playPrioritySound}>
+              <Play size={14} />
+              <div>
+                <span className="settings-page__sound-name">PRIORITY</span>
+                <span className="settings-page__sound-desc">Alerte importante nécessitant attention</span>
+              </div>
+            </button>
+            <button className="settings-page__sound-item settings-page__sound-item--routine" onClick={playRoutineSound}>
+              <Play size={14} />
+              <div>
+                <span className="settings-page__sound-name">ROUTINE</span>
+                <span className="settings-page__sound-desc">Nouvelle alerte de routine</span>
               </div>
             </button>
             <button className="settings-page__sound-item settings-page__sound-item--error" onClick={playErrorSound}>
@@ -370,6 +385,30 @@ export default function SettingsPage() {
           </div>
         </div>
       </section>
+
+      {/* Apparence */}
+      <section className="settings-page__section settings-page__section--half">
+        <div className="settings-page__section-header">
+          <Sun size={18} />
+          <h3>Apparence</h3>
+        </div>
+        <div className="settings-page__theme-group">
+          {[
+            { value: 'dark', icon: Moon, label: 'Sombre' },
+            { value: 'light', icon: Sun, label: 'Clair' },
+          ].map(({ value, icon: Icon, label }) => (
+            <button
+              key={value}
+              onClick={() => setTheme(value)}
+              className={`settings-page__theme-btn ${theme === value ? 'settings-page__theme-btn--active' : ''}`}
+            >
+              <Icon size={18} />
+              <span>{label}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
       <section className="settings-page__section">
         <button onClick={() => setShowSwitcher(true)} className="settings-page__eco-btn">
           <Globe size={18} />

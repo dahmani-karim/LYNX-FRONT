@@ -47,7 +47,10 @@ export const useSettingsStore = create(
           zones: state.zones.map((z) => (z.id === id ? { ...z, ...updates } : z)),
         })),
 
-      setTheme: (theme) => set({ theme }),
+      setTheme: (theme) => {
+        document.documentElement.setAttribute('data-theme', theme);
+        set({ theme });
+      },
 
       setNotifications: (notifs) =>
         set((state) => ({

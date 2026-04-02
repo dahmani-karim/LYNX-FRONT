@@ -1,20 +1,24 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAlertStore } from '../../stores/alertStore';
 import { CATEGORIES } from '../../config/categories';
 import { getAlertTier, TIER_CONFIG } from '../../services/deltaEngine';
+import { getChartData } from '../../services/deltaHistory';
 import { timeAgo } from '../../utils/date';
 import { Link } from 'react-router-dom';
 import {
-  ArrowUp, ArrowDown, Plus, CheckCircle, ChevronDown, ChevronUp, Zap
+  ArrowUp, ArrowDown, Plus, CheckCircle, ChevronDown, ChevronUp, Zap, BarChart3
 } from 'lucide-react';
 import './DeltaPanel.scss';
 
 export default function DeltaPanel() {
   const delta = useAlertStore((s) => s.delta);
   const [expanded, setExpanded] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   const { newEvents, resolved, escalated, deescalated } = delta;
   const totalChanges = newEvents.length + resolved.length + escalated.length + deescalated.length;
+
+  const historyData = useMemo(() => showHistory ? getChartData('24h') : [], [showHistory, totalChanges]);
 
   if (totalChanges === 0) return null;
 
@@ -147,6 +151,36 @@ export default function DeltaPanel() {
                 </div>
               ))}
             </div>
+          )}
+
+          {/* Delta History mini chart */}
+          <button
+            className="delta-panel__history-toggle"
+            onClick={() => setShowHistory(!showHistory)}
+          >
+            <BarChart3 size={12} />
+            {showHistory ? 'Masquer l\'historique' : 'Historique 24h'}
+          </button>
+
+          {showHistory && historyData.length > 0 && (
+            <div className="delta-panel__history">
+              <div className="delta-panel__history-bars">
+                {historyData.map((d, i) => {
+                  const maxScore = Math.max(...historyData.map((h) => h.score), 1);
+                  const height = Math.max(2, (d.score / maxScore) * 40);
+                  const color = d.score >= 75 ? '#EF4444' : d.score >= 50 ? '#F97316' : d.score >= 25 ? '#F59E0B' : '#10B981';
+                  return (
+                    <div key={i} className="delta-panel__history-col" title={`${d.time} — Score: ${d.score}, ${d.total} alertes`}>
+                      <div className="delta-panel__history-bar" style={{ height: `${height}px`, backgroundColor: color }} />
+                      {i % 4 === 0 && <span className="delta-panel__history-label">{d.time}</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {showHistory && historyData.length === 0 && (
+            <p className="delta-panel__history-empty">Pas encore de données — l'historique se remplit au fil des cycles.</p>
           )}
         </div>
       )}
