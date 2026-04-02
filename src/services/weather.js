@@ -41,13 +41,15 @@ function detectWeatherAlerts(data, lat, lng) {
   const daily = data.daily;
 
   if (current) {
-    if (current.wind_gusts_10m > 100) {
+    // Rafales violentes (seuils adaptés France)
+    if (current.wind_gusts_10m > 70) {
+      const severity = current.wind_gusts_10m > 130 ? 'critical' : current.wind_gusts_10m > 100 ? 'high' : 'medium';
       alerts.push({
         id: `weather-wind-now`,
         type: 'weather',
         title: 'Rafales violentes en cours',
         description: `Rafales de ${current.wind_gusts_10m} km/h détectées`,
-        severity: current.wind_gusts_10m > 130 ? 'critical' : 'high',
+        severity,
         latitude: lat,
         longitude: lng,
         sourceName: 'Open-Meteo',
@@ -55,13 +57,15 @@ function detectWeatherAlerts(data, lat, lng) {
         eventDate: new Date().toISOString(),
       });
     }
-    if (current.temperature_2m > 40) {
+    // Forte chaleur
+    if (current.temperature_2m > 33) {
+      const severity = current.temperature_2m > 42 ? 'critical' : current.temperature_2m > 38 ? 'high' : 'medium';
       alerts.push({
         id: `weather-heat-now`,
         type: 'weather',
-        title: 'Canicule en cours',
+        title: 'Forte chaleur en cours',
         description: `Température de ${current.temperature_2m}°C`,
-        severity: current.temperature_2m > 44 ? 'critical' : 'high',
+        severity,
         latitude: lat,
         longitude: lng,
         sourceName: 'Open-Meteo',
@@ -69,17 +73,81 @@ function detectWeatherAlerts(data, lat, lng) {
         eventDate: new Date().toISOString(),
       });
     }
-    if (current.temperature_2m < -15) {
+    // Grand froid
+    if (current.temperature_2m < -5) {
+      const severity = current.temperature_2m < -20 ? 'critical' : current.temperature_2m < -10 ? 'high' : 'medium';
       alerts.push({
         id: `weather-cold-now`,
         type: 'weather',
         title: 'Grand froid en cours',
         description: `Température de ${current.temperature_2m}°C`,
-        severity: current.temperature_2m < -25 ? 'critical' : 'high',
+        severity,
         latitude: lat,
         longitude: lng,
         sourceName: 'Open-Meteo',
         sourceReliability: 92,
+        eventDate: new Date().toISOString(),
+      });
+    }
+    // Orage en cours (weather codes 95, 96, 99)
+    if ([95, 96, 99].includes(current.weather_code)) {
+      const severity = current.weather_code === 99 ? 'high' : 'medium';
+      alerts.push({
+        id: `weather-storm-now`,
+        type: 'weather',
+        title: 'Orage en cours',
+        description: getWeatherDescription(current.weather_code),
+        severity,
+        latitude: lat,
+        longitude: lng,
+        sourceName: 'Open-Meteo',
+        sourceReliability: 92,
+        eventDate: new Date().toISOString(),
+      });
+    }
+    // Neige en cours (weather codes 71, 73, 75, 85, 86)
+    if ([71, 73, 75, 85, 86].includes(current.weather_code)) {
+      const severity = [75, 86].includes(current.weather_code) ? 'high' : 'medium';
+      alerts.push({
+        id: `weather-snow-now`,
+        type: 'weather',
+        title: 'Chutes de neige en cours',
+        description: getWeatherDescription(current.weather_code),
+        severity,
+        latitude: lat,
+        longitude: lng,
+        sourceName: 'Open-Meteo',
+        sourceReliability: 90,
+        eventDate: new Date().toISOString(),
+      });
+    }
+    // Verglas / pluie verglaçante (weather codes 56, 57, 66, 67)
+    if ([56, 57, 66, 67].includes(current.weather_code)) {
+      alerts.push({
+        id: `weather-ice-now`,
+        type: 'weather',
+        title: 'Verglas / pluie verglaçante',
+        description: `${getWeatherDescription(current.weather_code)} — risque de routes glissantes`,
+        severity: [57, 67].includes(current.weather_code) ? 'high' : 'medium',
+        latitude: lat,
+        longitude: lng,
+        sourceName: 'Open-Meteo',
+        sourceReliability: 90,
+        eventDate: new Date().toISOString(),
+      });
+    }
+    // Brouillard dense (weather codes 45, 48)
+    if ([45, 48].includes(current.weather_code)) {
+      alerts.push({
+        id: `weather-fog-now`,
+        type: 'weather',
+        title: current.weather_code === 48 ? 'Brouillard givrant' : 'Brouillard dense',
+        description: `${getWeatherDescription(current.weather_code)} — visibilité réduite`,
+        severity: current.weather_code === 48 ? 'medium' : 'low',
+        latitude: lat,
+        longitude: lng,
+        sourceName: 'Open-Meteo',
+        sourceReliability: 85,
         eventDate: new Date().toISOString(),
       });
     }
@@ -87,13 +155,15 @@ function detectWeatherAlerts(data, lat, lng) {
 
   if (daily) {
     daily.time.forEach((date, i) => {
-      if (daily.wind_speed_10m_max[i] > 90) {
+      // Vent fort (seuil abaissé: 60 km/h)
+      if (daily.wind_speed_10m_max[i] > 60) {
+        const severity = daily.wind_speed_10m_max[i] > 120 ? 'high' : daily.wind_speed_10m_max[i] > 80 ? 'medium' : 'low';
         alerts.push({
           id: `weather-wind-${date}`,
           type: 'weather',
-          title: `Tempête prévue le ${date}`,
+          title: `Vent fort prévu le ${date}`,
           description: `Vents jusqu'à ${daily.wind_speed_10m_max[i]} km/h`,
-          severity: daily.wind_speed_10m_max[i] > 120 ? 'high' : 'medium',
+          severity,
           latitude: lat,
           longitude: lng,
           sourceName: 'Open-Meteo',
@@ -101,13 +171,15 @@ function detectWeatherAlerts(data, lat, lng) {
           eventDate: new Date(date).toISOString(),
         });
       }
-      if (daily.precipitation_sum[i] > 50) {
+      // Précipitations importantes (seuil abaissé: 20 mm)
+      if (daily.precipitation_sum[i] > 20) {
+        const severity = daily.precipitation_sum[i] > 80 ? 'high' : daily.precipitation_sum[i] > 40 ? 'medium' : 'low';
         alerts.push({
           id: `weather-rain-${date}`,
           type: 'weather',
           title: `Fortes précipitations le ${date}`,
-          description: `${daily.precipitation_sum[i]} mm attendus – risque d'inondation`,
-          severity: daily.precipitation_sum[i] > 100 ? 'high' : 'medium',
+          description: `${daily.precipitation_sum[i]} mm attendus${daily.precipitation_sum[i] > 40 ? ' – risque d\'inondation' : ''}`,
+          severity,
           latitude: lat,
           longitude: lng,
           sourceName: 'Open-Meteo',
@@ -115,13 +187,15 @@ function detectWeatherAlerts(data, lat, lng) {
           eventDate: new Date(date).toISOString(),
         });
       }
-      if (daily.temperature_2m_max[i] > 38) {
+      // Chaleur (seuil abaissé: 33°C)
+      if (daily.temperature_2m_max[i] > 33) {
+        const severity = daily.temperature_2m_max[i] > 42 ? 'critical' : daily.temperature_2m_max[i] > 38 ? 'high' : 'medium';
         alerts.push({
           id: `weather-heat-${date}`,
           type: 'weather',
           title: `Forte chaleur prévue le ${date}`,
           description: `Maximum ${daily.temperature_2m_max[i]}°C`,
-          severity: daily.temperature_2m_max[i] > 42 ? 'high' : 'medium',
+          severity,
           latitude: lat,
           longitude: lng,
           sourceName: 'Open-Meteo',
@@ -129,13 +203,31 @@ function detectWeatherAlerts(data, lat, lng) {
           eventDate: new Date(date).toISOString(),
         });
       }
-      if (daily.uv_index_max[i] > 10) {
+      // Gel (températures min < 0°C)
+      if (daily.temperature_2m_min[i] < -2) {
+        const severity = daily.temperature_2m_min[i] < -15 ? 'high' : daily.temperature_2m_min[i] < -5 ? 'medium' : 'low';
+        alerts.push({
+          id: `weather-frost-${date}`,
+          type: 'weather',
+          title: `Gel prévu le ${date}`,
+          description: `Minimum ${daily.temperature_2m_min[i]}°C — risque de verglas`,
+          severity,
+          latitude: lat,
+          longitude: lng,
+          sourceName: 'Open-Meteo',
+          sourceReliability: 85,
+          eventDate: new Date(date).toISOString(),
+        });
+      }
+      // UV élevé (seuil abaissé: 7)
+      if (daily.uv_index_max[i] > 7) {
+        const severity = daily.uv_index_max[i] > 10 ? 'medium' : 'low';
         alerts.push({
           id: `weather-uv-${date}`,
           type: 'weather',
-          title: `UV extrême le ${date}`,
+          title: `UV élevé le ${date}`,
           description: `Index UV ${daily.uv_index_max[i]}`,
-          severity: 'low',
+          severity,
           latitude: lat,
           longitude: lng,
           sourceName: 'Open-Meteo',

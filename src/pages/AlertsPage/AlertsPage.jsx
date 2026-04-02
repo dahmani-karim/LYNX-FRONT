@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAlertStore } from '../../stores/alertStore';
 import { useSavedAlertStore } from '../../stores/savedAlertStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -38,6 +38,18 @@ export default function AlertsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [tab, setTab] = useState('live'); // 'live' | 'saved' | 'timeline'
   const [expandedGroups, setExpandedGroups] = useState(new Set());
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Read ?category= from URL on mount and apply filter
+  useEffect(() => {
+    const cat = searchParams.get('category');
+    if (cat && Object.keys(CATEGORIES).includes(cat)) {
+      setFilter('categories', [cat]);
+      setFilter('timeRange', 'all');
+      searchParams.delete('category');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filteredEvents = getFilteredEvents();
   const displayedEvents = tab === 'saved' ? savedAlerts : filteredEvents;

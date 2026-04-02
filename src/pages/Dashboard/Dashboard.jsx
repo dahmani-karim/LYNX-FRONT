@@ -28,6 +28,14 @@ export default function Dashboard() {
 
   const moduleKeys = Object.keys(CATEGORIES).filter((k) => k !== 'other');
 
+  const moduleCounts = useMemo(() => {
+    const counts = {};
+    for (const key of moduleKeys) {
+      counts[key] = events.filter((e) => e.type === key).length;
+    }
+    return counts;
+  }, [events, moduleKeys]);
+
   const insights = useMemo(() => {
     const correlations = findCorrelations(events);
     return generateInsights(correlations);
@@ -104,9 +112,14 @@ export default function Dashboard() {
             const cat = CATEGORIES[key];
             if (!cat) return null;
             const score = riskScores[key] || 0;
+            const count = moduleCounts[key] || 0;
             const Icon = cat.icon;
             return (
-              <div key={key} className="dashboard__module-card">
+              <Link
+                key={key}
+                to={`/alerts?category=${key}`}
+                className="dashboard__module-card dashboard__module-card--link"
+              >
                 <div className="dashboard__module-icon" style={{ backgroundColor: cat.bgColor }}>
                   <Icon size={16} style={{ color: cat.color }} />
                 </div>
@@ -114,7 +127,10 @@ export default function Dashboard() {
                 <span className="dashboard__module-score" style={{ color: getScoreColor(score) }}>
                   {score}
                 </span>
-              </div>
+                {count > 0 && (
+                  <span className="dashboard__module-count">{count} alerte{count > 1 ? 's' : ''}</span>
+                )}
+              </Link>
             );
           })}
         </div>
@@ -141,12 +157,17 @@ export default function Dashboard() {
       {insights.length > 0 && (
         <PremiumGate feature="Analyse de corrélations">
         <section className="dashboard__insights">
-          <h3 className="dashboard__insights-title">
-            <Link2 size={16} />
-            Corrélations détectées
-          </h3>
+          <div className="dashboard__alerts-header">
+            <h3 className="dashboard__insights-title">
+              <Link2 size={16} />
+              Corrélations détectées
+            </h3>
+            <Link to="/analysis" className="dashboard__alerts-link">
+              Voir l'analyse complète <ChevronRight size={14} />
+            </Link>
+          </div>
           <div className="dashboard__insights-list">
-            {insights.map((insight, i) => (
+            {insights.slice(0, 2).map((insight, i) => (
               <div key={i} className={`dashboard__insight dashboard__insight--${insight.severity}`}>
                 <p className="dashboard__insight-label">{insight.title}</p>
                 <p className="dashboard__insight-desc">{insight.description}</p>
@@ -161,12 +182,17 @@ export default function Dashboard() {
       {predictions.length > 0 && (
         <PremiumGate feature="Tendances prédictives">
         <section className="dashboard__insights">
-          <h3 className="dashboard__insights-title">
-            <TrendingUp size={16} />
-            Tendances prédictives
-          </h3>
+          <div className="dashboard__alerts-header">
+            <h3 className="dashboard__insights-title">
+              <TrendingUp size={16} />
+              Tendances prédictives
+            </h3>
+            <Link to="/analysis" className="dashboard__alerts-link">
+              Voir l'analyse complète <ChevronRight size={14} />
+            </Link>
+          </div>
           <div className="dashboard__insights-list">
-            {predictions.map((pred, i) => (
+            {predictions.slice(0, 2).map((pred, i) => (
               <div key={i} className={`dashboard__insight dashboard__insight--${pred.severity}`}>
                 <p className="dashboard__insight-label" style={{ color: pred.color }}>{pred.label}</p>
                 <p className="dashboard__insight-desc">{pred.message}</p>

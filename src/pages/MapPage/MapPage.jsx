@@ -9,7 +9,7 @@ import { CATEGORIES, SEVERITY_LEVELS } from '../../config/categories';
 import SeverityBadge from '../../components/SeverityBadge/SeverityBadge';
 import PremiumGate from '../../components/PremiumGate/PremiumGate';
 import { timeAgo } from '../../utils/date';
-import { Locate, ExternalLink, Layers, Radio, Plane, Satellite, Ship, Eye, EyeOff } from 'lucide-react';
+import { Locate, ExternalLink, Layers, Radio, Plane, Satellite, Ship, Eye, EyeOff, SlidersHorizontal, X } from 'lucide-react';
 import HeatmapLayer from '../../components/HeatmapLayer/HeatmapLayer';
 import './MapPage.scss';
 
@@ -23,7 +23,6 @@ function severityToRadius(severity) {
 
 function LocationButton() {
   const map = useMap();
-  const setUserLocation = useSettingsStore((s) => s.setUserLocation);
 
   const handleClick = () => {
     if (!navigator.geolocation) return;
@@ -31,7 +30,6 @@ function LocationButton() {
       (pos) => {
         const { latitude, longitude } = pos.coords;
         map.flyTo([latitude, longitude], 10);
-        setUserLocation({ lat: latitude, lng: longitude, label: 'Ma position' });
       },
       () => {},
       { enableHighAccuracy: false, timeout: 10000 }
@@ -53,13 +51,18 @@ const TRACKER_TYPES = [
 
 function createTrackerIcon(type, heading = 0) {
   const colors = { aircraft: '#3B82F6', satellite: '#D946EF', ship: '#06B6D4' };
-  const arrows = { aircraft: '✈️', satellite: '🛰️', ship: '⬆' };
-  const sizes = { aircraft: 28, satellite: 28, ship: 26 };
-  const sz = sizes[type];
-  const isShip = type === 'ship';
+  const sz = 30;
+
+  // SVG arrows that actually rotate (emojis don't rotate in most browsers)
+  const svgs = {
+    aircraft: `<svg viewBox="0 0 24 24" width="18" height="18" fill="${colors.aircraft}" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))"><path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>`,
+    satellite: `<svg viewBox="0 0 24 24" width="16" height="16" fill="${colors.satellite}" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))"><circle cx="12" cy="12" r="3"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14M7.76 7.76a6 6 0 0 0 0 8.49M19.07 4.93a10 10 0 0 1 0 14.14M16.24 7.76a6 6 0 0 1 0 8.49" stroke="${colors.satellite}" fill="none" stroke-width="1.5"/></svg>`,
+    ship: `<svg viewBox="0 0 24 24" width="16" height="16" fill="${colors.ship}" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))"><path d="M12 2L4 12h5v6h6v-6h5L12 2z"/></svg>`,
+  };
+
   return L.divIcon({
     className: 'tracker-icon',
-    html: `<div style="width:${sz}px;height:${sz}px;display:flex;align-items:center;justify-content:center;transform:rotate(${heading}deg);transition:transform 0.5s ease;font-size:${isShip ? 14 : 16}px;${isShip ? `background:${colors[type]};border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,.4);color:white;font-weight:bold` : ''}">${arrows[type]}</div>`,
+    html: `<div style="width:${sz}px;height:${sz}px;display:flex;align-items:center;justify-content:center;transform:rotate(${heading}deg);transition:transform 0.6s ease">${svgs[type]}</div>`,
     iconSize: [sz, sz],
     iconAnchor: [sz / 2, sz / 2],
   });
@@ -71,11 +74,12 @@ export default function MapPage() {
   const isPremium = useAuthStore((s) => s.isPremium);
   const [activeCategories, setActiveCategories] = useState(new Set());
   const [showHeatmap, setShowHeatmap] = useState(false);
+  const [showCatPanel, setShowCatPanel] = useState(false);
   const [mode, setMode] = useState('alerts'); // 'alerts' | 'tracking'
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   // Tracker store
-  const { aircraft, satellites, ships, activeTrackers, isLoading: trackersLoading, lastFetch, fetchTrackers, toggleTracker } =
+  const { aircraft, satellites, ships, maritimeCoverage, activeTrackers, isLoading: trackersLoading, lastFetch, fetchTrackers, toggleTracker } =
     useTrackerStore();
 
   const lat = userLocation?.lat || 48.8566;
@@ -155,34 +159,61 @@ export default function MapPage() {
         </button>
       </div>
 
-      {/* Alert mode filters */}
+      {/* Alert mode: heatmap left, filter toggle right */}
       {mode === 'alerts' && (
-        <div className="map-page__filters">
-          <PremiumGate feature="Heatmap">
-            <button
-              onClick={() => setShowHeatmap(!showHeatmap)}
-              className={`map-page__chip ${showHeatmap ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
-            >
-              <Layers size={14} />
-              Heatmap
-            </button>
-          </PremiumGate>
-          {availableCategories.map((cat) => {
-            const isActive = activeCategories.size === 0 || activeCategories.has(cat.id);
-            const count = events.filter((e) => e.type === cat.id).length;
-            return (
+        <>
+          {/* Heatmap button — top left */}
+          <div className="map-page__heatmap-btn">
+            <PremiumGate feature="Heatmap">
               <button
-                key={cat.id}
-                onClick={() => toggleCategory(cat.id)}
-                className={`map-page__chip ${isActive ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
+                onClick={() => setShowHeatmap(!showHeatmap)}
+                className={`map-page__chip ${showHeatmap ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
               >
-                <span className="map-page__chip-dot" style={{ backgroundColor: cat.color }} />
-                {cat.label}
-                <span className="map-page__chip-count">({count})</span>
+                <Layers size={14} />
+                Heatmap
               </button>
-            );
-          })}
-        </div>
+            </PremiumGate>
+          </div>
+
+          {/* Filter toggle — top right */}
+          <button
+            className={`map-page__filter-toggle ${activeCategories.size > 0 ? 'map-page__filter-toggle--active' : ''}`}
+            onClick={() => setShowCatPanel(!showCatPanel)}
+          >
+            {showCatPanel ? <X size={16} /> : <SlidersHorizontal size={16} />}
+            <span>Filtres{activeCategories.size > 0 ? ` (${activeCategories.size})` : ''}</span>
+          </button>
+
+          {/* Collapsible category panel */}
+          {showCatPanel && (
+            <div className="map-page__cat-panel">
+              {availableCategories.map((cat) => {
+                const isActive = activeCategories.size === 0 || activeCategories.has(cat.id);
+                const count = events.filter((e) => e.type === cat.id).length;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => toggleCategory(cat.id)}
+                    className={`map-page__chip ${isActive ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
+                  >
+                    <span className="map-page__chip-dot" style={{ backgroundColor: cat.color }} />
+                    {cat.label}
+                    <span className="map-page__chip-count">({count})</span>
+                  </button>
+                );
+              })}
+              {activeCategories.size > 0 && (
+                <button
+                  className="map-page__chip map-page__chip--active"
+                  onClick={() => setActiveCategories(new Set())}
+                >
+                  <X size={12} />
+                  Tout afficher
+                </button>
+              )}
+            </div>
+          )}
+        </>
       )}
 
       {/* Tracking mode filters */}
@@ -361,8 +392,11 @@ export default function MapPage() {
           ? `${filteredEvents.length} événement${filteredEvents.length > 1 ? 's' : ''}`
           : `${allTrackerPoints.length} objet${allTrackerPoints.length > 1 ? 's' : ''} suivi${allTrackerPoints.length > 1 ? 's' : ''}`
         }
-        {mode === 'tracking' && ships.length === 0 && activeTrackers.includes('ship') && !trackersLoading && (
-          <span className="map-page__last-update"> · Navires: zone non couverte</span>
+        {mode === 'tracking' && activeTrackers.includes('ship') && !trackersLoading && lastFetch && maritimeCoverage !== 'global' && (
+          <span className="map-page__last-update"> · Navires: {ships.length === 0 ? 'aucun à proximité' : 'couverture régionale'}</span>
+        )}
+        {mode === 'tracking' && activeTrackers.includes('ship') && !trackersLoading && lastFetch && maritimeCoverage === 'global' && (
+          <span className="map-page__last-update"> · Navires: couverture mondiale</span>
         )}
         {mode === 'tracking' && lastFetch && (
           <span className="map-page__last-update"> · MAJ {new Date(lastFetch).toLocaleTimeString('fr-FR')}</span>

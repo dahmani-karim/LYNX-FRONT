@@ -43,7 +43,7 @@
     }
   }
 
-  // Filter chips
+  // Filter chips (tracking mode only)
   &__filters {
     position: absolute;
     top: $sp-12;
@@ -54,6 +54,61 @@
     gap: $sp-1-5;
     overflow-x: auto;
     @include no-scrollbar;
+  }
+
+  // Heatmap button — top left
+  &__heatmap-btn {
+    position: absolute;
+    top: $sp-3;
+    left: $sp-3;
+    z-index: $z-map-controls;
+  }
+
+  // Filter toggle button — top right
+  &__filter-toggle {
+    position: absolute;
+    top: $sp-3;
+    right: $sp-3;
+    z-index: $z-map-controls + 1;
+    display: flex;
+    align-items: center;
+    gap: $sp-1-5;
+    padding: $sp-1-5 $sp-3;
+    border-radius: $radius-full;
+    font-size: $text-xs;
+    font-weight: 600;
+    background-color: rgba($lynx-surface, 0.9);
+    backdrop-filter: blur(8px);
+    border: 1px solid $lynx-border;
+    color: $lynx-muted;
+    @include transition;
+
+    &:hover { color: $lynx-text; }
+
+    &--active {
+      border-color: $lynx-accent;
+      color: $lynx-accent;
+    }
+  }
+
+  // Collapsible category panel
+  &__cat-panel {
+    position: absolute;
+    top: calc($sp-3 + 2.25rem);
+    right: $sp-3;
+    z-index: $z-map-controls;
+    display: flex;
+    flex-direction: column;
+    gap: $sp-1-5;
+    padding: $sp-3;
+    background-color: rgba($lynx-surface, 0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid $lynx-border;
+    border-radius: $radius-xl;
+    box-shadow: $shadow-lg;
+    max-height: 60vh;
+    overflow-y: auto;
+    max-width: 14rem;
   }
 
   &__chip {

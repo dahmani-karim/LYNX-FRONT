@@ -15,9 +15,9 @@ export async function fetchMaritimeTracker(lat, lng) {
 
     if (!res.ok) throw new Error(`Strapi maritime proxy: ${res.status}`);
     const json = await res.json();
-    return json.data || [];
+    return { data: json.data || [], coverage: json.coverage || 'none', source: json.source || 'none' };
   } catch (err) {
     console.warn('[maritime] Backend proxy failed:', err.message);
-    return [];
+    return { data: [], coverage: 'none', source: 'none' };
   }
 }

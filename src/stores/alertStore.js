@@ -102,20 +102,22 @@ export const useAlertStore = create((set, get) => ({
     return filtered;
   },
 
-  fetchAllData: async (userLocation) => {
+  fetchAllData: async (userLocation, weatherLocation) => {
     const { riskScores: prevScores } = get();
     set({ isLoading: true, errors: {} });
 
     const lat = userLocation?.lat || 48.8566;
     const lng = userLocation?.lng || 2.3522;
+    const wLat = weatherLocation?.lat || lat;
+    const wLng = weatherLocation?.lng || lng;
     const errors = {};
     let allEvents = [];
 
     // 1 appel Strapi (alertes globales pré-traduites) + quelques appels locaux (location-dependent)
     const results = await Promise.allSettled([
       fetchGlobalAlerts({ pageSize: 200, lang: 'fr' }),
-      fetchWeather(lat, lng),
-      fetchAirQuality(lat, lng),
+      fetchWeather(wLat, wLng),
+      fetchAirQuality(wLat, wLng),
       fetchFires(lat, lng),
       fetchServiceStatuses(),
       fetchNuclearProduction(),

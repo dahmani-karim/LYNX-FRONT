@@ -8,7 +8,7 @@ import { requestPermission } from '../../services/notifications';
 import { fetchZones as apiFetchZones, createZone as apiCreateZone, deleteZone as apiDeleteZone } from '../../services/strapi';
 import {
   MapPin, Bell, Eye, Trash2, Plus, ChevronRight, Info, Globe, Loader,
-  User, Crown, LogOut
+  User, Crown, LogOut, Crosshair
 } from 'lucide-react';
 import './SettingsPage.scss';
 
@@ -38,6 +38,7 @@ export default function SettingsPage() {
   const [newZone, setNewZone] = useState({ label: '', lat: '', lng: '', radiusKm: 50 });
   const [locationInput, setLocationInput] = useState(userLocation.label);
   const [syncing, setSyncing] = useState(false);
+  const [zoneGpsLoading, setZoneGpsLoading] = useState(false);
 
   // Sync zones from Strapi when authenticated
   const syncZonesFromStrapi = useCallback(async () => {
@@ -96,6 +97,23 @@ export default function SettingsPage() {
 
     setNewZone({ label: '', lat: '', lng: '', radiusKm: 50 });
     setShowAddZone(false);
+  };
+
+  const handleZoneGps = () => {
+    if (!navigator.geolocation) return;
+    setZoneGpsLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setNewZone((z) => ({
+          ...z,
+          lat: pos.coords.latitude.toFixed(4),
+          lng: pos.coords.longitude.toFixed(4),
+          label: z.label || 'Ma position',
+        }));
+        setZoneGpsLoading(false);
+      },
+      () => setZoneGpsLoading(false)
+    );
   };
 
   const handleRemoveZone = async (zone) => {
@@ -235,6 +253,16 @@ export default function SettingsPage() {
                 placeholder="Rayon km"
                 className="settings-page__zone-grid-input"
               />
+              <button
+                type="button"
+                onClick={handleZoneGps}
+                className="settings-page__gps-btn"
+                disabled={zoneGpsLoading}
+                title="Utiliser ma position GPS"
+              >
+                {zoneGpsLoading ? <Loader size={14} className="spin" /> : <Crosshair size={14} />}
+                GPS
+              </button>
             </div>
             <button onClick={handleAddZone} className="settings-page__zone-submit" disabled={syncing}>
               {syncing ? <><Loader size={14} className="spin" /> Synchronisation...</> : 'Ajouter la zone'}

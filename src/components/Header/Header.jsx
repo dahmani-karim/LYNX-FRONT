@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { RefreshCw, Menu, X, Home, Map, Bell, BarChart3, Settings, Eye, Zap, Info, Compass, CreditCard } from 'lucide-react';
+import { RefreshCw, Menu, X, Home, Map, Bell, BarChart3, Settings, Eye, Zap, Info, Compass, CreditCard, Link2, User } from 'lucide-react';
 import { useAlertStore } from '../../stores/alertStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import LynxLogo from '../LynxLogo/LynxLogo';
@@ -11,8 +11,10 @@ const NAV_MAIN = [
   { to: '/dashboard', icon: Home, label: 'Dashboard' },
   { to: '/map', icon: Map, label: 'Carte' },
   { to: '/alerts', icon: Bell, label: 'Alertes' },
+  { to: '/analysis', icon: Link2, label: 'Analyse' },
   { to: '/stats', icon: BarChart3, label: 'Stats' },
   { to: '/energy', icon: Zap, label: 'Énergie' },
+  { to: '/account', icon: User, label: 'Mon compte' },
   { to: '/settings', icon: Settings, label: 'Réglages' },
 ];
 

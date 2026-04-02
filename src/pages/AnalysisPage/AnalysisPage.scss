@@ -1,0 +1,355 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.analysis-page {
+  @include page-container;
+  @include stack($sp-5);
+  padding-bottom: $sp-16;
+
+  &__header {
+    padding: $sp-2 0;
+  }
+
+  &__title {
+    font-size: $text-xl;
+    font-weight: 700;
+  }
+
+  &__subtitle {
+    font-size: $text-xs;
+    color: $lynx-dim;
+    margin-top: $sp-1;
+  }
+
+  // Tabs
+  &__tabs {
+    display: flex;
+    background-color: $lynx-surface;
+    border: 1px solid $lynx-border;
+    border-radius: $radius-full;
+    padding: $sp-0-5;
+    gap: $sp-0-5;
+  }
+
+  &__tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $sp-1-5;
+    padding: $sp-2 $sp-3;
+    border-radius: $radius-full;
+    font-size: $text-xs;
+    font-weight: 600;
+    color: $lynx-muted;
+    @include transition;
+
+    &--active {
+      background-color: $lynx-accent;
+      color: white;
+    }
+
+    &:not(&--active):hover {
+      color: $lynx-text;
+    }
+  }
+
+  &__section {
+    @include stack($sp-5);
+  }
+
+  &__section-title {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    font-size: $text-sm;
+    font-weight: 600;
+    color: $lynx-muted;
+  }
+
+  // Insights summary
+  &__insights-grid {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-2;
+  }
+
+  &__insight {
+    @include card;
+    padding: $sp-3 $sp-4;
+    border-left: 3px solid $lynx-border;
+
+    &--high { border-left-color: $lynx-danger; }
+    &--medium { border-left-color: $lynx-warning; }
+    &--low { border-left-color: $lynx-info; }
+  }
+
+  &__insight-title {
+    font-size: $text-sm;
+    font-weight: 600;
+    margin-bottom: $sp-1;
+  }
+
+  &__insight-desc {
+    font-size: $text-xs;
+    color: $lynx-muted;
+  }
+
+  &__insight-meta {
+    display: flex;
+    align-items: center;
+    gap: $sp-1;
+    margin-top: $sp-1-5;
+    font-size: $text-xs;
+    color: $lynx-dim;
+  }
+
+  &__pred-head {
+    display: flex;
+    align-items: center;
+    gap: $sp-1-5;
+    margin-bottom: $sp-1;
+    font-size: $text-sm;
+  }
+
+  // Empty state
+  &__empty {
+    @include card;
+    @include flex-col;
+    align-items: center;
+    padding: $sp-10 $sp-4;
+    gap: $sp-3;
+    text-align: center;
+    color: $lynx-dim;
+
+    p { font-size: $text-sm; }
+  }
+
+  &__empty-sub {
+    font-size: $text-xs !important;
+    color: $lynx-dim;
+    max-width: 24rem;
+  }
+
+  // Correlation cards
+  &__correlations {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-2;
+  }
+
+  &__corr-card {
+    @include card;
+    padding: $sp-3 $sp-4;
+    cursor: pointer;
+    @include transition;
+
+    &:hover {
+      border-color: $lynx-accent;
+    }
+  }
+
+  &__corr-header {
+    @include flex-between;
+    margin-bottom: $sp-1-5;
+  }
+
+  &__corr-chain {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+  }
+
+  &__corr-cat {
+    font-size: $text-sm;
+    font-weight: 600;
+  }
+
+  &__corr-meta {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    color: $lynx-dim;
+  }
+
+  &__confidence {
+    font-size: $text-xs;
+    font-weight: 700;
+    padding: $sp-0-5 $sp-2;
+    border-radius: $radius-full;
+
+    &--high {
+      background-color: rgba($lynx-danger, 0.15);
+      color: $lynx-danger;
+    }
+    &--med {
+      background-color: rgba($lynx-warning, 0.15);
+      color: $lynx-warning;
+    }
+    &--low {
+      background-color: rgba($lynx-dim, 0.15);
+      color: $lynx-dim;
+    }
+  }
+
+  &__corr-pattern {
+    font-size: $text-xs;
+    color: $lynx-muted;
+    margin-bottom: $sp-2;
+  }
+
+  &__corr-badges {
+    display: flex;
+    gap: $sp-2;
+  }
+
+  &__badge {
+    font-size: 10px;
+    color: $lynx-dim;
+    background-color: rgba($lynx-border, 0.3);
+    padding: $sp-0-5 $sp-2;
+    border-radius: $radius-full;
+  }
+
+  // Correlation detail (expanded)
+  &__corr-detail {
+    margin-top: $sp-3;
+    padding-top: $sp-3;
+    border-top: 1px solid rgba($lynx-border, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: $sp-2;
+    align-items: stretch;
+  }
+
+  &__corr-arrow {
+    @include flex-center;
+    color: $lynx-dim;
+  }
+
+  &__corr-event {
+    display: flex;
+    align-items: flex-start;
+    gap: $sp-2;
+    background-color: rgba($lynx-bg, 0.5);
+    padding: $sp-2 $sp-3;
+    border-radius: $radius-lg;
+  }
+
+  &__corr-event-title {
+    font-size: $text-xs;
+    font-weight: 500;
+    margin-bottom: $sp-0-5;
+  }
+
+  &__corr-event-meta {
+    font-size: 10px;
+    color: $lynx-dim;
+  }
+
+  // Trends table
+  &__trends {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-1-5;
+  }
+
+  &__trend-row {
+    @include card;
+    padding: $sp-3;
+    display: grid;
+    grid-template-columns: 1fr auto auto 4rem;
+    align-items: center;
+    gap: $sp-3;
+
+    @media (max-width: $bp-sm) {
+      grid-template-columns: 1fr auto auto 3rem;
+      gap: $sp-2;
+    }
+  }
+
+  &__trend-cat {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+  }
+
+  &__trend-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: $radius-md;
+    @include flex-center;
+    flex-shrink: 0;
+  }
+
+  &__trend-label {
+    font-size: $text-xs;
+    font-weight: 500;
+  }
+
+  &__trend-scores {
+    display: flex;
+    align-items: center;
+    gap: $sp-1;
+    font-size: $text-xs;
+  }
+
+  &__trend-prev {
+    color: $lynx-dim;
+  }
+
+  &__trend-curr {
+    font-weight: 600;
+  }
+
+  &__trend-delta {
+    display: flex;
+    align-items: center;
+    gap: $sp-1;
+  }
+
+  &__trend-value {
+    font-size: $text-xs;
+    font-weight: 600;
+
+    &--rising { color: $lynx-danger; }
+    &--declining { color: $lynx-success; }
+    &--stable { color: $lynx-dim; }
+  }
+
+  &__trend-bar {
+    height: 4px;
+    background-color: rgba($lynx-border, 0.3);
+    border-radius: $radius-full;
+    overflow: hidden;
+  }
+
+  &__trend-fill {
+    height: 100%;
+    border-radius: $radius-full;
+    transition: width 0.4s ease;
+  }
+
+  // Explanation box
+  &__explain {
+    @include card;
+    padding: $sp-4;
+    margin-top: $sp-3;
+
+    h3 {
+      font-size: $text-sm;
+      font-weight: 600;
+      margin-bottom: $sp-2;
+    }
+
+    p {
+      font-size: $text-xs;
+      color: $lynx-muted;
+      line-height: 1.6;
+
+      & + p { margin-top: $sp-2; }
+    }
+
+    strong { color: $lynx-text; }
+  }
+}

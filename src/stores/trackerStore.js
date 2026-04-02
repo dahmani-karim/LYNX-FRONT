@@ -7,6 +7,7 @@ export const useTrackerStore = create((set, get) => ({
   aircraft: [],
   satellites: [],
   ships: [],
+  maritimeCoverage: 'none',
   activeTrackers: ['aircraft', 'satellite', 'ship'],
   isLoading: false,
   lastFetch: null,
@@ -29,10 +30,13 @@ export const useTrackerStore = create((set, get) => ({
       activeTrackers.includes('ship') ? fetchMaritimeTracker(lat, lng) : Promise.resolve([]),
     ]);
 
+    const maritimeResult = results[2].status === 'fulfilled' ? results[2].value : { data: [], coverage: 'none' };
+
     set({
       aircraft: results[0].status === 'fulfilled' ? results[0].value : [],
       satellites: results[1].status === 'fulfilled' ? results[1].value : [],
-      ships: results[2].status === 'fulfilled' ? results[2].value : [],
+      ships: maritimeResult.data || [],
+      maritimeCoverage: maritimeResult.coverage || 'none',
       isLoading: false,
       lastFetch: new Date().toISOString(),
     });
