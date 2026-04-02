@@ -166,6 +166,17 @@ export default function Pricing() {
         ))}
       </div>
 
+      {/* Partner program */}
+      <section className="pricing__partner">
+        <div className="pricing__partner-inner">
+          <span className="pricing__partner-badge">🤝 Programme Partner</span>
+          <p>Tu es créateur de contenu ? Deviens ambassadeur et accède au Premium gratuitement en échange de vidéos promotionnelles.</p>
+          <a href="https://partner.lacavernedurefractaire.fr" target="_blank" rel="noopener noreferrer" className="pricing__partner-link">
+            Découvrir le programme Partner <ArrowRight size={14} />
+          </a>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section className="pricing__faq">
         <h2 className="pricing__faq-title">Questions fréquentes</h2>

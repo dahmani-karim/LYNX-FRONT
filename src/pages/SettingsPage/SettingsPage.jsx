@@ -9,7 +9,7 @@ import { playSuccessSound, playErrorSound, playFlashSound, playPrioritySound, pl
 import { fetchZones as apiFetchZones, createZone as apiCreateZone, deleteZone as apiDeleteZone } from '../../services/strapi';
 import {
   MapPin, Bell, Eye, Trash2, Plus, ChevronRight, Info, Globe, Loader,
-  User, Crown, LogOut, Crosshair, Volume2, VolumeX, Play, Sun, Moon, Monitor, Activity
+  User, Crown, LogOut, Crosshair, Volume2, VolumeX, Play, Sun, Moon, Monitor, Activity, Handshake
 } from 'lucide-react';
 import './SettingsPage.scss';
 
@@ -163,8 +163,8 @@ export default function SettingsPage() {
               <p className="settings-page__profile-name">{user.username}</p>
               <p className="settings-page__profile-email">{user.email}</p>
               {isPremium && (
-                <span className="settings-page__profile-badge">
-                  <Crown size={12} />
+                <span className={`settings-page__profile-badge${premiumPlan === 'Partner' ? ' settings-page__profile-badge--partner' : ''}`}>
+                  {premiumPlan === 'Partner' ? <Handshake size={12} /> : <Crown size={12} />}
                   {premiumPlan || 'Premium'}
                 </span>
               )}

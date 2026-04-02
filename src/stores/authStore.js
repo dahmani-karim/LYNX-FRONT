@@ -21,6 +21,11 @@ export const useAuthStore = create(
           isAuthenticated: true,
         });
 
+        // Check Partner status first (distinct badge)
+        if (data.user?.isPartner) {
+          set({ isPremium: true, premiumPlan: 'Partner' });
+        }
+
         // Fetch extended profile
         try {
           const profile = await fetchProfile();
@@ -28,6 +33,8 @@ export const useAuthStore = create(
           // Check VIP status from profile
           if (profile?.vipLynx) {
             set({ isPremium: true, premiumPlan: 'VIP' });
+          } else if (profile?.isPartner && !get().premiumPlan) {
+            set({ isPremium: true, premiumPlan: 'Partner' });
           }
         } catch {
           // Profile fetch can fail if not created yet
@@ -58,6 +65,8 @@ export const useAuthStore = create(
         // Check VIP for newly registered users
         if (data.user?.vipLynx) {
           set({ isPremium: true, premiumPlan: 'VIP' });
+        } else if (data.user?.isPartner) {
+          set({ isPremium: true, premiumPlan: 'Partner' });
         }
       },
 
@@ -85,6 +94,11 @@ export const useAuthStore = create(
           // Re-check VIP status on refresh
           if (profile?.vipLynx) {
             set({ isPremium: true, premiumPlan: 'VIP' });
+            return;
+          }
+          // Check Partner status
+          if (profile?.isPartner) {
+            set({ isPremium: true, premiumPlan: 'Partner' });
             return;
           }
           // Re-check Fourthwall membership

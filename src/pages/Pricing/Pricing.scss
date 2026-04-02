@@ -249,6 +249,56 @@
   }
 }
 
+// ── Partner ──
+.pricing__partner {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: $sp-6 $sp-4;
+}
+
+.pricing__partner-inner {
+  text-align: center;
+  padding: $sp-6;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(#D4AF37, 0.08), rgba(#D4AF37, 0.02));
+  border: 1px solid rgba(#D4AF37, 0.2);
+
+  p {
+    color: $lynx-dim;
+    font-size: $text-sm;
+    margin-top: $sp-2;
+    max-width: 40rem;
+    margin-inline: auto;
+  }
+}
+
+.pricing__partner-badge {
+  display: inline-block;
+  padding: $sp-1 $sp-3;
+  border-radius: 999px;
+  background: rgba(#D4AF37, 0.15);
+  color: #D4AF37;
+  font-size: $text-xs;
+  font-weight: 600;
+}
+
+.pricing__partner-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: $sp-3;
+  color: #D4AF37;
+  font-size: $text-sm;
+  font-weight: 500;
+  text-decoration: none;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+  }
+}
+
 // ── Footer ──
 .pricing__footer {
   text-align: center;

@@ -482,6 +482,11 @@
     color: $lynx-warning;
     font-size: 10px;
     font-weight: 600;
+
+    &--partner {
+      background-color: rgba(#D4AF37, 0.15);
+      color: #D4AF37;
+    }
   }
 
   &__profile-actions {
