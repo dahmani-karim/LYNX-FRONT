@@ -77,7 +77,7 @@ export default function EnergyPrices() {
   return (
     <div className="energy-prices">
       <div className="energy-prices__header">
-        <div>
+        <div className='energy-prices__titlebloc'>
           <h1 className="energy-prices__title">
             <Droplets size={20} />
             Prix Énergie & Carburants

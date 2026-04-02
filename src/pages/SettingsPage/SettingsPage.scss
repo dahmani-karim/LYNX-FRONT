@@ -294,6 +294,36 @@
     }
   }
 
+  // Magnitude slider
+  &__magnitude-row {
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+  }
+
+  &__magnitude-slider {
+    flex: 1;
+    accent-color: $lynx-accent;
+    height: 6px;
+    cursor: pointer;
+  }
+
+  &__magnitude-value {
+    font-size: $text-lg;
+    font-weight: 700;
+    color: $lynx-accent;
+    min-width: 2.5rem;
+    text-align: center;
+  }
+
+  &__magnitude-legend {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: $lynx-dim;
+    margin-top: $sp-1;
+  }
+
   // Ecosystem button
   &__eco-btn {
     width: 100%;

@@ -36,14 +36,53 @@ export const API_CONFIG = {
   },
 
   STATUS_PAGES: {
+    // Finances & Paiement
+    STRIPE: 'https://status.stripe.com/api/v2/status.json',
+    PAYPAL: 'https://www.paypal-status.com/api/v2/status.json',
+    WISE: 'https://status.wise.com/api/v2/status.json',
+    COINBASE: 'https://status.coinbase.com/api/v2/status.json',
+    // Cloud & Hébergement
     GITHUB: 'https://www.githubstatus.com/api/v2/status.json',
     CLOUDFLARE: 'https://www.cloudflarestatus.com/api/v2/status.json',
-    DISCORD: 'https://discordstatus.com/api/v2/status.json',
-    OPENAI: 'https://status.openai.com/api/v2/status.json',
     VERCEL: 'https://www.vercel-status.com/api/v2/status.json',
     NETLIFY: 'https://www.netlifystatus.com/api/v2/status.json',
     RENDER: 'https://status.render.com/api/v2/status.json',
+    DIGITALOCEAN: 'https://status.digitalocean.com/api/v2/status.json',
+    DOCKER: 'https://www.dockerstatus.com/api/v2/status.json',
+    HEROKU: 'https://status.heroku.com/api/v2/status.json',
+    // Communication & Réseaux sociaux
+    DISCORD: 'https://discordstatus.com/api/v2/status.json',
+    SLACK: 'https://status.slack.com/api/v2.0.0/current',
+    ZOOM: 'https://status.zoom.us/api/v2/status.json',
+    TWITCH: 'https://status.twitch.tv/api/v2/status.json',
+    REDDIT: 'https://www.redditstatus.com/api/v2/status.json',
+    // Outils & Productivité
+    OPENAI: 'https://status.openai.com/api/v2/status.json',
+    NOTION: 'https://status.notion.so/api/v2/status.json',
+    FIGMA: 'https://status.figma.com/api/v2/status.json',
+    BITBUCKET: 'https://bitbucket.status.atlassian.com/api/v2/status.json',
+    DATADOG: 'https://status.datadoghq.com/api/v2/status.json',
     DROPBOX: 'https://status.dropbox.com/api/v2/status.json',
+    ATLASSIAN: 'https://status.atlassian.com/api/v2/status.json',
+  },
+
+  PING_SERVICES: {
+    // Santé & Services publics
+    DOCTOLIB: 'https://www.doctolib.fr',
+    AMELI: 'https://www.ameli.fr',
+    SERVICE_PUBLIC: 'https://www.service-public.fr',
+    IMPOTS: 'https://www.impots.gouv.fr',
+    CNAM: 'https://www.complementaire-sante-solidaire.gouv.fr',
+    // Logistique & Transport
+    SNCF: 'https://www.sncf-connect.com',
+    RATP: 'https://www.ratp.fr',
+    UBER: 'https://www.uber.com',
+    // Grandes plateformes (pas de statuspage public)
+    GOOGLE: 'https://www.google.fr',
+    YOUTUBE: 'https://www.youtube.com',
+    WHATSAPP: 'https://web.whatsapp.com',
+    INSTAGRAM: 'https://www.instagram.com',
+    AMAZON: 'https://www.amazon.fr',
   },
 
   CORS_PROXIES: [

@@ -9,7 +9,7 @@ import { playSuccessSound, playErrorSound, playFlashSound, playPrioritySound, pl
 import { fetchZones as apiFetchZones, createZone as apiCreateZone, deleteZone as apiDeleteZone } from '../../services/strapi';
 import {
   MapPin, Bell, Eye, Trash2, Plus, ChevronRight, Info, Globe, Loader,
-  User, Crown, LogOut, Crosshair, Volume2, VolumeX, Play, Sun, Moon, Monitor
+  User, Crown, LogOut, Crosshair, Volume2, VolumeX, Play, Sun, Moon, Monitor, Activity
 } from 'lucide-react';
 import './SettingsPage.scss';
 
@@ -28,6 +28,7 @@ export default function SettingsPage() {
     notifications, setNotifications,
     soundEnabled, setSoundEnabled,
     theme, setTheme,
+    earthquakeMinMagnitude, setEarthquakeMinMagnitude,
   } = useSettingsStore();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isPremium = useAuthStore((s) => s.isPremium);
@@ -326,6 +327,35 @@ export default function SettingsPage() {
               </button>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Séismes */}
+      <section className="settings-page__section settings-page__section--half">
+        <div className="settings-page__section-header">
+          <Activity size={18} />
+          <h3>Filtre séismes</h3>
+        </div>
+        <p className="settings-page__severity-label">
+          Magnitude minimum (échelle de Richter) — les séismes inférieurs sont masqués
+        </p>
+        <div className="settings-page__magnitude-row">
+          <input
+            type="range"
+            min={0}
+            max={8}
+            step={0.5}
+            value={earthquakeMinMagnitude ?? 4}
+            onChange={(e) => setEarthquakeMinMagnitude(parseFloat(e.target.value))}
+            className="settings-page__magnitude-slider"
+          />
+          <span className="settings-page__magnitude-value">{earthquakeMinMagnitude ?? 4}</span>
+        </div>
+        <div className="settings-page__magnitude-legend">
+          <span>0 (tout)</span>
+          <span>4 (ressenti)</span>
+          <span>6 (dégâts)</span>
+          <span>8 (majeur)</span>
         </div>
       </section>
 

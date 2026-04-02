@@ -1,9 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useAlertStore } from '../../stores/alertStore';
+import { SERVICE_CATEGORIES } from '../../services/status';
 import { timeAgo } from '../../utils/date';
 import {
   Wifi, WifiOff, Cloud, Globe, MessageCircle, Server,
-  CheckCircle, AlertTriangle, XCircle, HelpCircle, ExternalLink, ShieldAlert
+  CheckCircle, AlertTriangle, XCircle, HelpCircle, ExternalLink, ShieldAlert,
+  CreditCard, Wrench, Truck, Heart, ChevronDown, ChevronUp
 } from 'lucide-react';
 import './BlackoutPage.scss';
 
@@ -12,13 +14,19 @@ const STATUS_CONFIG = {
   minor: { label: 'Incident mineur', color: 'warning', Icon: AlertTriangle },
   major: { label: 'Panne majeure', color: 'danger', Icon: XCircle },
   critical: { label: 'Panne critique', color: 'critical', Icon: XCircle },
+  unreachable: { label: 'Inaccessible', color: 'danger', Icon: WifiOff },
   unknown: { label: 'Inconnu', color: 'dim', Icon: HelpCircle },
 };
 
 const CATEGORY_ICONS = {
-  internet: Globe,
+  finance: CreditCard,
   cloud: Cloud,
   communication: MessageCircle,
+  tools: Wrench,
+  logistics: Truck,
+  health: Heart,
+  platforms: Globe,
+  internet: Globe,
   default: Server,
 };
 
@@ -62,6 +70,16 @@ export default function BlackoutPage() {
   const serviceStatuses = useAlertStore((s) => s.serviceStatuses);
   const events = useAlertStore((s) => s.events);
   const lastFetch = useAlertStore((s) => s.lastFetch);
+  const [collapsedCats, setCollapsedCats] = useState(new Set());
+
+  const toggleCategory = (cat) => {
+    setCollapsedCats((prev) => {
+      const n = new Set(prev);
+      if (n.has(cat)) n.delete(cat);
+      else n.add(cat);
+      return n;
+    });
+  };
 
   // Blackout-type alerts (service outages that generate actual alert events)
   const blackoutAlerts = events.filter((e) => e.type === 'blackout');
@@ -85,6 +103,18 @@ export default function BlackoutPage() {
   const operational = serviceStatuses.filter((s) => s.status === 'operational');
   const degraded = serviceStatuses.filter((s) => s.status !== 'operational' && s.status !== 'unknown');
   const unknown = serviceStatuses.filter((s) => s.status === 'unknown');
+
+  // Group services by category — sorted by SERVICE_CATEGORIES order
+  const groupedServices = useMemo(() => {
+    const groups = {};
+    for (const svc of serviceStatuses) {
+      const cat = svc.category || 'cloud';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(svc);
+    }
+    return Object.entries(groups)
+      .sort(([a], [b]) => (SERVICE_CATEGORIES[a]?.order || 99) - (SERVICE_CATEGORIES[b]?.order || 99));
+  }, [serviceStatuses]);
 
   const overallStatus = degraded.some((s) => s.status === 'critical' || s.status === 'major')
     ? 'critical'
@@ -239,47 +269,76 @@ export default function BlackoutPage() {
         </section>
       )}
 
-      {/* Service grid */}
+      {/* Service grid — grouped by category */}
       <section className="blackout-page__grid-section">
         <h2 className="blackout-page__section-title">
           <Server size={16} />
-          Services surveillés
+          Services surveillés ({serviceStatuses.length})
         </h2>
-        <div className="blackout-page__grid">
-          {serviceStatuses.map((svc) => {
-            const cfg = getStatusConfig(svc.status);
-            const CatIcon = CATEGORY_ICONS[svc.category] || CATEGORY_ICONS.default;
-            return (
-              <div key={svc.name} className={`blackout-page__card blackout-page__card--${cfg.color}`}>
-                <div className="blackout-page__card-header">
-                  <CatIcon size={18} />
-                  <span className="blackout-page__card-name">{svc.name}</span>
-                  <span className={`blackout-page__card-dot blackout-page__card-dot--${cfg.color}`} />
-                </div>
-                <div className="blackout-page__card-status">
-                  <cfg.Icon size={14} />
-                  <span>{cfg.label}</span>
-                </div>
-                <p className="blackout-page__card-desc">{svc.description}</p>
-                <div className="blackout-page__card-footer">
-                  <span className="blackout-page__card-time">
-                    Vérifié {timeAgo(svc.lastChecked)}
-                  </span>
-                  {svc.pageUrl && (
-                    <a
-                      href={svc.pageUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="blackout-page__card-link"
-                    >
-                      <ExternalLink size={12} />
-                    </a>
+
+        {groupedServices.map(([catKey, services]) => {
+          const catConfig = SERVICE_CATEGORIES[catKey] || { label: catKey, icon: 'Server' };
+          const CatIcon = CATEGORY_ICONS[catKey] || CATEGORY_ICONS.default;
+          const isCollapsed = collapsedCats.has(catKey);
+          const catDegraded = services.filter((s) => s.status !== 'operational' && s.status !== 'unknown');
+          const catOk = services.filter((s) => s.status === 'operational');
+
+          return (
+            <div key={catKey} className="blackout-page__cat-group">
+              <button
+                className="blackout-page__cat-header"
+                onClick={() => toggleCategory(catKey)}
+              >
+                <CatIcon size={16} className="blackout-page__cat-icon" />
+                <span className="blackout-page__cat-label">{catConfig.label}</span>
+                <span className="blackout-page__cat-count">
+                  {catDegraded.length > 0 ? (
+                    <span className="blackout-page__cat-badge blackout-page__cat-badge--danger">{catDegraded.length} incident{catDegraded.length > 1 ? 's' : ''}</span>
+                  ) : (
+                    <span className="blackout-page__cat-badge blackout-page__cat-badge--ok">{catOk.length}/{services.length}</span>
                   )}
+                </span>
+                {isCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+              </button>
+
+              {!isCollapsed && (
+                <div className="blackout-page__grid">
+                  {services.map((svc) => {
+                    const cfg = getStatusConfig(svc.status === 'unreachable' ? 'major' : svc.status);
+                    return (
+                      <div key={svc.name} className={`blackout-page__card blackout-page__card--${cfg.color}`}>
+                        <div className="blackout-page__card-header">
+                          <span className="blackout-page__card-name">{svc.name}</span>
+                          <span className={`blackout-page__card-dot blackout-page__card-dot--${cfg.color}`} />
+                        </div>
+                        <div className="blackout-page__card-status">
+                          <cfg.Icon size={14} />
+                          <span>{cfg.label}</span>
+                        </div>
+                        <p className="blackout-page__card-desc">{svc.description}</p>
+                        <div className="blackout-page__card-footer">
+                          <span className="blackout-page__card-time">
+                            {svc.method === 'ping' ? '🔍 Ping' : '📡 API'} · {timeAgo(svc.lastChecked)}
+                          </span>
+                          {svc.pageUrl && (
+                            <a
+                              href={svc.pageUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="blackout-page__card-link"
+                            >
+                              <ExternalLink size={12} />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              )}
+            </div>
+          );
+        })}
       </section>
 
       {/* Legend */}

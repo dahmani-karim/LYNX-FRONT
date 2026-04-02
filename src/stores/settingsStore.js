@@ -17,6 +17,7 @@ export const useSettingsStore = create(
         categories: [],
       },
       soundEnabled: true,
+      earthquakeMinMagnitude: 4,
       isPremium: false,
       hasSeenOnboarding: false,
       mapStyle: 'dark',
@@ -58,6 +59,7 @@ export const useSettingsStore = create(
         })),
 
       setSoundEnabled: (v) => set({ soundEnabled: v }),
+      setEarthquakeMinMagnitude: (v) => set({ earthquakeMinMagnitude: v }),
       setHasSeenOnboarding: (v) => set({ hasSeenOnboarding: v }),
       setMapStyle: (style) => set({ mapStyle: style }),
     }),

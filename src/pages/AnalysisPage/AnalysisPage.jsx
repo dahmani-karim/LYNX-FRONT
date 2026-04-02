@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAlertStore } from '../../stores/alertStore';
 import { useAuthStore } from '../../stores/authStore';
 import { CATEGORIES, SEVERITY_LEVELS } from '../../config/categories';
@@ -6,7 +7,7 @@ import { findCorrelations, generateInsights } from '../../services/correlationEn
 import { calculateTrends, getPredictiveAlerts } from '../../services/predictiveEngine';
 import SeverityBadge from '../../components/SeverityBadge/SeverityBadge';
 import PremiumGate from '../../components/PremiumGate/PremiumGate';
-import { Link2, TrendingUp, TrendingDown, Minus, MapPin, Clock, ArrowRight, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
+import { Link2, TrendingUp, TrendingDown, Minus, MapPin, Clock, ArrowRight, ChevronDown, ChevronUp, AlertTriangle, ExternalLink } from 'lucide-react';
 import { timeAgo } from '../../utils/date';
 import './AnalysisPage.scss';
 
@@ -15,6 +16,7 @@ export default function AnalysisPage() {
   const isPremium = useAuthStore((s) => s.isPremium);
   const [tab, setTab] = useState('correlations'); // 'correlations' | 'trends'
   const [expandedCorr, setExpandedCorr] = useState(new Set());
+  const navigate = useNavigate();
 
   const correlations = useMemo(() => findCorrelations(events), [events]);
   const insights = useMemo(() => generateInsights(correlations), [correlations]);
@@ -137,7 +139,10 @@ export default function AnalysisPage() {
 
                     {isExpanded && (
                       <div className="analysis-page__corr-detail">
-                        <div className="analysis-page__corr-event">
+                        <div
+                          className="analysis-page__corr-event analysis-page__corr-event--link"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/alert/${encodeURIComponent(corr.source.id)}`); }}
+                        >
                           <SeverityBadge severity={corr.source.severity} size="xs" />
                           <div>
                             <p className="analysis-page__corr-event-title">{corr.source.title}</p>
@@ -145,11 +150,15 @@ export default function AnalysisPage() {
                               {corr.source.sourceName} · {timeAgo(corr.source.eventDate)}
                             </p>
                           </div>
+                          <ExternalLink size={12} className="analysis-page__corr-event-icon" />
                         </div>
                         <div className="analysis-page__corr-arrow">
                           <ArrowRight size={14} />
                         </div>
-                        <div className="analysis-page__corr-event">
+                        <div
+                          className="analysis-page__corr-event analysis-page__corr-event--link"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/alert/${encodeURIComponent(corr.impact.id)}`); }}
+                        >
                           <SeverityBadge severity={corr.impact.severity} size="xs" />
                           <div>
                             <p className="analysis-page__corr-event-title">{corr.impact.title}</p>
@@ -157,6 +166,7 @@ export default function AnalysisPage() {
                               {corr.impact.sourceName} · {timeAgo(corr.impact.eventDate)}
                             </p>
                           </div>
+                          <ExternalLink size={12} className="analysis-page__corr-event-icon" />
                         </div>
                       </div>
                     )}

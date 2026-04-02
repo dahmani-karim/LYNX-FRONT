@@ -1,15 +1,68 @@
 import { API_CONFIG } from '../config/api';
 
-const MONITORED_SERVICES = [
-  { name: 'GitHub', category: 'cloud', icon: 'github', url: API_CONFIG.STATUS_PAGES.GITHUB },
-  { name: 'Cloudflare', category: 'internet', icon: 'cloudflare', url: API_CONFIG.STATUS_PAGES.CLOUDFLARE },
-  { name: 'Discord', category: 'communication', icon: 'discord', url: API_CONFIG.STATUS_PAGES.DISCORD },
-  { name: 'OpenAI', category: 'cloud', icon: 'openai', url: API_CONFIG.STATUS_PAGES.OPENAI },
-  { name: 'Vercel', category: 'cloud', icon: 'vercel', url: API_CONFIG.STATUS_PAGES.VERCEL },
-  { name: 'Netlify', category: 'cloud', icon: 'netlify', url: API_CONFIG.STATUS_PAGES.NETLIFY },
-  { name: 'Render', category: 'cloud', icon: 'render', url: API_CONFIG.STATUS_PAGES.RENDER },
-  { name: 'Dropbox', category: 'cloud', icon: 'dropbox', url: API_CONFIG.STATUS_PAGES.DROPBOX },
+// ─── Service categories for grouped display ────────────────
+export const SERVICE_CATEGORIES = {
+  finance:       { label: 'Finances & Paiement',     icon: 'CreditCard',   order: 1 },
+  cloud:         { label: 'Cloud & Hébergement',     icon: 'Cloud',        order: 2 },
+  communication: { label: 'Communication & Réseaux', icon: 'MessageCircle', order: 3 },
+  tools:         { label: 'Outils & Productivité',   icon: 'Wrench',       order: 4 },
+  logistics:     { label: 'Logistique & Transport',   icon: 'Truck',        order: 5 },
+  health:        { label: 'Santé & Services publics', icon: 'Heart',        order: 6 },
+  platforms:     { label: 'Grandes plateformes',      icon: 'Globe',        order: 7 },
+};
+
+// ─── Statuspage.io-compatible services ─────────────────────
+const STATUSPAGE_SERVICES = [
+  // Finance
+  { name: 'Stripe',       category: 'finance',       url: API_CONFIG.STATUS_PAGES.STRIPE },
+  { name: 'PayPal',       category: 'finance',       url: API_CONFIG.STATUS_PAGES.PAYPAL },
+  { name: 'Wise',         category: 'finance',       url: API_CONFIG.STATUS_PAGES.WISE },
+  { name: 'Coinbase',     category: 'finance',       url: API_CONFIG.STATUS_PAGES.COINBASE },
+  // Cloud
+  { name: 'GitHub',       category: 'cloud',         url: API_CONFIG.STATUS_PAGES.GITHUB },
+  { name: 'Cloudflare',   category: 'cloud',         url: API_CONFIG.STATUS_PAGES.CLOUDFLARE },
+  { name: 'Vercel',       category: 'cloud',         url: API_CONFIG.STATUS_PAGES.VERCEL },
+  { name: 'Netlify',      category: 'cloud',         url: API_CONFIG.STATUS_PAGES.NETLIFY },
+  { name: 'Render',       category: 'cloud',         url: API_CONFIG.STATUS_PAGES.RENDER },
+  { name: 'DigitalOcean', category: 'cloud',         url: API_CONFIG.STATUS_PAGES.DIGITALOCEAN },
+  { name: 'Docker',       category: 'cloud',         url: API_CONFIG.STATUS_PAGES.DOCKER },
+  { name: 'Heroku',       category: 'cloud',         url: API_CONFIG.STATUS_PAGES.HEROKU },
+  // Communication
+  { name: 'Discord',      category: 'communication', url: API_CONFIG.STATUS_PAGES.DISCORD },
+  { name: 'Zoom',         category: 'communication', url: API_CONFIG.STATUS_PAGES.ZOOM },
+  { name: 'Twitch',       category: 'communication', url: API_CONFIG.STATUS_PAGES.TWITCH },
+  { name: 'Reddit',       category: 'communication', url: API_CONFIG.STATUS_PAGES.REDDIT },
+  // Tools
+  { name: 'OpenAI',       category: 'tools',         url: API_CONFIG.STATUS_PAGES.OPENAI },
+  { name: 'Notion',       category: 'tools',         url: API_CONFIG.STATUS_PAGES.NOTION },
+  { name: 'Figma',        category: 'tools',         url: API_CONFIG.STATUS_PAGES.FIGMA },
+  { name: 'Bitbucket',    category: 'tools',         url: API_CONFIG.STATUS_PAGES.BITBUCKET },
+  { name: 'Datadog',      category: 'tools',         url: API_CONFIG.STATUS_PAGES.DATADOG },
+  { name: 'Dropbox',      category: 'tools',         url: API_CONFIG.STATUS_PAGES.DROPBOX },
+  { name: 'Atlassian',    category: 'tools',         url: API_CONFIG.STATUS_PAGES.ATLASSIAN },
 ];
+
+// ─── HTTP-ping services (no public status API) ─────────────
+const PING_SERVICES = [
+  // Santé & Services publics
+  { name: 'Doctolib',       category: 'health',    url: API_CONFIG.PING_SERVICES.DOCTOLIB,        pageUrl: 'https://www.doctolib.fr' },
+  { name: 'Ameli',          category: 'health',    url: API_CONFIG.PING_SERVICES.AMELI,            pageUrl: 'https://www.ameli.fr' },
+  { name: 'Service-Public', category: 'health',    url: API_CONFIG.PING_SERVICES.SERVICE_PUBLIC,   pageUrl: 'https://www.service-public.fr' },
+  { name: 'Impots.gouv',    category: 'health',    url: API_CONFIG.PING_SERVICES.IMPOTS,           pageUrl: 'https://www.impots.gouv.fr' },
+  { name: 'Assurance Maladie', category: 'health', url: API_CONFIG.PING_SERVICES.CNAM,             pageUrl: 'https://www.complementaire-sante-solidaire.gouv.fr' },
+  // Logistique
+  { name: 'SNCF Connect',   category: 'logistics', url: API_CONFIG.PING_SERVICES.SNCF,             pageUrl: 'https://www.sncf-connect.com' },
+  { name: 'RATP',           category: 'logistics', url: API_CONFIG.PING_SERVICES.RATP,             pageUrl: 'https://www.ratp.fr' },
+  { name: 'Uber',           category: 'logistics', url: API_CONFIG.PING_SERVICES.UBER,             pageUrl: 'https://www.uber.com' },
+  // Grandes plateformes
+  { name: 'Google',         category: 'platforms', url: API_CONFIG.PING_SERVICES.GOOGLE,            pageUrl: 'https://www.google.fr' },
+  { name: 'YouTube',        category: 'platforms', url: API_CONFIG.PING_SERVICES.YOUTUBE,           pageUrl: 'https://www.youtube.com' },
+  { name: 'WhatsApp',       category: 'platforms', url: API_CONFIG.PING_SERVICES.WHATSAPP,          pageUrl: 'https://web.whatsapp.com' },
+  { name: 'Instagram',      category: 'platforms', url: API_CONFIG.PING_SERVICES.INSTAGRAM,         pageUrl: 'https://www.instagram.com' },
+  { name: 'Amazon',         category: 'platforms', url: API_CONFIG.PING_SERVICES.AMAZON,            pageUrl: 'https://www.amazon.fr' },
+];
+
+// ─── Helpers ───────────────────────────────────────────────
 
 function statusToSeverity(indicator) {
   if (!indicator) return 'info';
@@ -22,71 +75,143 @@ function statusToSeverity(indicator) {
   }
 }
 
-export async function fetchServiceStatuses() {
-  const results = [];
+function translateDesc(raw) {
+  switch (raw) {
+    case 'All Systems Operational': return 'Opérationnel';
+    case 'Partially Degraded Service': return 'Service partiellement dégradé';
+    case 'Major Service Outage': return 'Panne majeure';
+    case 'Minor Service Outage': return 'Panne mineure';
+    case 'Degraded Performance': return 'Performances dégradées';
+    case 'Service Under Maintenance': return 'Maintenance en cours';
+    default: return raw;
+  }
+}
 
-  const promises = MONITORED_SERVICES.map(async (service) => {
+function indicatorToFrench(indicator) {
+  switch (indicator) {
+    case 'minor': return 'mineur';
+    case 'major': return 'majeur';
+    case 'critical': return 'critique';
+    case 'maintenance': return 'maintenance';
+    default: return indicator;
+  }
+}
+
+// ─── Statuspage.io fetcher ─────────────────────────────────
+
+async function fetchStatuspageService(service) {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(service.url, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!res.ok) throw new Error(`${res.status}`);
+    const data = await res.json();
+
+    const indicator = data.status?.indicator || 'none';
+    const rawDesc = data.status?.description || 'Operational';
+    const description = translateDesc(rawDesc);
+
+    return {
+      name: service.name,
+      category: service.category,
+      method: 'statuspage',
+      pageUrl: service.url.replace('/api/v2/status.json', '').replace('/api/v2.0.0/current', ''),
+      status: indicator === 'none' ? 'operational' : indicator,
+      description,
+      indicator,
+      lastChecked: new Date().toISOString(),
+    };
+  } catch {
+    return {
+      name: service.name,
+      category: service.category,
+      method: 'statuspage',
+      pageUrl: service.url.replace('/api/v2/status.json', '').replace('/api/v2.0.0/current', ''),
+      status: 'unknown',
+      description: 'Impossible de vérifier',
+      indicator: 'unknown',
+      lastChecked: new Date().toISOString(),
+    };
+  }
+}
+
+// ─── HTTP ping fetcher (via CORS proxy) ────────────────────
+
+async function fetchPingService(service) {
+  const proxies = API_CONFIG.CORS_PROXIES;
+  let reachable = false;
+
+  for (const proxy of proxies) {
     try {
-      const res = await fetch(service.url);
-      if (!res.ok) throw new Error(`${service.name}: ${res.status}`);
-      const data = await res.json();
-
-      const indicator = data.status?.indicator || 'none';
-      const rawDesc = data.status?.description || 'Operational';
-      const description = rawDesc === 'All Systems Operational' ? 'Opérationnel'
-        : rawDesc === 'Partially Degraded Service' ? 'Service partiellement dégradé'
-        : rawDesc === 'Major Service Outage' ? 'Panne majeure'
-        : rawDesc === 'Minor Service Outage' ? 'Panne mineure'
-        : rawDesc;
-
-      if (indicator !== 'none') {
-        results.push({
-          id: `status-${service.name.toLowerCase()}`,
-          type: 'blackout',
-          title: `${service.name} : ${description}`,
-          description: `Service ${service.name} en état dégradé (${indicator === 'minor' ? 'mineur' : indicator === 'major' ? 'majeur' : indicator === 'critical' ? 'critique' : indicator})`,
-          severity: statusToSeverity(indicator),
-          sourceName: `${service.name} Status`,
-          sourceReliability: 99,
-          sourceUrl: service.url.replace('/api/v2/status.json', ''),
-          eventDate: new Date().toISOString(),
-          latitude: 37.7749,
-          longitude: -122.4194,
-          serviceInfo: {
-            name: service.name,
-            category: service.category,
-            indicator,
-            description,
-          },
-        });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 6000);
+      const res = await fetch(`${proxy}${encodeURIComponent(service.url)}`, {
+        method: 'HEAD',
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      // Consider 2xx and 3xx as reachable
+      if (res.ok || (res.status >= 300 && res.status < 400)) {
+        reachable = true;
+        break;
       }
-
-      return {
-        name: service.name,
-        category: service.category,
-        icon: service.icon,
-        pageUrl: service.url.replace('/api/v2/status.json', ''),
-        status: indicator === 'none' ? 'operational' : indicator,
-        description,
-        lastChecked: new Date().toISOString(),
-      };
     } catch {
-      return {
-        name: service.name,
-        category: service.category,
-        icon: service.icon,
-        pageUrl: service.url.replace('/api/v2/status.json', ''),
-        status: 'unknown',
-        description: 'Impossible de vérifier',
-        lastChecked: new Date().toISOString(),
-      };
+      // try next proxy
     }
-  });
+  }
 
-  const statuses = await Promise.allSettled(promises);
-  const serviceList = statuses
-    .filter((s) => s.status === 'fulfilled')
-    .map((s) => s.value);
+  return {
+    name: service.name,
+    category: service.category,
+    method: 'ping',
+    pageUrl: service.pageUrl,
+    status: reachable ? 'operational' : 'unreachable',
+    description: reachable ? 'Accessible' : 'Inaccessible ou bloqué',
+    indicator: reachable ? 'none' : 'major',
+    lastChecked: new Date().toISOString(),
+  };
+}
 
-  return { alerts: results, services: serviceList };
+// ─── Main export ───────────────────────────────────────────
+
+export async function fetchServiceStatuses() {
+  const alerts = [];
+
+  // Fetch both types in parallel
+  const statuspagePromises = STATUSPAGE_SERVICES.map(fetchStatuspageService);
+  const pingPromises = PING_SERVICES.map(fetchPingService);
+
+  const allResults = await Promise.allSettled([...statuspagePromises, ...pingPromises]);
+
+  const serviceList = allResults
+    .filter((r) => r.status === 'fulfilled')
+    .map((r) => r.value);
+
+  // Generate alert events for degraded services
+  for (const svc of serviceList) {
+    if (svc.status !== 'operational' && svc.status !== 'unknown') {
+      alerts.push({
+        id: `status-${svc.name.toLowerCase().replace(/\s+/g, '-')}`,
+        type: 'blackout',
+        title: `${svc.name} : ${svc.description}`,
+        description: `Service ${svc.name} en état dégradé (${indicatorToFrench(svc.indicator)})`,
+        severity: svc.status === 'unreachable' ? 'high' : statusToSeverity(svc.indicator),
+        sourceName: `${svc.name} Status`,
+        sourceReliability: svc.method === 'statuspage' ? 99 : 70,
+        sourceUrl: svc.pageUrl,
+        eventDate: new Date().toISOString(),
+        latitude: 48.8566,
+        longitude: 2.3522,
+        serviceInfo: {
+          name: svc.name,
+          category: svc.category,
+          indicator: svc.indicator,
+          description: svc.description,
+        },
+      });
+    }
+  }
+
+  return { alerts, services: serviceList };
 }

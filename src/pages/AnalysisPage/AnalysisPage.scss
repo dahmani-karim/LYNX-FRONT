@@ -246,6 +246,23 @@
     background-color: rgba($lynx-bg, 0.5);
     padding: $sp-2 $sp-3;
     border-radius: $radius-lg;
+
+    &--link {
+      cursor: pointer;
+      @include transition;
+
+      &:hover {
+        background-color: rgba($lynx-accent, 0.1);
+        border-color: $lynx-accent;
+      }
+    }
+  }
+
+  &__corr-event-icon {
+    flex-shrink: 0;
+    color: $lynx-dim;
+    margin-left: auto;
+    align-self: center;
   }
 
   &__corr-event-title {

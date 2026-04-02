@@ -141,13 +141,69 @@
 
   // Grid
   &__grid-section {
-    // no card wrapper — cards are individual
+    @include stack($sp-3);
+  }
+
+  &__cat-group {
+    @include card;
+    padding: 0;
+    overflow: hidden;
+
+    & + & { margin-top: $sp-2; }
+  }
+
+  &__cat-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    padding: $sp-3 $sp-4;
+    @include transition(background-color);
+    cursor: pointer;
+
+    &:hover { background-color: rgba($lynx-accent, 0.05); }
+
+    > svg:last-child { color: $lynx-dim; margin-left: auto; }
+  }
+
+  &__cat-icon {
+    color: $lynx-accent;
+    flex-shrink: 0;
+  }
+
+  &__cat-label {
+    font-size: $text-sm;
+    font-weight: 600;
+    flex: 1;
+    text-align: left;
+  }
+
+  &__cat-count {
+    margin-right: $sp-2;
+  }
+
+  &__cat-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: $sp-0-5 $sp-2;
+    border-radius: $radius-full;
+
+    &--ok {
+      background-color: rgba($lynx-success, 0.12);
+      color: $lynx-success;
+    }
+
+    &--danger {
+      background-color: rgba($lynx-danger, 0.12);
+      color: $lynx-danger;
+    }
   }
 
   &__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-    gap: $sp-3;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: $sp-2;
+    padding: 0 $sp-3 $sp-3;
   }
 
   &__card {

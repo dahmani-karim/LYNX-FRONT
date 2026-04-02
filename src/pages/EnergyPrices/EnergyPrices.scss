@@ -4,6 +4,11 @@
 
   &__header {
     @include flex-between;
+    .energy-prices__titlebloc, .energy-prices__subtitle {
+      display: flex;
+      flex-direction: row;
+      gap: 4px;
+    }
   }
 
   &__title {

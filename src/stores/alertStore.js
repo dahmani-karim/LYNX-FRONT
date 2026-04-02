@@ -7,6 +7,8 @@ import { fetchServiceStatuses } from '../services/status';
 import { fetchNuclearProduction } from '../services/energy';
 import { fetchInternetOutages } from '../services/internetOutages';
 import { calculateRiskScores } from '../services/riskEngine';
+import { useSettingsStore } from './settingsStore';
+import { asyncTranslate } from '../utils/translate';
 import { notifyNewAlerts } from '../services/notifications';
 import { computeDelta, getAlertTier } from '../services/deltaEngine';
 import { cacheAlertData, loadCachedData } from '../services/offlineCache';
@@ -189,32 +191,45 @@ export const useAlertStore = create((set, get) => ({
       new Map(allEvents.map((e) => [e.id, e])).values()
     );
 
-    const riskScores = calculateRiskScores(uniqueEvents);
+    // Filter earthquakes by minimum magnitude setting
+    const minMag = useSettingsStore.getState().earthquakeMinMagnitude || 4;
+    const filteredEvents = uniqueEvents.filter((e) => {
+      if (e.type === 'earthquake' && e.magnitude && e.magnitude < minMag) return false;
+      return true;
+    });
+
+    // Translate titles & descriptions that are still in English
+    for (const e of filteredEvents) {
+      if (e.title) e.title = asyncTranslate(e.title);
+      if (e.description) e.description = asyncTranslate(e.description);
+    }
+
+    const riskScores = calculateRiskScores(filteredEvents);
 
     // Compute delta between previous and current events
     const previousEvents = get().events;
-    const delta = isFirstFetch ? { newEvents: [], resolved: [], escalated: [], deescalated: [] } : computeDelta(previousEvents, uniqueEvents);
+    const delta = isFirstFetch ? { newEvents: [], resolved: [], escalated: [], deescalated: [] } : computeDelta(previousEvents, filteredEvents);
 
     // Detect new events by comparing against previous known IDs (exclude blackout — separate page)
     const wasFirstFetch = isFirstFetch;
     const prevEventIds = new Set(get().events.map((e) => e.id));
-    const newAlerts = uniqueEvents.filter((e) => !prevEventIds.has(e.id) && e.type !== 'blackout');
+    const newAlerts = filteredEvents.filter((e) => !prevEventIds.has(e.id) && e.type !== 'blackout');
 
     // Send push notifications for new high/critical alerts (skip first fetch)
     try {
       if (isFirstFetch) {
         // Hydrate known signatures without sending notifications
-        knownEventSigs = new Set(uniqueEvents.map((e) => `${e.type}::${e.title}`));
+        knownEventSigs = new Set(filteredEvents.map((e) => `${e.type}::${e.title}`));
         isFirstFetch = false;
       } else {
         const settings = JSON.parse(localStorage.getItem('lynx-settings') || '{}');
         const minSev = settings?.state?.notifications?.minSeverity || 'high';
-        knownEventSigs = notifyNewAlerts(uniqueEvents, knownEventSigs, minSev);
+        knownEventSigs = notifyNewAlerts(filteredEvents, knownEventSigs, minSev);
       }
     } catch {}
 
     set({
-      events: uniqueEvents,
+      events: filteredEvents,
       weatherData,
       serviceStatuses,
       riskScores,
