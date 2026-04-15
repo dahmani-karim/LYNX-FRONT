@@ -153,6 +153,19 @@ export class EcosystemPush {
     return res.json();
   }
 
+  async deleteHistoryItem(id) {
+    const token = this.getToken();
+    const res = await fetch(`${this.apiBase}/api/push-subscription/history/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    if (!res.ok) throw new Error(`Erreur delete: ${res.status}`);
+    return res.json();
+  }
+
   async markRead(ids) {
     const token = this.getToken();
     const res = await fetch(`${this.apiBase}/api/push-subscription/mark-read`, {

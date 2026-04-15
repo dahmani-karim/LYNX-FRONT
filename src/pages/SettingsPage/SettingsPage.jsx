@@ -446,7 +446,10 @@ export default function SettingsPage() {
                   <strong>{n.title}</strong>
                   <p>{n.body}</p>
                 </div>
-                <small>{new Date(n.sentAt || n.createdAt).toLocaleDateString('fr-FR')}</small>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+                  <small>{new Date(n.sentAt || n.createdAt).toLocaleDateString('fr-FR')}</small>
+                  <button onClick={async () => { try { await pushService.deleteHistoryItem(n.id); } catch(e) { console.error(e); } setNotifHistory(prev => prev.filter(item => item.id !== n.id)); }} title="Supprimer" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', opacity: 0.4, transition: 'opacity 0.2s', padding: '2px 4px' }} onMouseEnter={e => e.target.style.opacity = 1} onMouseLeave={e => e.target.style.opacity = 0.4}>🗑️</button>
+                </div>
               </div>
             ))}
           </div>
