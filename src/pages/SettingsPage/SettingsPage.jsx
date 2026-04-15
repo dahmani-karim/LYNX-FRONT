@@ -10,7 +10,7 @@ import { playSuccessSound, playErrorSound, playFlashSound, playPrioritySound, pl
 import { fetchZones as apiFetchZones, createZone as apiCreateZone, deleteZone as apiDeleteZone } from '../../services/strapi';
 import {
   MapPin, Bell, Eye, Trash2, Plus, ChevronRight, Info, Globe, Loader,
-  User, Crown, LogOut, Crosshair, Volume2, VolumeX, Play, Sun, Moon, Monitor, Activity, Handshake
+  User, Crown, LogOut, Crosshair, Volume2, VolumeX, Play, Sun, Moon, Monitor, Activity, Handshake, Megaphone
 } from 'lucide-react';
 import './SettingsPage.scss';
 
@@ -50,6 +50,27 @@ export default function SettingsPage() {
   const [pushLoading, setPushLoading] = useState(false);
   const [notifHistory, setNotifHistory] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // ─── Admin Push ───
+  const ADMIN_ICONS = ['🔔', '⭐', '🎉', '📢', '💡', '⚡', '🎯', '🔥', '✨', '📱'];
+  const ADMIN_APPS = [
+    { value: '', label: 'Toutes les apps' },
+    { value: 'smartcellar', label: 'SmartCellar' },
+    { value: 'progarden', label: 'ProGarden' },
+    { value: 'farmly', label: 'Farmly' },
+    { value: 'lynx', label: 'LYNX' },
+    { value: 'prete', label: 'PRÊT·E' },
+    { value: 'partner', label: 'Partner' },
+  ];
+  const adminApiBase = import.meta.env.VITE_STRAPI_URL || 'https://smart-cellar-api.onrender.com';
+  const getAdminToken = () => { try { return JSON.parse(localStorage.getItem('lynx-auth'))?.state?.jwt || null; } catch { return null; } };
+  const [adminPushForm, setAdminPushForm] = useState({ title: '', body: '', icon: '🔔', app: '', targetAudience: 'all' });
+  const [adminPushSending, setAdminPushSending] = useState(false);
+  const [adminSearchQuery, setAdminSearchQuery] = useState('');
+  const [adminSearchResults, setAdminSearchResults] = useState([]);
+  const [adminSelectedUsers, setAdminSelectedUsers] = useState([]);
+  const [adminSearching, setAdminSearching] = useState(false);
+  const [adminPushHistory, setAdminPushHistory] = useState([]);
 
   const pushService = useState(() => {
     const apiBase = import.meta.env.VITE_STRAPI_URL || 'https://smart-cellar-api.onrender.com';
@@ -563,6 +584,142 @@ export default function SettingsPage() {
           <ChevronRight size={16} className="settings-page__eco-chevron" />
         </Link>
       </section>
+
+      {/* Admin Push Notifications - only for admin user */}
+      {isAuthenticated && user?.id === 1 && (
+        <section className="settings-page__section">
+          <div className="settings-page__section-header">
+            <Megaphone size={18} />
+            <h3>Administration Push</h3>
+          </div>
+
+          <div className="settings-page__admin-push">
+            <div className="settings-page__admin-group">
+              <label className="settings-page__severity-label">Icône</label>
+              <div className="settings-page__chip-group">
+                {ADMIN_ICONS.map((ic) => (
+                  <button key={ic} className={`settings-page__chip ${adminPushForm.icon === ic ? 'settings-page__chip--active' : ''}`} onClick={() => setAdminPushForm({ ...adminPushForm, icon: ic })}>{ic}</button>
+                ))}
+              </div>
+            </div>
+
+            <div className="settings-page__admin-group">
+              <label className="settings-page__severity-label">Titre *</label>
+              <input type="text" value={adminPushForm.title} onChange={(e) => setAdminPushForm({ ...adminPushForm, title: e.target.value })} placeholder="Titre" maxLength={50} className="settings-page__location-input" />
+            </div>
+
+            <div className="settings-page__admin-group">
+              <label className="settings-page__severity-label">Message *</label>
+              <textarea value={adminPushForm.body} onChange={(e) => setAdminPushForm({ ...adminPushForm, body: e.target.value })} placeholder="Contenu" rows={3} maxLength={200} className="settings-page__location-input" style={{ resize: 'vertical', minHeight: 60 }} />
+            </div>
+
+            <div className="settings-page__admin-group">
+              <label className="settings-page__severity-label">Application cible</label>
+              <select value={adminPushForm.app} onChange={(e) => setAdminPushForm({ ...adminPushForm, app: e.target.value })} className="settings-page__location-input">
+                {ADMIN_APPS.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
+              </select>
+            </div>
+
+            <div className="settings-page__admin-group">
+              <label className="settings-page__severity-label">Audience</label>
+              <select value={adminPushForm.targetAudience} onChange={(e) => { setAdminPushForm({ ...adminPushForm, targetAudience: e.target.value }); setAdminSelectedUsers([]); setAdminSearchQuery(''); }} className="settings-page__location-input">
+                <option value="all">Tous</option>
+                <option value="premium">Premium / VIP</option>
+                <option value="free">Gratuits</option>
+                <option value="specific">Spécifiques</option>
+              </select>
+            </div>
+
+            {adminPushForm.targetAudience === 'specific' && (
+              <div className="settings-page__admin-group">
+                <input type="text" value={adminSearchQuery} onChange={(e) => {
+                  const q = e.target.value;
+                  setAdminSearchQuery(q);
+                  if (q.length < 2) { setAdminSearchResults([]); return; }
+                  setAdminSearching(true);
+                  fetch(`${adminApiBase}/api/admin/users?search=${encodeURIComponent(q)}`, {
+                    headers: { Authorization: `Bearer ${getAdminToken()}` },
+                  }).then(r => r.json()).then(d => setAdminSearchResults(d.users || []))
+                    .catch(() => setAdminSearchResults([]))
+                    .finally(() => setAdminSearching(false));
+                }} placeholder="Rechercher un utilisateur..." className="settings-page__location-input" />
+                {adminSearching && <small style={{ color: 'var(--lynx-dim)' }}>Recherche...</small>}
+
+                {adminSearchResults.length > 0 && (
+                  <div className="settings-page__admin-results">
+                    {adminSearchResults.map((u) => (
+                      <div key={u.id} className={`settings-page__admin-result ${adminSelectedUsers.find((s) => s.id === u.id) ? 'settings-page__admin-result--selected' : ''}`}
+                        onClick={() => setAdminSelectedUsers((prev) => prev.find((s) => s.id === u.id) ? prev.filter((s) => s.id !== u.id) : [...prev, u])}>
+                        <span>{u.username} — <small>{u.email}</small></span>
+                        {adminSelectedUsers.find((s) => s.id === u.id) && <span>✓</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {adminSelectedUsers.length > 0 && (
+                  <div className="settings-page__admin-chips">
+                    {adminSelectedUsers.map((u) => (
+                      <span key={u.id} className="settings-page__chip settings-page__chip--active" onClick={() => setAdminSelectedUsers((prev) => prev.filter((s) => s.id !== u.id))}>{u.username} ✕</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="settings-page__push-actions">
+              <button className="settings-page__chip" disabled={adminPushSending} onClick={async () => {
+                if (!adminPushForm.title || !adminPushForm.body) return alert('Titre et message obligatoires');
+                try {
+                  await fetch(`${adminApiBase}/api/admin/notifications/push/test`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${getAdminToken()}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title: adminPushForm.title, body: adminPushForm.body, icon: adminPushForm.icon }),
+                  });
+                  alert('Test envoyé');
+                } catch { alert('Erreur test'); }
+              }}>🧪 Tester</button>
+
+              <button className="settings-page__chip settings-page__chip--active" disabled={adminPushSending} onClick={async () => {
+                if (!adminPushForm.title || !adminPushForm.body) return alert('Titre et message obligatoires');
+                if (adminPushForm.targetAudience === 'specific' && adminSelectedUsers.length === 0) return alert('Sélectionnez au moins un utilisateur');
+                const label = adminPushForm.targetAudience === 'specific' ? `${adminSelectedUsers.length} utilisateur(s)` : adminPushForm.targetAudience === 'all' ? 'Tous' : adminPushForm.targetAudience;
+                if (!window.confirm(`Envoyer à : ${label} ?`)) return;
+                try {
+                  setAdminPushSending(true);
+                  const res = await fetch(`${adminApiBase}/api/admin/notifications/push/send`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${getAdminToken()}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      title: adminPushForm.title, body: adminPushForm.body, icon: adminPushForm.icon,
+                      app: adminPushForm.app || undefined, targetAudience: adminPushForm.targetAudience,
+                      targetUserIds: adminPushForm.targetAudience === 'specific' ? adminSelectedUsers.map((u) => u.id) : undefined,
+                    }),
+                  });
+                  const result = await res.json();
+                  setAdminPushHistory([{ ...adminPushForm, sentAt: new Date().toISOString(), ...result }, ...adminPushHistory]);
+                  setAdminPushForm({ title: '', body: '', icon: '🔔', app: adminPushForm.app, targetAudience: 'all' });
+                  setAdminSelectedUsers([]); setAdminSearchQuery('');
+                  alert(`Envoyé : ${result.successCount} réussi(s), ${result.failureCount} échoué(s)`);
+                } catch { alert('Erreur envoi'); }
+                finally { setAdminPushSending(false); }
+              }}>{adminPushSending ? 'Envoi...' : '📤 Envoyer'}</button>
+            </div>
+
+            {adminPushHistory.length > 0 && (
+              <div className="settings-page__notif-history" style={{ marginTop: '0.75rem' }}>
+                <p className="settings-page__severity-label">Historique session</p>
+                {adminPushHistory.map((h, i) => (
+                  <div key={i} className="settings-page__notif-item">
+                    <div><strong>{h.icon} {h.title}</strong></div>
+                    <small>{new Date(h.sentAt).toLocaleTimeString('fr-FR')} — {h.successCount || 0} envoyé(s)</small>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       <p className="settings-page__copyright">© 2026 La Caverne du Réfractaire – Tous droits réservés</p>
 

@@ -569,4 +569,51 @@
       }
     }
   }
+
+  // Admin Push section
+  &__admin-push {
+    > * + * { margin-top: $sp-3; }
+  }
+
+  &__admin-group {
+    > * + * { margin-top: $sp-1; }
+
+    select {
+      @include input-base;
+    }
+
+    textarea {
+      @include input-base;
+    }
+  }
+
+  &__admin-results {
+    max-height: 180px;
+    overflow-y: auto;
+    border: 1px solid rgba($lynx-accent, 0.15);
+    border-radius: $radius-lg;
+    margin-top: $sp-1;
+  }
+
+  &__admin-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $sp-2;
+    cursor: pointer;
+    @include transition;
+    border-bottom: 1px solid rgba($lynx-accent, 0.06);
+
+    &:hover { background: rgba($lynx-accent, 0.06); }
+    &--selected { background: rgba($lynx-accent, 0.1); font-weight: 500; }
+
+    small { color: $lynx-dim; }
+  }
+
+  &__admin-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $sp-1;
+    margin-top: $sp-1;
+  }
 }
