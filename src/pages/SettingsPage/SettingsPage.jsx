@@ -4,6 +4,7 @@ import { useSettingsStore } from '../../stores/settingsStore';
 import { useAuthStore } from '../../stores/authStore';
 import InstallPrompt from '../../components/InstallPrompt/InstallPrompt';
 import AppSwitcher from '../../components/AppSwitcher/AppSwitcher';
+import { EcosystemPush } from '../../services/EcosystemPushService';
 import { requestPermission } from '../../services/notifications';
 import { playSuccessSound, playErrorSound, playFlashSound, playPrioritySound, playRoutineSound } from '../../services/sounds';
 import { fetchZones as apiFetchZones, createZone as apiCreateZone, deleteZone as apiDeleteZone } from '../../services/strapi';
@@ -43,6 +44,34 @@ export default function SettingsPage() {
   const [locationInput, setLocationInput] = useState(userLocation.label);
   const [syncing, setSyncing] = useState(false);
   const [zoneGpsLoading, setZoneGpsLoading] = useState(false);
+
+  // ─── Push Notifications (Ecosystem) ───────────────────────
+  const [pushSubscribed, setPushSubscribed] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
+  const [notifHistory, setNotifHistory] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const pushService = useState(() => {
+    const apiBase = import.meta.env.VITE_STRAPI_URL || 'https://smart-cellar-api.onrender.com';
+    return new EcosystemPush('lynx', apiBase, () => {
+      try {
+        const raw = localStorage.getItem('lynx-auth');
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return parsed?.state?.jwt || null;
+      } catch { return null; }
+    });
+  })[0];
+
+  useEffect(() => {
+    if (EcosystemPush.isSupported() && isAuthenticated) {
+      pushService.isSubscribed().then(setPushSubscribed);
+      pushService.getHistory(1, 20).then((data) => {
+        setNotifHistory(data.notifications || []);
+        setUnreadCount(data.unread || 0);
+      }).catch(() => {});
+    }
+  }, [isAuthenticated, pushService]);
 
   // Sync zones from Strapi when authenticated
   const syncZonesFromStrapi = useCallback(async () => {
@@ -299,10 +328,40 @@ export default function SettingsPage() {
       <section className="settings-page__section settings-page__section--half">
         <div className="settings-page__section-header">
           <Bell size={18} />
-          <h3>Notifications</h3>
+          <h3>Notifications {unreadCount > 0 && <span className="settings-page__badge">{unreadCount}</span>}</h3>
         </div>
+
+        {/* Push Web (backend) */}
+        {EcosystemPush.isSupported() && isAuthenticated && (
+          <div className="settings-page__toggle-row">
+            <span className="settings-page__toggle-label">Push web (alertes serveur)</span>
+            <button
+              disabled={pushLoading}
+              onClick={async () => {
+                setPushLoading(true);
+                try {
+                  if (pushSubscribed) {
+                    await pushService.unsubscribe();
+                    setPushSubscribed(false);
+                  } else {
+                    await pushService.subscribe();
+                    setPushSubscribed(true);
+                  }
+                } catch (err) {
+                  console.error('Push toggle error:', err);
+                }
+                setPushLoading(false);
+              }}
+              className={`settings-page__toggle ${pushSubscribed ? 'settings-page__toggle--on' : 'settings-page__toggle--off'}`}
+            >
+              <span className={`settings-page__toggle-knob ${pushSubscribed ? 'settings-page__toggle-knob--on' : ''}`} />
+            </button>
+          </div>
+        )}
+
+        {/* Local alerts toggle */}
         <div className="settings-page__toggle-row">
-          <span className="settings-page__toggle-label">Alertes push</span>
+          <span className="settings-page__toggle-label">Alertes locales</span>
           <button
             onClick={async () => {
               const newVal = !notifications.enabled;
@@ -328,6 +387,49 @@ export default function SettingsPage() {
             ))}
           </div>
         </div>
+
+        {/* Test + Actions */}
+        {pushSubscribed && (
+          <div className="settings-page__push-actions">
+            <button
+              className="settings-page__chip settings-page__chip--active"
+              onClick={async () => {
+                try { await pushService.sendTest('Test LYNX', 'Notification de test LYNX'); }
+                catch (err) { console.error(err); }
+              }}
+            >
+              Tester
+            </button>
+            {unreadCount > 0 && (
+              <button
+                className="settings-page__chip"
+                onClick={async () => {
+                  await pushService.markRead();
+                  setNotifHistory((h) => h.map((n) => ({ ...n, read: true })));
+                  setUnreadCount(0);
+                }}
+              >
+                Tout marquer lu
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Notification History */}
+        {notifHistory.length > 0 && (
+          <div className="settings-page__notif-history">
+            <p className="settings-page__severity-label">Historique récent</p>
+            {notifHistory.slice(0, 5).map((n) => (
+              <div key={n.id} className={`settings-page__notif-item ${n.read ? '' : 'settings-page__notif-item--unread'}`}>
+                <div>
+                  <strong>{n.title}</strong>
+                  <p>{n.body}</p>
+                </div>
+                <small>{new Date(n.sentAt || n.createdAt).toLocaleDateString('fr-FR')}</small>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Séismes */}
