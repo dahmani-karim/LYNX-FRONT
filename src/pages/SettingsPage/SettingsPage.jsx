@@ -129,6 +129,27 @@ export default function SettingsPage() {
   const [adminSearching, setAdminSearching] = useState(false);
   const [adminPushHistory, setAdminPushHistory] = useState([]);
 
+  const fetchAdminPushHistory = useCallback(async () => {
+    try {
+      const res = await fetch(`${adminApiBase}/api/admin/notifications/push/history`, {
+        headers: { Authorization: `Bearer ${getAdminToken()}` },
+      });
+      if (res.ok) setAdminPushHistory(await res.json());
+    } catch (e) { console.error('Erreur chargement historique:', e); }
+  }, []);
+
+  useEffect(() => { fetchAdminPushHistory(); }, [fetchAdminPushHistory]);
+
+  const deleteAdminPushHistoryItem = async (id) => {
+    try {
+      await fetch(`${adminApiBase}/api/admin/notifications/push/history/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${getAdminToken()}` },
+      });
+      setAdminPushHistory(prev => prev.filter(h => h.id !== id));
+    } catch (e) { console.error('Erreur suppression:', e); }
+  };
+
   const pushService = useState(() => {
     const apiBase = import.meta.env.VITE_STRAPI_URL || 'https://smart-cellar-api.onrender.com';
     return new EcosystemPush('lynx', apiBase, () => {
@@ -774,7 +795,7 @@ export default function SettingsPage() {
                     }),
                   });
                   const result = await res.json();
-                  setAdminPushHistory([{ ...adminPushForm, sentAt: new Date().toISOString(), ...result }, ...adminPushHistory]);
+                  await fetchAdminPushHistory();
                   setAdminPushForm({ title: '', body: '', icon: '🔔', app: adminPushForm.app, targetAudience: 'all', url: '/', urlType: '/' });
                   setAdminSelectedUsers([]); setAdminSearchQuery('');
                   alert(`Envoyé : ${result.successCount} réussi(s), ${result.failureCount} échoué(s)`);
@@ -785,13 +806,13 @@ export default function SettingsPage() {
 
             {adminPushHistory.length > 0 && (
               <div className="settings-page__notif-history" style={{ marginTop: '0.75rem' }}>
-                <p className="settings-page__severity-label">Historique session</p>
-                {adminPushHistory.map((h, i) => (
-                  <div key={i} className="settings-page__notif-item">
+                <p className="settings-page__severity-label">Historique des notifications</p>
+                {adminPushHistory.map((h) => (
+                  <div key={h.id} className="settings-page__notif-item">
                     <div><strong>{h.icon} {h.title}</strong></div>
                     <div className="settings-page__notif-actions">
-                      <small>{new Date(h.sentAt).toLocaleTimeString('fr-FR')} — {h.successCount || 0} envoyé(s)</small>
-                      <button className="settings-page__notif-delete" onClick={() => setAdminPushHistory(prev => prev.filter((_, idx) => idx !== i))} title="Supprimer">🗑️</button>
+                      <small>{new Date(h.createdAt).toLocaleString('fr-FR')} — {h.app || 'toutes'}</small>
+                      <button className="settings-page__notif-delete" onClick={() => deleteAdminPushHistoryItem(h.id)} title="Supprimer">🗑️</button>
                     </div>
                   </div>
                 ))}
