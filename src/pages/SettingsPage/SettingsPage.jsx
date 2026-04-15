@@ -62,9 +62,66 @@ export default function SettingsPage() {
     { value: 'prete', label: 'PRÊT·E' },
     { value: 'partner', label: 'Partner' },
   ];
+  const APP_URLS = {
+    smartcellar: [
+      { value: '/dashboard', label: 'Tableau de bord' },
+      { value: '/stock', label: 'Stock / Inventaire' },
+      { value: '/recette', label: 'Recettes' },
+      { value: '/meal-plan', label: 'Planification repas' },
+      { value: '/course', label: 'Liste de courses' },
+      { value: '/scan', label: 'Scanner' },
+      { value: '/household', label: 'Foyer' },
+      { value: '/notification-history', label: 'Historique notifications' },
+      { value: '/settings', label: 'Paramètres' },
+      { value: '/profile', label: 'Profil' },
+      { value: 'custom', label: 'URL personnalisée' },
+    ],
+    progarden: [
+      { value: '/dashboard', label: 'Dashboard' },
+      { value: '/garden', label: 'Éditeur jardin' },
+      { value: '/calendar', label: 'Calendrier' },
+      { value: '/plants', label: 'Catalogue plantes' },
+      { value: '/seedbox', label: 'Grainothèque' },
+      { value: '/observations', label: 'Observations' },
+      { value: '/soil', label: 'Analyse sol' },
+      { value: '/settings', label: 'Paramètres' },
+      { value: 'custom', label: 'URL personnalisée' },
+    ],
+    farmly: [
+      { value: '/dashboard', label: 'Dashboard' },
+      { value: '/animals', label: 'Animaux' },
+      { value: '/settings', label: 'Paramètres' },
+      { value: 'custom', label: 'URL personnalisée' },
+    ],
+    lynx: [
+      { value: '/dashboard', label: 'Dashboard' },
+      { value: '/map', label: 'Carte' },
+      { value: '/alerts', label: 'Alertes' },
+      { value: '/stats', label: 'Statistiques' },
+      { value: '/energy', label: 'Prix énergie' },
+      { value: '/blackout', label: 'Coupures' },
+      { value: '/analysis', label: 'Analyse' },
+      { value: '/settings', label: 'Paramètres' },
+      { value: 'custom', label: 'URL personnalisée' },
+    ],
+    prete: [
+      { value: '/dashboard', label: 'Dashboard' },
+      { value: '/scenarios', label: 'Scénarios' },
+      { value: '/exercices', label: 'Exercices' },
+      { value: '/terrain', label: 'Terrain' },
+      { value: '/profile', label: 'Profil' },
+      { value: '/gamification', label: 'Gamification' },
+      { value: 'custom', label: 'URL personnalisée' },
+    ],
+    partner: [
+      { value: '/dashboard', label: 'Dashboard' },
+      { value: '/profile', label: 'Profil' },
+      { value: 'custom', label: 'URL personnalisée' },
+    ],
+  };
   const adminApiBase = import.meta.env.VITE_STRAPI_URL || 'https://smart-cellar-api.onrender.com';
   const getAdminToken = () => { try { return JSON.parse(localStorage.getItem('lynx-auth'))?.state?.jwt || null; } catch { return null; } };
-  const [adminPushForm, setAdminPushForm] = useState({ title: '', body: '', icon: '🔔', app: '', targetAudience: 'all' });
+  const [adminPushForm, setAdminPushForm] = useState({ title: '', body: '', icon: '🔔', app: '', targetAudience: 'all', url: '/', urlType: '/' });
   const [adminPushSending, setAdminPushSending] = useState(false);
   const [adminSearchQuery, setAdminSearchQuery] = useState('');
   const [adminSearchResults, setAdminSearchResults] = useState([]);
@@ -618,10 +675,26 @@ export default function SettingsPage() {
 
             <div className="settings-page__admin-group">
               <label className="settings-page__severity-label">Application cible</label>
-              <select value={adminPushForm.app} onChange={(e) => setAdminPushForm({ ...adminPushForm, app: e.target.value })} className="settings-page__location-input">
+              <select value={adminPushForm.app} onChange={(e) => setAdminPushForm({ ...adminPushForm, app: e.target.value, url: '/', urlType: '/' })} className="settings-page__location-input">
                 {ADMIN_APPS.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
               </select>
             </div>
+
+            {adminPushForm.app && APP_URLS[adminPushForm.app] && (
+              <div className="settings-page__admin-group">
+                <label className="settings-page__severity-label">URL de destination</label>
+                <select value={adminPushForm.urlType} onChange={(e) => { const v = e.target.value; setAdminPushForm({ ...adminPushForm, urlType: v, url: v === 'custom' ? '' : v }); }} className="settings-page__location-input">
+                  {APP_URLS[adminPushForm.app].map((u) => <option key={u.value} value={u.value}>{u.label}</option>)}
+                </select>
+              </div>
+            )}
+
+            {adminPushForm.urlType === 'custom' && adminPushForm.app && (
+              <div className="settings-page__admin-group">
+                <label className="settings-page__severity-label">URL personnalisée</label>
+                <input type="text" value={adminPushForm.url} onChange={(e) => setAdminPushForm({ ...adminPushForm, url: e.target.value })} placeholder="/ma-page" className="settings-page__location-input" />
+              </div>
+            )}
 
             <div className="settings-page__admin-group">
               <label className="settings-page__severity-label">Audience</label>
@@ -695,13 +768,14 @@ export default function SettingsPage() {
                     headers: { Authorization: `Bearer ${getAdminToken()}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                       title: adminPushForm.title, body: adminPushForm.body, icon: adminPushForm.icon,
+                      data: adminPushForm.app ? { url: adminPushForm.url || '/' } : undefined,
                       app: adminPushForm.app || undefined, targetAudience: adminPushForm.targetAudience,
                       targetUserIds: adminPushForm.targetAudience === 'specific' ? adminSelectedUsers.map((u) => u.id) : undefined,
                     }),
                   });
                   const result = await res.json();
                   setAdminPushHistory([{ ...adminPushForm, sentAt: new Date().toISOString(), ...result }, ...adminPushHistory]);
-                  setAdminPushForm({ title: '', body: '', icon: '🔔', app: adminPushForm.app, targetAudience: 'all' });
+                  setAdminPushForm({ title: '', body: '', icon: '🔔', app: adminPushForm.app, targetAudience: 'all', url: '/', urlType: '/' });
                   setAdminSelectedUsers([]); setAdminSearchQuery('');
                   alert(`Envoyé : ${result.successCount} réussi(s), ${result.failureCount} échoué(s)`);
                 } catch { alert('Erreur envoi'); }
