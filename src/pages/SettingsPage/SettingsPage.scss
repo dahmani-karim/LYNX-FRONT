@@ -570,6 +570,24 @@
     }
   }
 
+  &__notif-actions {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+  }
+
+  &__notif-delete {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 2px 4px;
+    border-radius: $radius-sm;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+    &:hover { opacity: 1; }
+  }
+
   // Admin Push section
   &__admin-push {
     > * + * { margin-top: $sp-3; }

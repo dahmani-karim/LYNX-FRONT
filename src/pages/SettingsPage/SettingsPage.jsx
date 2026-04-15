@@ -712,7 +712,10 @@ export default function SettingsPage() {
                 {adminPushHistory.map((h, i) => (
                   <div key={i} className="settings-page__notif-item">
                     <div><strong>{h.icon} {h.title}</strong></div>
-                    <small>{new Date(h.sentAt).toLocaleTimeString('fr-FR')} — {h.successCount || 0} envoyé(s)</small>
+                    <div className="settings-page__notif-actions">
+                      <small>{new Date(h.sentAt).toLocaleTimeString('fr-FR')} — {h.successCount || 0} envoyé(s)</small>
+                      <button className="settings-page__notif-delete" onClick={() => setAdminPushHistory(prev => prev.filter((_, idx) => idx !== i))} title="Supprimer">🗑️</button>
+                    </div>
                   </div>
                 ))}
               </div>
