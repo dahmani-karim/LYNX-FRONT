@@ -3,6 +3,15 @@ import { getAppUrl, ECOSYSTEM_APPS } from '../../config/ecosystem';
 import './EcosystemBridge.scss';
 
 const BRIDGE_RULES = [
+  // Priorité absolue : toute alerte critique → checklist PRÊT·E
+  {
+    triggerCategories: ['earthquake', 'disaster', 'health', 'nuclear', 'social', 'conflict', 'cyber', 'weather', 'energy', 'fuel', 'radiation', 'space_weather'],
+    triggerMinSeverity: 'critical',
+    appId: 'prete',
+    message: 'Alerte critique active — Vérifiez votre checklist d\'urgence',
+    cta: 'Ouvrir PRÊT·E',
+    highlight: true,
+  },
   {
     triggerCategories: ['earthquake', 'disaster'],
     triggerMinSeverity: 'high',
@@ -76,7 +85,7 @@ export default function EcosystemBridge({ events }) {
           href={getAppUrl(bridge.app)}
           target="_blank"
           rel="noopener noreferrer"
-          className="eco-bridge__card"
+          className={`eco-bridge__card${bridge.highlight ? ' eco-bridge__card--highlight' : ''}`}
           style={{ borderLeftColor: bridge.app.color }}
         >
           <span className="eco-bridge__emoji">{bridge.app.emoji}</span>

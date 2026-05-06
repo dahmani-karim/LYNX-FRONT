@@ -1,6 +1,10 @@
+// @deprecated — replaced by globalAlerts.js + Strapi backend
+// Les données météo spatiale sont désormais agrégées côté backend (lynx-global-alert)
+// via la source NOAA SWPC et servies via le store alertStore.js / globalAlerts.js.
 import { API_CONFIG } from '../config/api';
 
 /**
+ * @deprecated Use globalAlerts.js instead.
  * Fetches space weather alerts from NOAA SWPC.
  * Free, no API key, CORS-friendly.
  */

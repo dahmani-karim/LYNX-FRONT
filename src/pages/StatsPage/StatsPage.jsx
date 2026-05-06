@@ -5,7 +5,8 @@ import { CATEGORIES, SEVERITY_LEVELS } from '../../config/categories';
 import { getScoreColor } from '../../services/riskEngine';
 import { generateReport } from '../../utils/pdfExport';
 import { downloadRssFeed } from '../../utils/rssFeed';
-import { FileDown, Rss, Crown } from 'lucide-react';
+import { FileDown, Rss, Crown, Table2 } from 'lucide-react';
+import { downloadCsv } from '../../utils/csvExport';
 import { useAuthStore } from '../../stores/authStore';
 import { useNavigate } from 'react-router-dom';
 import PremiumGate from '../../components/PremiumGate/PremiumGate';
@@ -13,7 +14,7 @@ import './StatsPage.scss';
 
 export default function StatsPage() {
   const { events, riskScores } = useAlertStore();
-  const [timeView, setTimeView] = useState('24h');
+  const [timeView, setTimeView] = useState('7d');
   const isPremium = useAuthStore((s) => s.isPremium);
   const navigate = useNavigate();
 
@@ -49,13 +50,14 @@ export default function StatsPage() {
 
   const timelineData = useMemo(() => {
     const now = new Date();
-    const hours = timeView === '24h' ? 24 : 24 * 7;
-    const bucketSize = timeView === '24h' ? 1 : 24;
+    const days = timeView === '24h' ? 0 : timeView === '7d' ? 7 : 30;
+    const bucketSizeH = timeView === '24h' ? 1 : 24;
+    const bucketCount = timeView === '24h' ? 24 : days;
     const buckets = [];
 
-    for (let i = hours / bucketSize - 1; i >= 0; i--) {
-      const start = new Date(now.getTime() - (i + 1) * bucketSize * 60 * 60 * 1000);
-      const end = new Date(now.getTime() - i * bucketSize * 60 * 60 * 1000);
+    for (let i = bucketCount - 1; i >= 0; i--) {
+      const start = new Date(now.getTime() - (i + 1) * bucketSizeH * 3600000);
+      const end = new Date(now.getTime() - i * bucketSizeH * 3600000);
       const count = events.filter((e) => {
         const d = new Date(e.eventDate);
         return d >= start && d < end;
@@ -114,6 +116,15 @@ export default function StatsPage() {
             <FileDown size={16} />
             PDF
           </button>
+          <button
+            className="stats-page__export-btn"
+            onClick={() => isPremium ? downloadCsv(events) : navigate('/pricing')}
+            title={!isPremium ? 'Premium requis' : 'Exporter en CSV'}
+          >
+            {!isPremium && <Crown size={12} />}
+            <Table2 size={16} />
+            CSV
+          </button>
         </div>
       </div>
 
@@ -161,7 +172,7 @@ export default function StatsPage() {
         <div className="stats-page__section-header">
           <h3 className="stats-page__section-title">Événements dans le temps</h3>
           <div className="stats-page__time-toggle">
-            {['24h', '7d'].map((v) => (
+            {['24h', '7d', '30d'].map((v) => (
               <button
                 key={v}
                 onClick={() => setTimeView(v)}
