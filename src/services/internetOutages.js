@@ -80,7 +80,7 @@ export async function fetchInternetOutages() {
         id: `ioda-${code}-${entry.datasource}`,
         type: 'blackout',
         severity,
-        title: `Coupure internet ${country.name} (−${pctDrop}%)`,
+        title: `Coupure internet — ${country.name}`,
         description: `Anomalie ${entry.datasource.toUpperCase()} détectée en ${country.name} : ${entry.value}/${entry.historyValue} (baisse de ${pctDrop}%). Source: IODA.`,
         latitude: country.lat,
         longitude: country.lng,

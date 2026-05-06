@@ -53,6 +53,19 @@ export function sendNotification(title, options = {}) {
 
 const SEV_ORDER = ['info', 'low', 'medium', 'high', 'critical'];
 
+// Rate limiter: max 3 notifications per 2-minute window
+let notifBurst = [];
+const BURST_MAX = 3;
+const BURST_WINDOW_MS = 2 * 60 * 1000;
+
+function canSendNotif() {
+  const now = Date.now();
+  notifBurst = notifBurst.filter((t) => now - t < BURST_WINDOW_MS);
+  if (notifBurst.length >= BURST_MAX) return false;
+  notifBurst.push(now);
+  return true;
+}
+
 /**
  * Check new events against previous events and send notifications
  * for new critical/high severity alerts.
@@ -75,7 +88,7 @@ export function notifyNewAlerts(newEvents, previousSigs, minSeverity = 'high') {
     updatedSigs.add(sig);
 
     const sevIdx = SEV_ORDER.indexOf(event.severity);
-    if (sevIdx >= minIdx) {
+    if (sevIdx >= minIdx && canSendNotif()) {
       sendNotification(`🔴 ${event.title}`, {
         body: event.description?.slice(0, 120) || event.sourceName,
         tag: `lynx-${sig}`,
