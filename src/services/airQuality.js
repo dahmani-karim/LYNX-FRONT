@@ -32,50 +32,57 @@ export async function fetchAirQuality(lat, lng) {
     const data = await res.json();
 
     const c = data.current;
-    if (!c) return [];
+    if (!c) return { events: [], current: null };
 
     const euAqi = c.european_aqi || 0;
     const { label, severity } = aqiSeverity(euAqi);
 
-    // Only alert if air quality is degraded
-    if (severity === 'info') return [];
-
-    const pm25 = c.pm2_5;
-    const pm10 = c.pm10;
-    const no2 = c.nitrogen_dioxide;
-    const o3 = c.ozone;
-    const so2 = c.sulphur_dioxide;
-
-    const parts = [];
-    if (pm25 != null) parts.push(`PM2.5=${pm25}µg/m³`);
-    if (pm10 != null) parts.push(`PM10=${pm10}µg/m³`);
-    if (no2 != null) parts.push(`NO₂=${no2}µg/m³`);
-    if (o3 != null) parts.push(`O₃=${o3}µg/m³`);
-    if (so2 != null) parts.push(`SO₂=${so2}µg/m³`);
-
-    return [{
-      id: `aq-${lat.toFixed(2)}-${lng.toFixed(2)}`,
-      type: 'air_quality',
-      title: `Qualité de l'air — ${label}`,
-      description: `Indice européen de qualité de l'air: ${euAqi} (${label}). ${parts.join(', ')}`,
+    const current = {
+      euAqi,
+      label,
       severity,
-      eventDate: c.time ? new Date(c.time).toISOString() : new Date().toISOString(),
-      latitude: data.latitude || lat,
-      longitude: data.longitude || lng,
-      sourceName: 'Open-Meteo AQ',
-      sourceUrl: 'https://open-meteo.com/en/docs/air-quality-api',
-      sourceReliability: 88,
-      metadata: {
-        european_aqi: euAqi,
-        pm2_5: pm25,
-        pm10,
-        no2,
-        ozone: o3,
-        so2,
-      },
-    }];
+      pm2_5: c.pm2_5 != null ? Math.round(c.pm2_5 * 10) / 10 : null,
+      pm10: c.pm10 != null ? Math.round(c.pm10 * 10) / 10 : null,
+      no2: c.nitrogen_dioxide != null ? Math.round(c.nitrogen_dioxide * 10) / 10 : null,
+      ozone: c.ozone != null ? Math.round(c.ozone * 10) / 10 : null,
+      so2: c.sulphur_dioxide != null ? Math.round(c.sulphur_dioxide * 10) / 10 : null,
+    };
+
+    // Only emit alert event if air quality is degraded
+    const events = [];
+    if (severity !== 'info') {
+      const pm25 = current.pm2_5;
+      const pm10 = current.pm10;
+      const no2 = current.no2;
+      const o3 = current.ozone;
+      const so2 = current.so2;
+
+      const parts = [];
+      if (pm25 != null) parts.push(`PM2.5=${pm25}µg/m³`);
+      if (pm10 != null) parts.push(`PM10=${pm10}µg/m³`);
+      if (no2 != null) parts.push(`NO₂=${no2}µg/m³`);
+      if (o3 != null) parts.push(`O₃=${o3}µg/m³`);
+      if (so2 != null) parts.push(`SO₂=${so2}µg/m³`);
+
+      events.push({
+        id: `aq-${lat.toFixed(2)}-${lng.toFixed(2)}`,
+        type: 'air_quality',
+        title: `Qualité de l'air — ${label}`,
+        description: `Indice européen de qualité de l'air: ${euAqi} (${label}). ${parts.join(', ')}`,
+        severity,
+        eventDate: c.time ? new Date(c.time).toISOString() : new Date().toISOString(),
+        latitude: data.latitude || lat,
+        longitude: data.longitude || lng,
+        sourceName: 'Open-Meteo AQ',
+        sourceUrl: 'https://open-meteo.com/en/docs/air-quality-api',
+        sourceReliability: 88,
+        metadata: { european_aqi: euAqi, pm2_5: pm25, pm10, no2, ozone: o3, so2 },
+      });
+    }
+
+    return { events, current };
   } catch (err) {
     console.warn('[airQuality] Open-Meteo AQ failed:', err.message);
-    return [];
+    return { events: [], current: null };
   }
 }

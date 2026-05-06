@@ -14,12 +14,12 @@ import { getScoreColor } from '../../services/riskEngine';
 import { findCorrelations, generateInsights } from '../../services/correlationEngine';
 import { getPredictiveAlerts } from '../../services/predictiveEngine';
 import { checkGeofences } from '../../utils/geofencing';
-import { RefreshCw, MapPin, Thermometer, Wind, Droplets, Link2, TrendingUp, Crosshair, ChevronRight } from 'lucide-react';
+import { RefreshCw, MapPin, Thermometer, Wind, Droplets, Link2, TrendingUp, Crosshair, ChevronRight, Sun, Gauge, CloudRain, Leaf } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import './Dashboard.scss';
 
 export default function Dashboard() {
-  const { events, riskScores, weatherData, isLoading, errors, delta } = useAlertStore();
+  const { events, riskScores, weatherData, airQualityData, isLoading, errors, delta } = useAlertStore();
   const { userLocation, zones } = useSettingsStore();
   const isPremium = useAuthStore((s) => s.isPremium);
 
@@ -28,7 +28,20 @@ export default function Dashboard() {
     .sort((a, b) => new Date(b.eventDate) - new Date(a.eventDate))
     .slice(0, 5);
 
-  const moduleKeys = Object.keys(CATEGORIES).filter((k) => k !== 'other');
+  const moduleKeys = useMemo(
+    () =>
+      Object.keys(CATEGORIES)
+        .filter((k) => k !== 'other')
+        .sort((a, b) => {
+          const scoreDiff = (riskScores[b] || 0) - (riskScores[a] || 0);
+          if (scoreDiff !== 0) return scoreDiff;
+          return (
+            events.filter((e) => e.type === b).length -
+            events.filter((e) => e.type === a).length
+          );
+        }),
+    [riskScores, events]
+  );
 
   const moduleCounts = useMemo(() => {
     const counts = {};
@@ -49,6 +62,14 @@ export default function Dashboard() {
 
   if (isLoading && events.length === 0) {
     return <Loader text="Analyse des données en cours..." />;
+  }
+
+  function aqiColor(severity) {
+    if (severity === 'critical') return '#EF4444';
+    if (severity === 'high') return '#F97316';
+    if (severity === 'medium') return '#F59E0B';
+    if (severity === 'low') return '#84CC16';
+    return '#10B981';
   }
   
   return (
@@ -100,6 +121,56 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+
+          <div className="dashboard__weather-divider" />
+
+          <div className="dashboard__weather-grid dashboard__weather-grid--secondary">
+            {airQualityData && (
+              <div className="dashboard__weather-item">
+                <Leaf size={16} style={{ color: aqiColor(airQualityData.severity) }} />
+                <div>
+                  <p className="dashboard__weather-label">
+                    <span
+                      className="dashboard__weather-aqi-badge"
+                      style={{ backgroundColor: aqiColor(airQualityData.severity) }}
+                    >
+                      {airQualityData.euAqi}
+                    </span>
+                    {airQualityData.label}
+                  </p>
+                  <p className="dashboard__weather-sub">Qualité air</p>
+                </div>
+              </div>
+            )}
+            {weatherData.daily?.uv_index_max?.[0] != null && (
+              <div className="dashboard__weather-item">
+                <Sun size={16} style={{ color: '#FBBF24' }} />
+                <div>
+                  <p className="dashboard__weather-label">UV {weatherData.daily.uv_index_max[0]}</p>
+                  <p className="dashboard__weather-sub">Index UV</p>
+                </div>
+              </div>
+            )}
+            {weatherData.current.pressure != null && (
+              <div className="dashboard__weather-item">
+                <Gauge size={16} style={{ color: '#A78BFA' }} />
+                <div>
+                  <p className="dashboard__weather-label">{Math.round(weatherData.current.pressure)} hPa</p>
+                  <p className="dashboard__weather-sub">Pression</p>
+                </div>
+              </div>
+            )}
+            {weatherData.daily?.precipitation_sum?.[0] != null && (
+              <div className="dashboard__weather-item">
+                <CloudRain size={16} style={{ color: '#38BDF8' }} />
+                <div>
+                  <p className="dashboard__weather-label">{weatherData.daily.precipitation_sum[0]} mm</p>
+                  <p className="dashboard__weather-sub">Précip. J</p>
+                </div>
+              </div>
+            )}
+          </div>
+
           <p className="dashboard__weather-desc">{weatherData.current.description}</p>
         </section>
       )}
@@ -132,12 +203,17 @@ export default function Dashboard() {
                   <Icon size={16} style={{ color: cat.color }} />
                 </div>
                 <span className="dashboard__module-label">{cat.label}</span>
-                <span className="dashboard__module-score" style={{ color: getScoreColor(score) }}>
-                  {score}
-                </span>
-                {count > 0 && (
-                  <span className="dashboard__module-count">{count} alerte{count > 1 ? 's' : ''}</span>
-                )}
+                <div className="dashboard__module-stats">
+                  <span className="dashboard__module-stat">
+                    <span className="dashboard__module-stat-value" style={{ color: getScoreColor(score) }}>{score}</span>
+                    <span className="dashboard__module-stat-label">risque</span>
+                  </span>
+                  <span className="dashboard__module-stat-divider" />
+                  <span className="dashboard__module-stat">
+                    <span className="dashboard__module-stat-value">{count}</span>
+                    <span className="dashboard__module-stat-label">alerte{count > 1 ? 's' : ''}</span>
+                  </span>
+                </div>
               </Link>
             );
           })}

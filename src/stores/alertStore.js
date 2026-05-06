@@ -23,6 +23,7 @@ export const useAlertStore = create(
     (set, get) => ({
   events: [],
   weatherData: null,
+  airQualityData: null,
   serviceStatuses: [],
   spaceWeatherData: [],
   riskScores: {
@@ -155,8 +156,11 @@ export const useAlertStore = create(
     }
 
     // [2] Qualité de l'air locale
+    let airQualityData = null;
     if (results[2].status === 'fulfilled') {
-      allEvents.push(...results[2].value);
+      const aqResult = results[2].value;
+      allEvents.push(...(aqResult.events || []));
+      airQualityData = aqResult.current || null;
     } else {
       errors.air_quality = results[2].reason?.message;
     }
@@ -236,6 +240,7 @@ export const useAlertStore = create(
     set({
       events: filteredEvents,
       weatherData,
+      airQualityData,
       serviceStatuses,
       spaceWeatherData,
       riskScores,

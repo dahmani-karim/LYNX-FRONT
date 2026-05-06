@@ -64,6 +64,32 @@
     display: flex;
     align-items: center;
     justify-content: space-around;
+
+    &--secondary {
+      justify-content: flex-start;
+      gap: $sp-4;
+      flex-wrap: wrap;
+    }
+  }
+
+  &__weather-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.06);
+    margin: $sp-3 0;
+  }
+
+  &__weather-aqi-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 18px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    padding: 0 5px;
+    margin-right: $sp-1-5;
   }
 
   &__weather-item {
@@ -152,15 +178,40 @@
     line-height: 1.3;
   }
 
-  &__module-score {
-    font-size: $text-lg;
-    font-weight: 700;
+  &__module-stats {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    width: 100%;
+    justify-content: center;
+    margin-top: $sp-1;
   }
 
-  &__module-count {
-    font-size: 10px;
+  &__module-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+  }
+
+  &__module-stat-value {
+    font-size: $text-base;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  &__module-stat-label {
+    font-size: 9px;
     color: $lynx-dim;
     font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  &__module-stat-divider {
+    width: 1px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
   }
 
   // Alerts section

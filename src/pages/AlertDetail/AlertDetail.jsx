@@ -372,7 +372,7 @@ export default function AlertDetail() {
               return (
                 <Link
                   key={rel.id}
-                  to={`/alerts/${encodeURIComponent(rel.id)}`}
+                  to={`/alert/${encodeURIComponent(rel.id)}`}
                   className="alert-detail__related-item"
                 >
                   <div className="alert-detail__related-header">

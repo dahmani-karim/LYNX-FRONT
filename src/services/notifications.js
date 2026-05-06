@@ -92,7 +92,7 @@ export function notifyNewAlerts(newEvents, previousSigs, minSeverity = 'high') {
       sendNotification(`🔴 ${event.title}`, {
         body: event.description?.slice(0, 120) || event.sourceName,
         tag: `lynx-${sig}`,
-        data: { url: `/#/alert/${encodeURIComponent(event.id)}` },
+        data: { url: `/alert/${encodeURIComponent(event.id)}` },
       });
     }
   }
