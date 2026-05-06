@@ -11,7 +11,7 @@ export async function fetchGlobalAlerts(options = {}) {
   const {
     types,
     severity,
-    pageSize = 200,
+    pageSize = 500,
     page = 1,
     lang = 'fr',
   } = options;

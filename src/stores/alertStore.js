@@ -129,7 +129,7 @@ export const useAlertStore = create(
 
     // 1 appel Strapi (alertes globales pré-traduites) + quelques appels locaux (location-dependent)
     const results = await Promise.allSettled([
-      fetchGlobalAlerts({ pageSize: 200, lang: 'fr' }),
+      fetchGlobalAlerts({ pageSize: 500, lang: 'fr' }),
       fetchWeather(wLat, wLng),
       fetchAirQuality(wLat, wLng),
       fetchFires(lat, lng),

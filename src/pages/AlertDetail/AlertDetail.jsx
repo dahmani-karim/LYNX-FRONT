@@ -44,7 +44,7 @@ function MetadataSection({ event }) {
   if (type === 'earthquake') {
     return (
       <div className="alert-detail__meta-section">
-        <h3 className="alert-detail__section-title">DonnÃ©es sismiques</h3>
+        <h3 className="alert-detail__section-title">Données sismiques</h3>
         <div className="alert-detail__meta-grid">
           {m.magnitude != null && (
             <div className="alert-detail__meta-cell">
@@ -78,11 +78,11 @@ function MetadataSection({ event }) {
   if (type === 'radiation') {
     return (
       <div className="alert-detail__meta-section">
-        <h3 className="alert-detail__section-title">DonnÃ©es de radiation</h3>
+        <h3 className="alert-detail__section-title">Données de radiation</h3>
         <div className="alert-detail__meta-grid">
           {m.doseRate != null && (
             <div className="alert-detail__meta-cell">
-              <span className="alert-detail__meta-label">Dose mesurÃ©e</span>
+              <span className="alert-detail__meta-label">Dose mesurée</span>
               <span className="alert-detail__meta-value alert-detail__meta-value--big">
                 {Number(m.doseRate).toFixed(3)} {m.unit || 'ÂµSv/h'}
               </span>
@@ -104,7 +104,7 @@ function MetadataSection({ event }) {
     if (!hasData) return null;
     return (
       <div className="alert-detail__meta-section">
-        <h3 className="alert-detail__section-title">DonnÃ©es sanitaires</h3>
+        <h3 className="alert-detail__section-title">Données sanitaires</h3>
         <div className="alert-detail__meta-grid">
           {m.todayCases != null && (
             <div className="alert-detail__meta-cell">
@@ -114,7 +114,7 @@ function MetadataSection({ event }) {
           )}
           {m.todayDeaths != null && (
             <div className="alert-detail__meta-cell">
-              <span className="alert-detail__meta-label">DÃ©cÃ¨s (J)</span>
+              <span className="alert-detail__meta-label">Décès (J)</span>
               <span className="alert-detail__meta-value">{Number(m.todayDeaths).toLocaleString('fr')}</span>
             </div>
           )}
@@ -126,7 +126,7 @@ function MetadataSection({ event }) {
           )}
           {m.categorie && (
             <div className="alert-detail__meta-cell">
-              <span className="alert-detail__meta-label">CatÃ©gorie</span>
+              <span className="alert-detail__meta-label">Catégorie</span>
               <span className="alert-detail__meta-value">{m.categorie}</span>
             </div>
           )}
@@ -144,7 +144,7 @@ function MetadataSection({ event }) {
   if (type === 'energy' && m.signal) {
     return (
       <div className="alert-detail__meta-section">
-        <h3 className="alert-detail__section-title">Signal rÃ©seau gaz</h3>
+        <h3 className="alert-detail__section-title">Signal réseau gaz</h3>
         <div className="alert-detail__meta-grid">
           <div className="alert-detail__meta-cell">
             <span className="alert-detail__meta-label">Signal Ecogaz</span>
@@ -158,7 +158,7 @@ function MetadataSection({ event }) {
   if (type === 'space_weather' && m.kp_index != null) {
     return (
       <div className="alert-detail__meta-section">
-        <h3 className="alert-detail__section-title">MÃ©tÃ©o spatiale</h3>
+        <h3 className="alert-detail__section-title">Météo spatiale</h3>
         <div className="alert-detail__meta-grid">
           <div className="alert-detail__meta-cell">
             <span className="alert-detail__meta-label">Indice Kp</span>
@@ -328,7 +328,7 @@ export default function AlertDetail() {
         {/* Import timestamp â€” secondary info */}
         {event.importedAt && (
           <p className="alert-detail__imported">
-            ImportÃ© dans LYNX le {formatDate(event.importedAt)}
+            Importé dans LYNX le {formatDate(event.importedAt)}
           </p>
         )}
       </div>
@@ -398,7 +398,7 @@ export default function AlertDetail() {
           </div>
           {event.sourceReliability && (
             <span className="alert-detail__source-reliability">
-              FiabilitÃ© : <strong>{event.sourceReliability}%</strong>
+              Fiabilité : <strong>{event.sourceReliability}%</strong>
             </span>
           )}
         </div>
@@ -426,7 +426,7 @@ export default function AlertDetail() {
             }}
           >
             <Globe size={16} />
-            <span>AperÃ§u de la source</span>
+            <span>Aperçu de la source</span>
             {previewOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
 
@@ -442,7 +442,7 @@ export default function AlertDetail() {
                 <div className="alert-detail__preview-error">
                   <AlertTriangle size={24} />
                   <p>AperÃ§u non disponible</p>
-                  <span>Ce site ne permet pas l'affichage dans un cadre intÃ©grÃ©.</span>
+                  <span>Ce site ne permet pas l'affichage dans un cadre intégré.</span>
                   <a
                     href={event.sourceUrl}
                     target="_blank"
@@ -492,7 +492,7 @@ export default function AlertDetail() {
             className={`alert-detail__save-btn ${isSaved(event.id) ? 'alert-detail__save-btn--active' : ''}`}
           >
             <Bookmark size={16} fill={isSaved(event.id) ? 'currentColor' : 'none'} />
-            {isSaved(event.id) ? 'SauvegardÃ©e' : 'Sauvegarder'}
+            {isSaved(event.id) ? 'Sauvegardée' : 'Sauvegarder'}
           </button>
         )}
         <button onClick={handleShare} className="alert-detail__share-btn">
