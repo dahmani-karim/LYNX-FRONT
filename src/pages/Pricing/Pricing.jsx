@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { Check, X, ArrowRight, Crown, Zap, Shield } from 'lucide-react';
+import LynxLogo from '../../components/LynxLogo/LynxLogo';
 import './Pricing.scss';
 
 const PLANS = [
@@ -32,7 +33,7 @@ const PLANS = [
     name: 'Premium',
     price: '4,99€',
     period: '/mois',
-    desc: 'Pour les veilleurs exigeants et les préparateurs.',
+    desc: 'Pour les veilleurs exigeants et les prévoyants.',
     icon: Crown,
     cta: 'Passer à Premium',
     popular: true,
@@ -77,7 +78,7 @@ const PLANS = [
 ];
 
 export default function Pricing() {
-  const { isAuthenticated, isPremium } = useAuthStore();
+  const { isAuthenticated, isPremium, premiumPlan } = useAuthStore();
 
   const FOURTHWALL_URL = 'https://lacavernedurefractaire-shop.fourthwall.com/supporters/pricing';
 
@@ -100,7 +101,8 @@ export default function Pricing() {
       <nav className="pricing__nav">
         <div className="pricing__nav-inner">
           <Link to="/" className="pricing__back">
-            <span>🐆</span> LYNX
+            <LynxLogo size={32} />
+            <span>LYNX</span>
           </Link>
           {isAuthenticated ? (
             <Link to="/dashboard" className="pricing__nav-cta">Dashboard</Link>
@@ -156,11 +158,20 @@ export default function Pricing() {
             <button
               onClick={() => handleSelectPlan(plan.id)}
               className={`pricing__plan-cta ${plan.popular ? 'pricing__plan-cta--primary' : ''}`}
-              disabled={(plan.id === 'free' && isAuthenticated && !isPremium) || (plan.id === 'premium' && isPremium)}
+              disabled={
+                (plan.id === 'free' && isAuthenticated && !isPremium) ||
+                (plan.id === 'premium' && isPremium && premiumPlan !== 'Pro') ||
+                (plan.id === 'pro' && premiumPlan === 'Pro')
+              }
             >
-              {plan.id === 'free' && isAuthenticated ? 'Plan actuel' : 
-               plan.id === 'premium' && isPremium ? 'Plan actuel' : plan.cta}
-              {!(plan.id === 'free' && isAuthenticated) && !(plan.id === 'premium' && isPremium) ? <ArrowRight size={16} /> : null}
+              {plan.id === 'free' && isAuthenticated ? 'Plan actuel' :
+               plan.id === 'premium' && isPremium && premiumPlan !== 'Pro' ? 'Plan actuel' :
+               plan.id === 'pro' && premiumPlan === 'Pro' ? 'Plan actuel' : plan.cta}
+              {!(
+                (plan.id === 'free' && isAuthenticated) ||
+                (plan.id === 'premium' && isPremium && premiumPlan !== 'Pro') ||
+                (plan.id === 'pro' && premiumPlan === 'Pro')
+              ) ? <ArrowRight size={16} /> : null}
             </button>
           </div>
         ))}
@@ -183,7 +194,7 @@ export default function Pricing() {
         <div className="pricing__faq-grid">
           <div className="pricing__faq-item">
             <h3>Puis-je changer de plan à tout moment ?</h3>
-            <p>Oui, vous pouvez passer d'un plan à l'autre à tout moment. Le changement prend effet immédiatement.</p>
+            <p>Oui, vous pouvez vous abonner ou résilier à tout moment depuis votre espace Fourthwall. La résiliation prend effet à la fin de la période mensuelle en cours.</p>
           </div>
           <div className="pricing__faq-item">
             <h3>Les données sont-elles fiables ?</h3>

@@ -5,7 +5,7 @@ import { useSettingsStore } from '../../stores/settingsStore';
 import { checkMembership } from '../../services/strapi';
 import {
   User, Mail, LogOut, Crown, MapPin, Bell,
-  ChevronRight, Shield, RefreshCw, ExternalLink, Loader
+  ChevronRight, Shield, RefreshCw, ExternalLink, Loader, Settings
 } from 'lucide-react';
 import './Account.scss';
 
@@ -13,6 +13,8 @@ export default function Account() {
   const navigate = useNavigate();
   const { user, isPremium, premiumPlan, logout, updateProfile } = useAuthStore();
   const userLocation = useSettingsStore((s) => s.userLocation);
+  const notifications = useSettingsStore((s) => s.notifications);
+  const zones = useSettingsStore((s) => s.zones);
   const [editName, setEditName] = useState(false);
   const [nameValue, setNameValue] = useState(user?.username || '');
   const [checkingMembership, setCheckingMembership] = useState(false);
@@ -26,7 +28,9 @@ export default function Account() {
   const handleSaveName = async () => {
     if (nameValue.trim()) {
       try {
-        await updateProfile({ firstName: nameValue.trim() });
+        await updateProfile({ username: nameValue.trim() });
+        // Update user object locally so UI reflects new name immediately
+        useAuthStore.setState((s) => ({ user: { ...s.user, username: nameValue.trim() } }));
       } catch {
         // silent
       }
@@ -156,31 +160,42 @@ export default function Account() {
 
       {/* Settings summary */}
       <section className="account__section">
-        <h3 className="account__section-title">Paramètres rapides</h3>
+        <h3 className="account__section-title">Aperçu</h3>
 
-        <div className="account__row" onClick={() => navigate('/settings')}>
+        <div className="account__row">
           <MapPin size={18} />
           <div className="account__row-body">
             <p className="account__row-label">Localisation</p>
             <p className="account__row-value">{userLocation.label}</p>
           </div>
-          <ChevronRight size={16} />
         </div>
 
-        <div className="account__row" onClick={() => navigate('/settings')}>
+        <div className="account__row">
           <Bell size={18} />
           <div className="account__row-body">
-            <p className="account__row-label">Notifications</p>
-            <p className="account__row-value">Configurer</p>
+            <p className="account__row-label">Seuil push</p>
+            <p className="account__row-value">{{
+              info: 'Tout',
+              low: 'Faible+',
+              medium: 'Modéré+',
+              high: 'Élevé+',
+              critical: 'Critique uniquement',
+            }[notifications?.minSeverity] || 'Modéré+'}</p>
           </div>
-          <ChevronRight size={16} />
         </div>
 
-        <div className="account__row" onClick={() => navigate('/settings')}>
+        <div className="account__row">
           <Shield size={18} />
           <div className="account__row-body">
             <p className="account__row-label">Zones surveillées</p>
-            <p className="account__row-value">Gérer</p>
+            <p className="account__row-value">{zones.length > 0 ? `${zones.length} zone${zones.length > 1 ? 's' : ''}` : 'Aucune'}</p>
+          </div>
+        </div>
+
+        <div className="account__row" onClick={() => navigate('/settings')}>
+          <Settings size={18} />
+          <div className="account__row-body">
+            <p className="account__row-label">Tous les réglages</p>
           </div>
           <ChevronRight size={16} />
         </div>

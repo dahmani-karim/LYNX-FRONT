@@ -97,7 +97,7 @@ const MODULES = [
     icon: Heart,
     color: '#10B981',
     title: 'Sanitaire',
-    source: 'Disease.sh / OMS',
+    source: 'Disease.sh / OMS / GDELT',
     desc: 'Suivi des épidémies et pandémies mondiales : COVID-19, grippe aviaire, variole du singe et autres pathogènes.',
     features: ['COVID-19 global', 'Épidémies émergentes', 'Vaccination mondiale', 'Alertes sanitaires'],
   },
@@ -158,10 +158,12 @@ const MODULES = [
 ];
 
 const STATS = [
-  { value: '17+', label: 'Sources de données' },
+  { value: '18+', label: 'Sources de données' },
   { value: '24/7', label: 'Monitoring continu' },
   { value: '16', label: 'Catégories de risque' },
-  { value: '5 min', label: 'Rafraîchissement' },
+  { value: '5 min', label: 'Gratuit' },
+  { value: '1 min', label: 'Premium' },
+  { value: 'Temps réel', label: 'Pro' },
 ];
 
 export default function Discover() {

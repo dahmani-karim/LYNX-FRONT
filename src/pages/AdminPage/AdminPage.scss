@@ -1,0 +1,190 @@
+.admin-page {
+  padding: $sp-4;
+  max-width: 640px;
+  margin: 0 auto;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+    margin-bottom: $sp-6;
+  }
+
+  &__back {
+    @include btn-ghost;
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    color: $lynx-muted;
+    font-size: $text-sm;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    font-size: $text-lg;
+    font-weight: 700;
+    color: $lynx-text;
+  }
+
+  &__section {
+    background: $lynx-surface;
+    border: 1px solid $lynx-border;
+    border-radius: $radius-lg;
+    padding: $sp-4;
+    margin-bottom: $sp-4;
+  }
+
+  &__section-title {
+    font-size: $text-base;
+    font-weight: 600;
+    color: $lynx-text;
+    margin-bottom: $sp-4;
+  }
+
+  &__group {
+    margin-bottom: $sp-4;
+  }
+
+  &__label {
+    display: block;
+    font-size: $text-xs;
+    color: $lynx-muted;
+    margin-bottom: $sp-2;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__input {
+    width: 100%;
+    padding: $sp-2 $sp-3;
+    background: $lynx-bg;
+    border: 1px solid $lynx-border;
+    border-radius: $radius-md;
+    color: $lynx-text;
+    font-size: $text-sm;
+    font-family: inherit;
+
+    &:focus {
+      outline: none;
+      border-color: $lynx-accent;
+    }
+  }
+
+  &__textarea {
+    resize: vertical;
+    min-height: 60px;
+  }
+
+  &__hint {
+    display: block;
+    font-size: $text-xs;
+    color: $lynx-dim;
+    margin-top: $sp-1;
+  }
+
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $sp-2;
+    margin-top: $sp-2;
+  }
+
+  &__chip {
+    padding: $sp-1 $sp-3;
+    border-radius: $radius-full;
+    border: 1px solid $lynx-border;
+    background: transparent;
+    color: $lynx-muted;
+    font-size: $text-sm;
+    cursor: pointer;
+
+    &--active {
+      background: rgba($lynx-accent, 0.15);
+      border-color: $lynx-accent;
+      color: $lynx-accent;
+    }
+  }
+
+  &__results {
+    margin-top: $sp-2;
+    border: 1px solid $lynx-border;
+    border-radius: $radius-md;
+    overflow: hidden;
+  }
+
+  &__result {
+    display: flex;
+    justify-content: space-between;
+    padding: $sp-2 $sp-3;
+    cursor: pointer;
+    font-size: $text-sm;
+    color: $lynx-text;
+
+    &:hover { background: rgba($lynx-accent, 0.05); }
+
+    &--selected { background: rgba($lynx-accent, 0.1); color: $lynx-accent; }
+
+    small { color: $lynx-muted; }
+  }
+
+  &__actions {
+    display: flex;
+    gap: $sp-3;
+    margin-top: $sp-2;
+  }
+
+  &__btn {
+    @include btn-ghost;
+    padding: $sp-2 $sp-4;
+    border-radius: $radius-md;
+    font-size: $text-sm;
+    font-weight: 600;
+    border: 1px solid $lynx-border;
+
+    &--primary {
+      background: $lynx-accent;
+      border-color: $lynx-accent;
+      color: #fff;
+
+      &:hover { background: color.adjust($lynx-accent, $lightness: -8%); }
+    }
+
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+
+  &__history {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-2;
+  }
+
+  &__history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: $sp-3;
+    background: $lynx-bg;
+    border: 1px solid $lynx-border;
+    border-radius: $radius-md;
+    font-size: $text-sm;
+
+    > div {
+      display: flex;
+      flex-direction: column;
+      gap: $sp-1;
+    }
+  }
+
+  &__delete {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: $lynx-muted;
+    font-size: $text-base;
+    line-height: 1;
+
+    &:hover { color: $lynx-danger; }
+  }
+}

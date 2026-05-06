@@ -25,6 +25,7 @@ const EnergyPrices = lazy(() => import('./pages/EnergyPrices/EnergyPrices'));
 const About = lazy(() => import('./pages/About/About'));
 const AnalysisPage = lazy(() => import('./pages/AnalysisPage/AnalysisPage'));
 const BlackoutPage = lazy(() => import('./pages/BlackoutPage/BlackoutPage'));
+const AdminPage = lazy(() => import('./pages/AdminPage/AdminPage'));
 
 function RequireAuth({ children }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -127,6 +128,7 @@ export default function App() {
           <Route path="/timeline" element={<Navigate to="/alerts" replace />} />
           <Route path="/about" element={<About />} />
           <Route path="/alert/:id" element={<AlertDetail />} />
+          <Route path="/admin" element={<AdminPage />} />
         </Route>
 
         {/* Redirect old trackers route */}

@@ -25,7 +25,7 @@ const GUIDE_SECTIONS = [
   {
     icon: Clock,
     title: 'Chronologie',
-    desc: 'Suivez l\'évolution des événements dans le temps. Les Premium accèdent à l\'historique complet et aux analyses de tendances.',
+    desc: 'Suivez l\'évolution des événements dans le temps. Accessible depuis la page Alertes (onglet Timeline). Les Premium accèdent à l\'historique complet et aux analyses de tendances.',
   },
   {
     icon: Fuel,
@@ -46,6 +46,11 @@ const GUIDE_SECTIONS = [
     icon: Settings,
     title: 'Réglages',
     desc: 'Configurez votre localisation, vos zones de surveillance, les notifications push et le seuil minimum de sévérité.',
+  },
+  {
+    icon: Eye,
+    title: 'Mode veille',
+    desc: 'Activez le mode veille via le bouton lune dans le header pour assombrir l\'écran. Un tap sur l\'écran le réactive temporairement. Idéal pour surveiller LYNX de nuit sans éblouissement.',
   },
 ];
 
@@ -70,12 +75,12 @@ export default function About() {
         </div>
         <div className="about__card">
           <p><strong>LYNX</strong> — Voyez ce que les autres ne voient pas</p>
-          <p>Version 1.0.0</p>
+          <p>Version 1.3.0</p>
           <p>Plateforme OSINT d'anticipation & d'alertes multi-risques en temps réel.</p>
           <div className="about__sources">
             <p className="about__sources-label">Sources de données :</p>
             <div className="about__sources-tags">
-              {['USGS', 'Open-Meteo', 'GDACS', 'CERT-FR', 'ZATAZ', 'ODRÉ', 'Ecogaz', 'NASA FIRMS', 'NOAA SWPC', 'OpenSky', 'BfS', 'Disease.sh', 'data.gouv.fr', 'CRE'].map((src) => (
+              {['USGS', 'Open-Meteo', 'GDACS', 'CERT-FR', 'ZATAZ', 'ODRÉ', 'Ecogaz', 'NASA FIRMS', 'NOAA SWPC', 'OpenSky', 'N2YO', 'Digitraffic', 'BfS', 'Disease.sh', 'data.gouv.fr', 'CRE', 'ReliefWeb', 'GDELT'].map((src) => (
                 <span key={src} className="about__source-tag">{src}</span>
               ))}
             </div>
