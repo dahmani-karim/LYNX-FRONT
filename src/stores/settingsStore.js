@@ -21,8 +21,10 @@ export const useSettingsStore = create(
       isPremium: false,
       hasSeenOnboarding: false,
       mapStyle: 'dark',
+      veilleMode: false,
 
       setUserLocation: (location) => set({ userLocation: location }),
+      setVeilleMode: (v) => set({ veilleMode: v }),
 
       addZone: (zone) =>
         set((state) => ({

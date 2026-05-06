@@ -56,6 +56,13 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', theme || 'dark');
   }, [theme]);
 
+  // Mode veille — dim the screen
+  const veilleMode = useSettingsStore((s) => s.veilleMode);
+  useEffect(() => {
+    document.body.classList.toggle('veille-mode', !!veilleMode);
+    return () => document.body.classList.remove('veille-mode');
+  }, [veilleMode]);
+
   const premiumPlan = useAuthStore((s) => s.premiumPlan);
   const soundEnabled = useSettingsStore((s) => s.soundEnabled !== false);
 

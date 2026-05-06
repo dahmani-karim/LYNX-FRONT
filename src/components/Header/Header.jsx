@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { RefreshCw, Menu, X, Home, Map, Bell, BarChart3, Settings, Eye, Zap, Info, Compass, CreditCard, Link2, User, ShieldAlert } from 'lucide-react';
+import { RefreshCw, Menu, X, Home, Map, Bell, BarChart3, Settings, Eye, Zap, Info, Compass, CreditCard, Link2, User, ShieldAlert, MoonStar, Sun } from 'lucide-react';
 import { useAlertStore } from '../../stores/alertStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { playSuccessSound, playErrorSound, playFlashSound, playPrioritySound, playRoutineSound } from '../../services/sounds';
@@ -41,6 +41,8 @@ export default function Header() {
     : userLocation;
 
   const soundEnabled = useSettingsStore((s) => s.soundEnabled !== false);
+  const veilleMode = useSettingsStore((s) => s.veilleMode);
+  const setVeilleMode = useSettingsStore((s) => s.setVeilleMode);
 
   const handleManualRefresh = async () => {
     try {
@@ -87,6 +89,14 @@ export default function Header() {
             {/* {criticalCount > 0 && (
               <span className="header__badge">{criticalCount}</span>
             )} */}
+            <button
+              onClick={() => setVeilleMode(!veilleMode)}
+              className={`header__icon-btn${veilleMode ? ' header__icon-btn--active' : ''}`}
+              aria-label="Mode veille"
+              title={veilleMode ? 'Désactiver mode veille' : 'Mode veille'}
+            >
+              {veilleMode ? <Sun size={18} /> : <MoonStar size={18} />}
+            </button>
             <button
               onClick={handleManualRefresh}
               disabled={isLoading}

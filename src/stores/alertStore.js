@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { fetchGlobalAlerts } from '../services/globalAlerts';
 import { fetchWeather } from '../services/weather';
 import { fetchAirQuality } from '../services/airQuality';
@@ -17,7 +18,9 @@ import { recordDeltaSnapshot } from '../services/deltaHistory';
 let knownEventSigs = new Set();
 let isFirstFetch = true;
 
-export const useAlertStore = create((set, get) => ({
+export const useAlertStore = create(
+  persist(
+    (set, get) => ({
   events: [],
   weatherData: null,
   serviceStatuses: [],
@@ -53,7 +56,7 @@ export const useAlertStore = create((set, get) => ({
     searchQuery: '',
   },
 
-  setSelectedEvent: (event) => set({ selectedEvent: event }),
+    setSelectedEvent: (event) => set({ selectedEvent: event }),
 
   setFilter: (key, value) =>
     set((state) => ({
@@ -285,4 +288,9 @@ export const useAlertStore = create((set, get) => ({
     });
     return true;
   },
-}));
+}),
+  {
+    name: 'lynx-alert-filters',
+    partialize: (state) => ({ filters: state.filters }),
+  }
+));

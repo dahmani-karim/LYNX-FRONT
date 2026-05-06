@@ -19,6 +19,16 @@ body {
   min-height: 100dvh;
   overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
+
+  &.veille-mode {
+    filter: brightness(0.15);
+    transition: filter 0.5s ease;
+
+    &:active {
+      filter: brightness(1);
+      transition: filter 0.1s ease;
+    }
+  }
 }
 
 #root {

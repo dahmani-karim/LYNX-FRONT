@@ -62,6 +62,10 @@
     color: $lynx-muted;
 
     &:disabled { opacity: 0.5; }
+
+    &--active {
+      color: $lynx-accent;
+    }
   }
 
   &__emoji-btn {
