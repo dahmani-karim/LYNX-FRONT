@@ -84,7 +84,7 @@ function MetadataSection({ event }) {
             <div className="alert-detail__meta-cell">
               <span className="alert-detail__meta-label">Dose mesurée</span>
               <span className="alert-detail__meta-value alert-detail__meta-value--big">
-                {Number(m.doseRate).toFixed(3)} {m.unit || 'ÂµSv/h'}
+                {Number(m.doseRate).toFixed(3)} {m.unit || 'µSv/h'}
               </span>
             </div>
           )}
@@ -209,7 +209,7 @@ export default function AlertDetail() {
   const iframeRef = useRef(null);
   const timeoutRef = useRef(null);
 
-  // Related alerts â€” same type, sorted by date desc, exclude current, top 3
+  // Related alerts — same type, sorted by date desc, exclude current, top 3
   const relatedAlerts = useMemo(() => {
     if (!event) return [];
     return events
@@ -242,7 +242,7 @@ export default function AlertDetail() {
   if (!event) {
     return (
       <div className="alert-detail__not-found">
-        <p className="alert-detail__not-found-icon">ðŸ”</p>
+        <p className="alert-detail__not-found-icon">🔍</p>
         <p className="alert-detail__not-found-text">Alerte introuvable</p>
         <Link to="/alerts" className="alert-detail__not-found-link">
           Retour aux alertes
@@ -262,7 +262,7 @@ export default function AlertDetail() {
   const handleShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: `LYNX â€“ ${event.title}`, text: event.description, url: window.location.href });
+        await navigator.share({ title: `LYNX — ${event.title}`, text: event.description, url: window.location.href });
       } catch { }
     } else {
       await navigator.clipboard.writeText(window.location.href);
@@ -435,13 +435,13 @@ export default function AlertDetail() {
               {previewLoading && !previewError && (
                 <div className="alert-detail__preview-loading">
                   <div className="alert-detail__preview-spinner" />
-                  <p>Chargement de l'aperÃ§uâ€¦</p>
+                  <p>Chargement de l'aperçu…</p>
                 </div>
               )}
               {previewError ? (
                 <div className="alert-detail__preview-error">
                   <AlertTriangle size={24} />
-                  <p>AperÃ§u non disponible</p>
+                  <p>Aperçu non disponible</p>
                   <span>Ce site ne permet pas l'affichage dans un cadre intégré.</span>
                   <a
                     href={event.sourceUrl}
@@ -457,7 +457,7 @@ export default function AlertDetail() {
                   <iframe
                     ref={iframeRef}
                     src={event.sourceUrl}
-                    title="AperÃ§u de la source"
+                    title="Aperçu de la source"
                     sandbox="allow-scripts allow-same-origin"
                     className="alert-detail__preview-iframe"
                     onLoad={handleIframeLoad}
