@@ -109,18 +109,159 @@
     margin-bottom: $sp-4;
   }
 
-  &__info-grid {
+  // Info chips row
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $sp-2;
+    margin-bottom: $sp-2;
+  }
+
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: $sp-1;
+    padding: 3px $sp-2;
+    background-color: $lynx-surface;
+    border: 1px solid $lynx-border;
+    border-radius: $radius-full;
+    font-size: $text-xs;
+    color: $lynx-muted;
+    white-space: nowrap;
+
+    svg { flex-shrink: 0; }
+
+    &--muted {
+      opacity: 0.6;
+    }
+  }
+
+  &__chip-reliability {
+    font-style: normal;
+    font-size: 0.625rem;
+    opacity: 0.7;
+    margin-left: $sp-1;
+  }
+
+  // Import timestamp badge
+  &__imported {
+    font-size: 0.625rem;
+    color: $lynx-dim;
+    opacity: 0.6;
+    margin-top: $sp-1;
+  }
+
+  // Shared section title (used in source, metadata, related)
+  &__section-title {
+    font-size: $text-sm;
+    font-weight: 600;
+    color: $lynx-muted;
+    margin-bottom: $sp-3;
+  }
+
+  // Mini inline Leaflet map
+  &__mini-map {
+    border-radius: $radius-xl;
+    overflow: hidden;
+    border: 1px solid $lynx-border;
+  }
+
+  // Generic metadata card (seismic, radiation, health, etc.)
+  &__meta-section {
+    @include card;
+    padding: $sp-4;
+  }
+
+  &__meta-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: $sp-3;
   }
 
-  &__info-item {
+  &__meta-cell {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-1;
+
+    &--full {
+      grid-column: 1 / -1;
+    }
+  }
+
+  &__meta-label {
+    font-size: $text-xs;
+    color: $lynx-dim;
+  }
+
+  &__meta-value {
+    font-size: $text-sm;
+    font-weight: 600;
+
+    &--big {
+      font-size: $text-xl;
+      font-weight: 700;
+    }
+
+    &--sm {
+      font-size: $text-xs;
+      font-weight: 400;
+      line-height: 1.5;
+      color: $lynx-muted;
+    }
+
+    &--warning {
+      color: $lynx-warning;
+    }
+  }
+
+  // Related alerts
+  &__related {
+    @include card;
+    padding: $sp-4;
+  }
+
+  &__related-list {
+    @include stack($sp-2);
+  }
+
+  &__related-item {
+    display: block;
+    padding: $sp-3;
+    background-color: $lynx-surface;
+    border: 1px solid $lynx-border;
+    border-radius: $radius-lg;
+    @include transition;
+    text-decoration: none;
+
+    &:hover {
+      background-color: $lynx-elevated;
+      border-color: rgba($lynx-accent, 0.3);
+    }
+  }
+
+  &__related-header {
     display: flex;
     align-items: center;
     gap: $sp-2;
+    margin-bottom: $sp-1;
+  }
+
+  &__related-cat {
     font-size: $text-xs;
     color: $lynx-dim;
+    flex: 1;
+  }
+
+  &__related-date {
+    font-size: $text-xs;
+    color: $lynx-dim;
+  }
+
+  &__related-title {
+    font-size: $text-sm;
+    font-weight: 500;
+    line-height: 1.4;
+    color: $lynx-text;
   }
 
   // Source card
@@ -131,12 +272,6 @@
     > * + * { margin-top: $sp-3; }
 
     @include lg { grid-column: 2 / 3; grid-row: 2 / 3; }
-  }
-
-  &__source-title {
-    font-size: $text-sm;
-    font-weight: 600;
-    color: $lynx-muted;
   }
 
   &__source-row {
@@ -288,46 +423,7 @@
     &:hover { color: $lynx-accent; }
   }
 
-  // Seismic data
-  &__seismic {
-    @include card;
-    padding: $sp-4;
-
-    > * + * { margin-top: $sp-3; }
-  }
-
-  &__seismic-title {
-    font-size: $text-sm;
-    font-weight: 600;
-    color: $lynx-muted;
-  }
-
-  &__seismic-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: $sp-3;
-  }
-
-  &__seismic-label {
-    font-size: $text-xs;
-    color: $lynx-dim;
-  }
-
-  &__seismic-value {
-    font-size: $text-lg;
-    font-weight: 700;
-
-    &--sm {
-      font-size: $text-sm;
-      font-weight: 500;
-    }
-
-    &--warning {
-      font-size: $text-sm;
-      font-weight: 500;
-      color: $lynx-warning;
-    }
-  }
+  // (seismic section replaced by generic __meta-section above)
 
   // Actions
   &__actions {
