@@ -206,6 +206,7 @@ export default function AlertDetail() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(true);
   const [previewError, setPreviewError] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const iframeRef = useRef(null);
   const timeoutRef = useRef(null);
 
@@ -258,6 +259,7 @@ export default function AlertDetail() {
   const description = cleanDescription(event.description);
   const sourceDomain = parseDomain(event.sourceUrl, event.sourceName);
   const hasMap = Boolean(event.latitude && event.longitude);
+  const sourceImage = !imgError && event.metadata?.imageUrl?.startsWith('http') ? event.metadata.imageUrl : null;
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -362,6 +364,21 @@ export default function AlertDetail() {
       {/* ── Type-specific metadata ── */}
       <MetadataSection event={event} />
 
+      {/* ── Source image (GDELT socialimage) ── */}
+      {sourceImage && (
+        <div className="alert-detail__source-image">
+          <img
+            src={sourceImage}
+            alt={event.title}
+            className="alert-detail__source-img"
+            onError={() => setImgError(true)}
+          />
+          <p className="alert-detail__source-image-caption">
+            Image via {sourceDomain || event.sourceName}
+          </p>
+        </div>
+      )}
+
       {/* ── Related alerts ── */}
       {relatedAlerts.length > 0 && (
         <div className="alert-detail__related">
@@ -414,8 +431,8 @@ export default function AlertDetail() {
         )}
       </div>
 
-      {/* ── Source preview ── */}
-      {event.sourceUrl && (
+      {/* ── Source preview (iframe — only when no image available) ── */}
+      {event.sourceUrl && !sourceImage && (
         <div className="alert-detail__preview">
           <button
             className="alert-detail__preview-toggle"

@@ -19,8 +19,9 @@
     &__source       { grid-column: 1; }
 
     // Right column — contextual
-    &__mini-map { grid-column: 2; }
-    &__preview  { grid-column: 2; }
+    &__mini-map     { grid-column: 2; }
+    &__preview      { grid-column: 2; }
+    &__source-image { grid-column: 2; }
   }
 
   // Back button
@@ -311,6 +312,28 @@
     font-size: $text-sm;
     color: $lynx-accent;
     &:hover { text-decoration: underline; }
+  }
+
+  // Source image
+  &__source-image {
+    @include card;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  &__source-img {
+    display: block;
+    width: 100%;
+    max-height: 320px;
+    object-fit: cover;
+    object-position: center top;
+  }
+
+  &__source-image-caption {
+    padding: $sp-2 $sp-3;
+    font-size: $text-xs;
+    color: $lynx-dim;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
   }
 
   // Source preview
