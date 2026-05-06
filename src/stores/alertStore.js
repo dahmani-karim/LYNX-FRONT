@@ -9,7 +9,6 @@ import { fetchInternetOutages } from '../services/internetOutages';
 import { fetchSpaceWeather } from '../services/spaceWeather';
 import { calculateRiskScores } from '../services/riskEngine';
 import { useSettingsStore } from './settingsStore';
-import { asyncTranslate } from '../utils/translate';
 import { notifyNewAlerts } from '../services/notifications';
 import { computeDelta, getAlertTier } from '../services/deltaEngine';
 import { cacheAlertData, loadCachedData } from '../services/offlineCache';
@@ -210,11 +209,8 @@ export const useAlertStore = create((set, get) => ({
       return true;
     });
 
-    // Translate titles & descriptions that are still in English
-    for (const e of filteredEvents) {
-      if (e.title) e.title = asyncTranslate(e.title);
-      if (e.description) e.description = asyncTranslate(e.description);
-    }
+    // NOTE: La traduction est gérée côté backend Strapi (lang=fr).
+    // L'ancien double-translate frontend cassait les titres déjà français.
 
     const riskScores = calculateRiskScores(filteredEvents);
 

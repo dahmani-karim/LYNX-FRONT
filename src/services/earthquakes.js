@@ -1,3 +1,5 @@
+// @deprecated — Remplacé par globalAlerts.js + Strapi backend (lang=fr).
+// Ce service n'est plus appelé par alertStore. À supprimer en P2.
 import { API_CONFIG } from '../config/api';
 import { asyncTranslate } from '../utils/translate';
 
