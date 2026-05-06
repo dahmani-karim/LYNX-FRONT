@@ -1,4 +1,4 @@
-﻿import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { MapContainer, TileLayer, CircleMarker } from 'react-leaflet';
 import { useAlertStore } from '../../stores/alertStore';
@@ -272,13 +272,13 @@ export default function AlertDetail() {
   return (
     <div className="alert-detail">
 
-      {/* â”€â”€ Back â”€â”€ */}
+      {/* ── Back ── */}
       <button onClick={() => navigate(-1)} className="alert-detail__back">
         <ArrowLeft size={16} />
         Retour
       </button>
 
-      {/* â”€â”€ Header â”€â”€ */}
+      {/* ── Header ── */}
       <div className="alert-detail__header">
         <div className="alert-detail__header-row">
           <div className="alert-detail__icon" style={{ backgroundColor: category.bgColor }}>
@@ -300,7 +300,7 @@ export default function AlertDetail() {
 
         {description && <p className="alert-detail__desc">{description}</p>}
 
-        {/* Info chips â€” source time, country, source name, coords */}
+        {/* Info chips — source time, country, source name, coords */}
         <div className="alert-detail__chips">
           <span className="alert-detail__chip" title={timeAgo(event.eventDate)}>
             <Clock size={12} />
@@ -325,7 +325,7 @@ export default function AlertDetail() {
           )}
         </div>
 
-        {/* Import timestamp â€” secondary info */}
+        {/* Import timestamp — secondary info */}
         {event.importedAt && (
           <p className="alert-detail__imported">
             Importé dans LYNX le {formatDate(event.importedAt)}
@@ -333,7 +333,7 @@ export default function AlertDetail() {
         )}
       </div>
 
-      {/* â”€â”€ Mini map â”€â”€ */}
+      {/* ── Mini map ── */}
       {hasMap && (
         <div className="alert-detail__mini-map">
           <MapContainer
@@ -359,10 +359,10 @@ export default function AlertDetail() {
         </div>
       )}
 
-      {/* â”€â”€ Type-specific metadata â”€â”€ */}
+      {/* ── Type-specific metadata ── */}
       <MetadataSection event={event} />
 
-      {/* â”€â”€ Related alerts â”€â”€ */}
+      {/* ── Related alerts ── */}
       {relatedAlerts.length > 0 && (
         <div className="alert-detail__related">
           <h3 className="alert-detail__section-title">Alertes similaires</h3>
@@ -388,7 +388,7 @@ export default function AlertDetail() {
         </div>
       )}
 
-      {/* â”€â”€ Source â”€â”€ */}
+      {/* ── Source ── */}
       <div className="alert-detail__source">
         <h3 className="alert-detail__section-title">Source</h3>
         <div className="alert-detail__source-row">
@@ -414,7 +414,7 @@ export default function AlertDetail() {
         )}
       </div>
 
-      {/* â”€â”€ Source preview â”€â”€ */}
+      {/* ── Source preview ── */}
       {event.sourceUrl && (
         <div className="alert-detail__preview">
           <button
@@ -484,7 +484,7 @@ export default function AlertDetail() {
         </div>
       )}
 
-      {/* â”€â”€ Actions â”€â”€ */}
+      {/* ── Actions ── */}
       <div className="alert-detail__actions">
         {isAuthenticated && (
           <button
