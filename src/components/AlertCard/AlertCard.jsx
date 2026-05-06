@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { CATEGORIES } from '../../config/categories';
 import SeverityBadge from '../SeverityBadge/SeverityBadge';
 import { getAlertTier, TIER_CONFIG } from '../../services/deltaEngine';
-import { timeAgo } from '../../utils/date';
+import { formatDate, timeAgo } from '../../utils/date';
 import { ChevronRight } from 'lucide-react';
 import './AlertCard.scss';
 
@@ -32,7 +32,7 @@ export default function AlertCard({ event, compact = false }) {
         </div>
         <div className="alert-card__compact-body">
           <p className="alert-card__compact-title">{event.title}</p>
-          <p className="alert-card__compact-time">{timeAgo(event.eventDate)}</p>
+          <p className="alert-card__compact-time" title={timeAgo(event.eventDate)}>{formatDate(event.eventDate)}</p>
         </div>
         <SeverityBadge severity={event.severity} size="xs" />
         <TierBadge event={event} />
@@ -61,7 +61,7 @@ export default function AlertCard({ event, compact = false }) {
             <div className="alert-card__source-info">
               <span>{event.sourceName}</span>
               <span>·</span>
-              <span>{timeAgo(event.eventDate)}</span>
+              <span title={timeAgo(event.eventDate)}>{formatDate(event.eventDate)}</span>
             </div>
             <ChevronRight size={14} className="alert-card__chevron" />
           </div>

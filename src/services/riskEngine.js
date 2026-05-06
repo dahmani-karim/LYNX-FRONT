@@ -14,11 +14,17 @@ function latestSeverity(events) {
 
 function categoryScore(events) {
   if (!events.length) return 0;
-  const criticals = countBySeverity(events, 'critical');
-  const highs = countBySeverity(events, 'high') - criticals;
-  const mediums = countBySeverity(events, 'medium') - highs - criticals;
 
-  const score = Math.min(100, criticals * 30 + highs * 15 + mediums * 5);
+  const criticals = countBySeverity(events, 'critical');
+  // Highs/mediums are raw counts at that exact level (not cumulative)
+  const highs = events.filter((e) => e.severity === 'high').length;
+  const mediums = events.filter((e) => e.severity === 'medium').length;
+
+  // Weighted sum capped at 100, normalised by a reference volume of 10 alerts
+  // so that 1 critical alone = 30pts, 4 criticals = 100pts max
+  // regardless of how many medium/low articles GDELT injects
+  const raw = criticals * 30 + highs * 15 + mediums * 5;
+  const score = Math.min(100, raw);
   return Math.round(score);
 }
 
