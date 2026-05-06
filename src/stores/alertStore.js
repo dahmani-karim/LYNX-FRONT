@@ -7,7 +7,7 @@ import { fetchFires } from '../services/fires';
 import { fetchServiceStatuses } from '../services/status';
 import { fetchNuclearProduction } from '../services/energy';
 import { fetchInternetOutages } from '../services/internetOutages';
-import { fetchSpaceWeather } from '../services/spaceWeather';
+// fetchSpaceWeather deprecated — données météo spatiale désormais via Strapi backend (lynx-global-alert, source NOAA SWPC)
 import { calculateRiskScores } from '../services/riskEngine';
 import { useSettingsStore } from './settingsStore';
 import { notifyNewAlerts } from '../services/notifications';
@@ -136,7 +136,6 @@ export const useAlertStore = create(
       fetchServiceStatuses(),
       fetchNuclearProduction(),
       fetchInternetOutages(),
-      fetchSpaceWeather(),
     ]);
 
     // [0] Alertes globales depuis Strapi (séismes, conflits, géopolitique, GDACS, cyber, énergie, santé, radiation, météo spatiale, feux globaux, statut)
@@ -192,14 +191,9 @@ export const useAlertStore = create(
       errors.internet_outage = results[6].reason?.message;
     }
 
-    // [7] Space Weather (NOAA SWPC — Kp index, solar flares, CME)
-    let spaceWeatherData = [];
-    if (results[7].status === 'fulfilled') {
-      spaceWeatherData = results[7].value;
-      allEvents.push(...results[7].value);
-    } else {
-      errors.space_weather = results[7].reason?.message;
-    }
+    // Space Weather: maintenant géré côté Strapi (source NOAA SWPC, type=space_weather)
+    // Les alertes sont incluses dans results[0] (fetchGlobalAlerts)
+    const spaceWeatherData = [];
 
     const uniqueEvents = Array.from(
       new Map(allEvents.map((e) => [e.id, e])).values()
