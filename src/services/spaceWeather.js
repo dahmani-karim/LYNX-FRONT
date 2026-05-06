@@ -1,5 +1,4 @@
 import { API_CONFIG } from '../config/api';
-import { asyncTranslate } from '../utils/translate';
 
 /**
  * Fetches space weather alerts from NOAA SWPC.
@@ -72,12 +71,7 @@ export async function fetchSpaceWeather() {
     console.warn('[spaceWeather] NOAA SWPC failed:', err.message);
   }
 
-  // Translate titles and descriptions
-  events.forEach((e) => {
-    e.title = asyncTranslate(e.title);
-    e.description = asyncTranslate(e.description);
-  });
-
+  // Titres et descriptions sont déjà générés en français ci-dessus.
   return events;
 }
 
