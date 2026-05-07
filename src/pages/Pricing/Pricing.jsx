@@ -17,11 +17,11 @@ const PLANS = [
       { text: '6 modules de surveillance', included: true },
       { text: 'Carte interactive', included: true },
       { text: 'Score de risque global', included: true },
-      { text: 'Rafraîchissement toutes les 5 min', included: true },
+      { text: 'Données actualisées toutes les 10 min', included: true },
       { text: '1 zone surveillée', included: true },
       { text: 'Historique 24h', included: true },
       { text: 'Passerelles écosystème', included: true },
-      { text: 'Alertes push', included: false },
+      { text: 'Notifications push', included: false },
       { text: 'Zones illimitées', included: false },
       { text: 'Analyse d\'impact conflits', included: false },
       { text: 'Export de données', included: false },
@@ -33,7 +33,7 @@ const PLANS = [
     name: 'Premium',
     price: '4,99€',
     period: '/mois',
-    desc: 'Pour les veilleurs exigeants et les prévoyants.',
+    desc: "Pour les veilleurs exigeants. Soyez alerté dès qu'une menace est détectée.",
     icon: Crown,
     cta: 'Passer à Premium',
     popular: true,
@@ -41,12 +41,11 @@ const PLANS = [
       { text: 'Tous les modules', included: true },
       { text: 'Carte interactive avancée', included: true },
       { text: 'Score de risque détaillé', included: true },
-      { text: 'Rafraîchissement toutes les 1 min', included: true },
+      { text: 'Données actualisées toutes les 5 min', included: true },
+      { text: 'Notifications push instantanées', included: true },
       { text: 'Zones illimitées', included: true },
-      { text: 'Historique 30 jours', included: true },
       { text: 'Passerelles écosystème', included: true },
-      { text: 'Alertes push prioritaires', included: true },
-      { text: 'Analyse d\'impact conflits', included: true },
+      { text: "Analyse d'impact conflits", included: true },
       { text: 'Export CSV / PDF', included: true },
       { text: 'Widget Android avancé', included: true },
       { text: 'API access', included: false },
@@ -55,16 +54,17 @@ const PLANS = [
   {
     id: 'pro',
     name: 'Pro',
-    price: '14,99€',
+    price: '19,99€',
     period: '/mois',
-    desc: 'Pour les organisations et analystes professionnels. Tarif personnalisé après échange.',
+    desc: 'Pour les organisations et analystes professionnels. Accès sur contact obligatoire — souscription après validation par l\'éditeur.',
+
     icon: Zap,
     cta: 'Nous contacter',
     features: [
       { text: 'Tout Premium inclus', included: true },
-      { text: 'API REST complète', included: true },
-      { text: 'Webhooks personnalisés', included: true },
-      { text: 'Rafraîchissement 15s (temps réel)', included: true },
+      { text: 'Rafraîchissement quasi temps réel (15s)', included: true },
+      { text: 'Webhooks sortants (push vers vos systèmes)', included: true },
+      { text: 'API REST complète + token dédié', included: true },
       { text: 'Multi-utilisateurs', included: true },
       { text: 'Historique illimité', included: true },
       { text: 'Dashboard personnalisable', included: true },
@@ -101,8 +101,8 @@ export default function Pricing() {
       <nav className="pricing__nav">
         <div className="pricing__nav-inner">
           <Link to="/" className="pricing__back">
-            <LynxLogo size={32} />
-            <span>LYNX</span>
+            <LynxLogo size={38} />
+            {/* <span>LYNX</span> */}
           </Link>
           {isAuthenticated ? (
             <Link to="/dashboard" className="pricing__nav-cta">Dashboard</Link>

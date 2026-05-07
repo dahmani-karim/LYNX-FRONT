@@ -141,7 +141,7 @@ export default function About() {
           <p>Les présentes CGU régissent l'accès et l'utilisation de la plateforme LYNX. En créant un compte, vous acceptez ces conditions sans réserve.</p>
 
           <h4>2. Accès au service</h4>
-          <p>LYNX est accessible gratuitement avec des fonctionnalités limitées. L'accès Premium est conditionné à un abonnement via Fourthwall ou à un statut VIP accordé manuellement par l'éditeur.</p>
+          <p>LYNX est accessible sur inscription gratuite (compte obligatoire). L'accès Premium est conditionné à un abonnement via Fourthwall ou à un statut VIP accordé manuellement par l'éditeur. L'accès Pro est disponible sur devis après échange avec l'éditeur.</p>
 
           <h4>3. Responsabilité</h4>
           <p>LYNX fournit des informations à titre indicatif uniquement. Cette application ne se substitue en aucun cas aux autorités officielles, services d'urgence ou organismes compétents. En cas de danger immédiat, contactez le <strong>112</strong> (urgences européennes) ou le <strong>114</strong> (urgences par SMS).</p>
@@ -166,7 +166,7 @@ export default function About() {
         </div>
         <div className="about__card about__legal">
           <h4>1. Offres</h4>
-          <p>LYNX propose un accès gratuit (fonctionnalités de base) et un accès Premium (fonctionnalités avancées). Les tarifs sont consultables sur la page Tarifs.</p>
+          <p>LYNX propose trois niveaux d'accès : Gratuit (compte requis, fonctionnalités de base), Premium (abonnement mensuel, fonctionnalités avancées + push notifications) et Pro (sur devis, pour organisations). Les tarifs sont consultables sur la page Tarifs.</p>
 
           <h4>2. Paiement</h4>
           <p>Les paiements sont gérés par la plateforme Fourthwall. Aucune donnée bancaire n'est stockée par LYNX ou La Caverne du Réfractaire.</p>

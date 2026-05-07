@@ -161,9 +161,9 @@ const STATS = [
   { value: '18+', label: 'Sources de données' },
   { value: '24/7', label: 'Monitoring continu' },
   { value: '16', label: 'Catégories de risque' },
-  { value: '5 min', label: 'Gratuit' },
-  { value: '1 min', label: 'Premium' },
-  { value: 'Temps réel', label: 'Pro' },
+  { value: '10 min', label: 'Gratuit' },
+  { value: '5 min', label: 'Premium' },
+  { value: '15s', label: 'Pro' },
 ];
 
 export default function Discover() {
