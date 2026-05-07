@@ -19,7 +19,7 @@ import { Link } from 'react-router-dom';
 import './Dashboard.scss';
 
 export default function Dashboard() {
-  const { events, riskScores, weatherData, airQualityData, isLoading, errors, delta } = useAlertStore();
+  const { events, riskScores, weatherData, airQualityData, isLoading, errors } = useAlertStore();
   const { userLocation, zones } = useSettingsStore();
   const isPremium = useAuthStore((s) => s.isPremium);
 
@@ -74,111 +74,111 @@ export default function Dashboard() {
   
   return (
     <div className="dashboard">
-      {/* News Ticker */}
+      {/* 1. NewsTicker */}
       <NewsTicker events={events} />
 
-      {/* Global Risk Score */}
-      <section className="dashboard__risk-card">
-        <div className="dashboard__risk-header">
-          <div>
-            <h2 className="dashboard__risk-title">Score de risque global</h2>
-            <div className="dashboard__risk-location">
-              <MapPin size={12} />
-              <span>{userLocation.label}</span>
+      {/* 2. Top row: Risk score + Weather + Delta Panel */}
+      <div className="dashboard__top-row">
+        <section className="dashboard__risk-card">
+          <div className="dashboard__risk-header">
+            <div>
+              <h2 className="dashboard__risk-title">Score de risque global</h2>
+              <div className="dashboard__risk-location">
+                <MapPin size={12} />
+                <span>{userLocation.label}</span>
+              </div>
             </div>
+            {isLoading && <RefreshCw size={16} style={{ color: '#9CA3AF' }} className="animate-spin" />}
           </div>
-          {isLoading && <RefreshCw size={16} style={{ color: '#9CA3AF' }} className="animate-spin" />}
-        </div>
-        <div className="dashboard__risk-gauge">
-          <ScoreGauge score={riskScores.global} size={140} strokeWidth={10} />
-        </div>
-      </section>
-
-      {/* Weather Widget */}
-      {weatherData?.current && (
-        <section className="dashboard__weather">
-          <h3 className="dashboard__weather-title">Conditions actuelles</h3>
-          <div className="dashboard__weather-grid">
-            <div className="dashboard__weather-item">
-              <Thermometer size={18} style={{ color: '#F59E0B' }} />
-              <div>
-                <p className="dashboard__weather-value">{weatherData.current.temperature}°C</p>
-                <p className="dashboard__weather-sub">Ressenti {weatherData.current.feelsLike}°C</p>
-              </div>
-            </div>
-            <div className="dashboard__weather-item">
-              <Wind size={18} style={{ color: '#60A5FA' }} />
-              <div>
-                <p className="dashboard__weather-label">{weatherData.current.windSpeed} km/h</p>
-                <p className="dashboard__weather-sub">Vent</p>
-              </div>
-            </div>
-            <div className="dashboard__weather-item">
-              <Droplets size={18} style={{ color: '#6366F1' }} />
-              <div>
-                <p className="dashboard__weather-label">{weatherData.current.humidity}%</p>
-                <p className="dashboard__weather-sub">Humidité</p>
-              </div>
-            </div>
+          <div className="dashboard__risk-gauge">
+            <ScoreGauge score={riskScores.global} size={140} strokeWidth={10} />
           </div>
-
-          <div className="dashboard__weather-divider" />
-
-          <div className="dashboard__weather-grid dashboard__weather-grid--secondary">
-            {airQualityData && (
-              <div className="dashboard__weather-item">
-                <Leaf size={16} style={{ color: aqiColor(airQualityData.severity) }} />
-                <div>
-                  <p className="dashboard__weather-label">
-                    <span
-                      className="dashboard__weather-aqi-badge"
-                      style={{ backgroundColor: aqiColor(airQualityData.severity) }}
-                    >
-                      {airQualityData.euAqi}
-                    </span>
-                    {airQualityData.label}
-                  </p>
-                  <p className="dashboard__weather-sub">Qualité air</p>
-                </div>
-              </div>
-            )}
-            {weatherData.daily?.uv_index_max?.[0] != null && (
-              <div className="dashboard__weather-item">
-                <Sun size={16} style={{ color: '#FBBF24' }} />
-                <div>
-                  <p className="dashboard__weather-label">UV {weatherData.daily.uv_index_max[0]}</p>
-                  <p className="dashboard__weather-sub">Index UV</p>
-                </div>
-              </div>
-            )}
-            {weatherData.current.pressure != null && (
-              <div className="dashboard__weather-item">
-                <Gauge size={16} style={{ color: '#A78BFA' }} />
-                <div>
-                  <p className="dashboard__weather-label">{Math.round(weatherData.current.pressure)} hPa</p>
-                  <p className="dashboard__weather-sub">Pression</p>
-                </div>
-              </div>
-            )}
-            {weatherData.daily?.precipitation_sum?.[0] != null && (
-              <div className="dashboard__weather-item">
-                <CloudRain size={16} style={{ color: '#38BDF8' }} />
-                <div>
-                  <p className="dashboard__weather-label">{weatherData.daily.precipitation_sum[0]} mm</p>
-                  <p className="dashboard__weather-sub">Précip. J</p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <p className="dashboard__weather-desc">{weatherData.current.description}</p>
         </section>
-      )}
 
-      {/* Delta Panel */}
-      <DeltaPanel delta={delta} events={events} />
+        {weatherData?.current && (
+          <section className="dashboard__weather">
+            <h3 className="dashboard__weather-title">Conditions actuelles</h3>
+            <div className="dashboard__weather-grid">
+              <div className="dashboard__weather-item">
+                <Thermometer size={18} style={{ color: '#F59E0B' }} />
+                <div>
+                  <p className="dashboard__weather-value">{weatherData.current.temperature}°C</p>
+                  <p className="dashboard__weather-sub">Ressenti {weatherData.current.feelsLike}°C</p>
+                </div>
+              </div>
+              <div className="dashboard__weather-item">
+                <Wind size={18} style={{ color: '#60A5FA' }} />
+                <div>
+                  <p className="dashboard__weather-label">{weatherData.current.windSpeed} km/h</p>
+                  <p className="dashboard__weather-sub">Vent</p>
+                </div>
+              </div>
+              <div className="dashboard__weather-item">
+                <Droplets size={18} style={{ color: '#6366F1' }} />
+                <div>
+                  <p className="dashboard__weather-label">{weatherData.current.humidity}%</p>
+                  <p className="dashboard__weather-sub">Humidité</p>
+                </div>
+              </div>
+            </div>
 
-      {/* Module Scores Grid */}
+            <div className="dashboard__weather-divider" />
+
+            <div className="dashboard__weather-grid dashboard__weather-grid--secondary">
+              {airQualityData && (
+                <div className="dashboard__weather-item">
+                  <Leaf size={16} style={{ color: aqiColor(airQualityData.severity) }} />
+                  <div>
+                    <p className="dashboard__weather-label">
+                      <span
+                        className="dashboard__weather-aqi-badge"
+                        style={{ backgroundColor: aqiColor(airQualityData.severity) }}
+                      >
+                        {airQualityData.euAqi}
+                      </span>
+                      {airQualityData.label}
+                    </p>
+                    <p className="dashboard__weather-sub">Qualité air</p>
+                  </div>
+                </div>
+              )}
+              {weatherData.daily?.uv_index_max?.[0] != null && (
+                <div className="dashboard__weather-item">
+                  <Sun size={16} style={{ color: '#FBBF24' }} />
+                  <div>
+                    <p className="dashboard__weather-label">UV {weatherData.daily.uv_index_max[0]}</p>
+                    <p className="dashboard__weather-sub">Index UV</p>
+                  </div>
+                </div>
+              )}
+              {weatherData.current.pressure != null && (
+                <div className="dashboard__weather-item">
+                  <Gauge size={16} style={{ color: '#A78BFA' }} />
+                  <div>
+                    <p className="dashboard__weather-label">{Math.round(weatherData.current.pressure)} hPa</p>
+                    <p className="dashboard__weather-sub">Pression</p>
+                  </div>
+                </div>
+              )}
+              {weatherData.daily?.precipitation_sum?.[0] != null && (
+                <div className="dashboard__weather-item">
+                  <CloudRain size={16} style={{ color: '#38BDF8' }} />
+                  <div>
+                    <p className="dashboard__weather-label">{weatherData.daily.precipitation_sum[0]} mm</p>
+                    <p className="dashboard__weather-sub">Précip. J</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <p className="dashboard__weather-desc">{weatherData.current.description}</p>
+          </section>
+        )}
+
+        <DeltaPanel />
+      </div>
+
+      {/* 3. Module Scores Grid */}
       <section>
         <div className="dashboard__alerts-header">
           <h3 className="dashboard__modules-title">Modules de surveillance</h3>
@@ -220,97 +220,103 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* Active Alerts */}
-      {topAlerts.length > 0 && (
-        <section>
-          <div className="dashboard__alerts-header">
-            <h3 className="dashboard__alerts-title">Alertes récentes ({events.length})</h3>
-            <Link to="/alerts" className="dashboard__alerts-link">
-              Toutes les alertes <ChevronRight size={14} />
-            </Link>
-          </div>
-          <div className="dashboard__alerts-list">
-            {topAlerts.map((event) => (
-              <AlertCard key={event.id} event={event} compact />
-            ))}
-          </div>
-        </section>
-      )}
+      {/* 4. Alertes récentes + Alertes zones (côte à côte) */}
+      <div className="dashboard__two-col">
+        {topAlerts.length > 0 && (
+          <section>
+            <div className="dashboard__alerts-header">
+              <h3 className="dashboard__alerts-title">Alertes récentes ({events.length})</h3>
+              <Link to="/alerts" className="dashboard__alerts-link">
+                Toutes les alertes <ChevronRight size={14} />
+              </Link>
+            </div>
+            <div className="dashboard__alerts-list dashboard__alerts-list--single">
+              {topAlerts.map((event) => (
+                <AlertCard key={event.id} event={event} compact />
+              ))}
+            </div>
+          </section>
+        )}
 
-      {/* Correlations & Insights */}
-      {insights.length > 0 && (
-        <section className="dashboard__insights">
-          <div className="dashboard__alerts-header">
+        {zoneMatches.length > 0 && (
+          <section className="dashboard__insights">
             <h3 className="dashboard__insights-title">
-              <Link2 size={16} />
-              Corrélations détectées
+              <Crosshair size={16} />
+              Alertes dans vos zones ({zoneMatches.length})
             </h3>
-            <Link to="/analysis" className="dashboard__alerts-link">
-              Voir l'analyse complète <ChevronRight size={14} />
-            </Link>
-          </div>
-          <div className="dashboard__insights-list">
-            {insights.slice(0, isPremium ? 5 : 1).map((insight, i) => (
-              <div key={i} className={`dashboard__insight dashboard__insight--${insight.severity}`}>
-                <p className="dashboard__insight-label">{insight.title}</p>
-                <p className="dashboard__insight-desc">{insight.description}</p>
+            <div className="dashboard__insights-list">
+              {zoneMatches.slice(0, 5).map((m, i) => (
+                <div key={i} className={`dashboard__insight dashboard__insight--${m.event.severity === 'critical' || m.event.severity === 'high' ? 'high' : 'medium'}`}>
+                  <p className="dashboard__insight-label">{m.event.title}</p>
+                  <p className="dashboard__insight-desc">
+                    Zone « {m.zone.label} » · {m.distanceKm} km · {m.event.sourceName}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+
+      {/* 5. Corrélations + Tendances prédictives (côte à côte) */}
+      {(insights.length > 0 || predictions.length > 0) && (
+        <div className="dashboard__two-col">
+          {/* Correlations & Insights */}
+          {insights.length > 0 && (
+            <section className="dashboard__insights">
+              <div className="dashboard__alerts-header">
+                <h3 className="dashboard__insights-title">
+                  <Link2 size={16} />
+                  Corrélations détectées
+                </h3>
+                <Link to="/analysis" className="dashboard__alerts-link">
+                  Voir l'analyse complète <ChevronRight size={14} />
+                </Link>
               </div>
-            ))}
-            {!isPremium && insights.length > 1 && (
-              <p className="dashboard__insight-premium">
-                +{insights.length - 1} corrélation{insights.length > 2 ? 's' : ''} — Premium pour tout voir
-              </p>
-            )}
-          </div>
-        </section>
+              <div className="dashboard__insights-list">
+                {insights.slice(0, isPremium ? 5 : 1).map((insight, i) => (
+                  <div key={i} className={`dashboard__insight dashboard__insight--${insight.severity}`}>
+                    <p className="dashboard__insight-label">{insight.title}</p>
+                    <p className="dashboard__insight-desc">{insight.description}</p>
+                  </div>
+                ))}
+                {!isPremium && insights.length > 1 && (
+                  <p className="dashboard__insight-premium">
+                    +{insights.length - 1} corrélation{insights.length > 2 ? 's' : ''} — Premium pour tout voir
+                  </p>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Predictive Alerts */}
+          {predictions.length > 0 && (
+            <PremiumGate feature="Tendances prédictives">
+              <section className="dashboard__insights">
+                <div className="dashboard__alerts-header">
+                  <h3 className="dashboard__insights-title">
+                    <TrendingUp size={16} />
+                    Tendances prédictives
+                  </h3>
+                  <Link to="/analysis" className="dashboard__alerts-link">
+                    Voir l'analyse complète <ChevronRight size={14} />
+                  </Link>
+                </div>
+                <div className="dashboard__insights-list">
+                  {predictions.slice(0, 2).map((pred, i) => (
+                    <div key={i} className={`dashboard__insight dashboard__insight--${pred.severity}`}>
+                      <p className="dashboard__insight-label" style={{ color: pred.color }}>{pred.label}</p>
+                      <p className="dashboard__insight-desc">{pred.message}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </PremiumGate>
+          )}
+        </div>
       )}
 
-      {/* Predictive Alerts */}
-      {predictions.length > 0 && (
-        <PremiumGate feature="Tendances prédictives">
-        <section className="dashboard__insights">
-          <div className="dashboard__alerts-header">
-            <h3 className="dashboard__insights-title">
-              <TrendingUp size={16} />
-              Tendances prédictives
-            </h3>
-            <Link to="/analysis" className="dashboard__alerts-link">
-              Voir l'analyse complète <ChevronRight size={14} />
-            </Link>
-          </div>
-          <div className="dashboard__insights-list">
-            {predictions.slice(0, 2).map((pred, i) => (
-              <div key={i} className={`dashboard__insight dashboard__insight--${pred.severity}`}>
-                <p className="dashboard__insight-label" style={{ color: pred.color }}>{pred.label}</p>
-                <p className="dashboard__insight-desc">{pred.message}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-        </PremiumGate>
-      )}
-
-      {/* Zone Alerts (Geofencing) */}
-      {zoneMatches.length > 0 && (
-        <section className="dashboard__insights">
-          <h3 className="dashboard__insights-title">
-            <Crosshair size={16} />
-            Alertes dans vos zones ({zoneMatches.length})
-          </h3>
-          <div className="dashboard__insights-list">
-            {zoneMatches.slice(0, 5).map((m, i) => (
-              <div key={i} className={`dashboard__insight dashboard__insight--${m.event.severity === 'critical' || m.event.severity === 'high' ? 'high' : 'medium'}`}>
-                <p className="dashboard__insight-label">{m.event.title}</p>
-                <p className="dashboard__insight-desc">
-                  Zone « {m.zone.label} » · {m.distanceKm} km · {m.event.sourceName}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Ecosystem Bridge */}
+      {/* 6. EcosystemBridge */}
       <EcosystemBridge events={events} />
 
       {/* Errors */}

@@ -2,23 +2,38 @@
   @include page-container;
   @include stack($sp-5);
 
-  // Desktop: 2-column top row (risk + weather)
-  @include lg {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: $sp-5;
-    align-items: start;
+  // ── Top row: Risk + Weather + Delta (stack on mobile, 3 cols on desktop) ──
+  &__top-row {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-4;
 
-    // Full-width elements span both columns
-    > * { grid-column: 1 / -1; }
+    @include lg {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: $sp-5;
+      align-items: start;
+    }
+  }
+
+  // ── Two-column row (Alerts+Zones, Correlations+Predictions) ──
+  &__two-col {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-4;
+
+    @include lg {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: $sp-5;
+      align-items: start;
+    }
   }
 
   // Risk score card
   &__risk-card {
     @include card-lg;
     padding: $sp-5;
-
-    @include lg { grid-column: 1 / 2; }
   }
 
   &__risk-header {
@@ -49,8 +64,6 @@
   &__weather {
     @include card-lg;
     padding: $sp-4;
-
-    @include lg { grid-column: 2 / 3; }
   }
 
   &__weather-title {
@@ -243,11 +256,13 @@
   &__alerts-list {
     > * + * { margin-top: $sp-2; }
 
-    @include lg {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: $sp-2;
-      > * + * { margin-top: 0; }
+    // When inside a two-col container, single-column list (no inner 2-col split)
+    &--single {
+      @include lg {
+        display: flex;
+        flex-direction: column;
+        > * + * { margin-top: $sp-2; }
+      }
     }
   }
 
