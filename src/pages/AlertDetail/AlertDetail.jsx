@@ -201,7 +201,17 @@ export default function AlertDetail() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { isSaved, toggleSave } = useSavedAlertStore();
 
-  const event = events.find((e) => e.id === decodeURIComponent(id));
+  // Snapshot the event on first find — survives store refetches that replace events[]
+  const [frozenEvent, setFrozenEvent] = useState(() =>
+    events.find((e) => e.id === decodeURIComponent(id)) ?? null
+  );
+  useEffect(() => {
+    if (frozenEvent) return; // already captured
+    const found = events.find((e) => e.id === decodeURIComponent(id));
+    if (found) setFrozenEvent(found);
+  }, [events, id, frozenEvent]);
+
+  const event = frozenEvent;
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(true);
@@ -343,6 +353,9 @@ export default function AlertDetail() {
           </p>
         )}
 
+        {/* Type-specific metadata inside header */}
+        <MetadataSection event={event} />
+
         {/* Source image embedded in header */}
         {sourceImage && (
           <div className="alert-detail__header-image">
@@ -357,36 +370,33 @@ export default function AlertDetail() {
             </p>
           </div>
         )}
-      </div>
 
-      {/* ── Mini map ── */}
-      {hasMap && (
-        <div className="alert-detail__mini-map">
-          <MapContainer
-            center={[event.latitude, event.longitude]}
-            zoom={5}
-            scrollWheelZoom={false}
-            zoomControl={false}
-            attributionControl={false}
-            style={{ height: '180px', width: '100%' }}
-          >
-            <TileLayer url={DARK_TILES} />
-            <CircleMarker
+        {/* Mini map embedded in header when no image */}
+        {hasMap && !sourceImage && (
+          <div className="alert-detail__header-map">
+            <MapContainer
               center={[event.latitude, event.longitude]}
-              radius={10}
-              pathOptions={{
-                color: category.color,
-                fillColor: category.color,
-                fillOpacity: 0.75,
-                weight: 2,
-              }}
-            />
-          </MapContainer>
-        </div>
-      )}
-
-      {/* ── Type-specific metadata ── */}
-      <MetadataSection event={event} />
+              zoom={5}
+              scrollWheelZoom={false}
+              zoomControl={false}
+              attributionControl={false}
+              style={{ height: '200px', width: '100%' }}
+            >
+              <TileLayer url={DARK_TILES} />
+              <CircleMarker
+                center={[event.latitude, event.longitude]}
+                radius={10}
+                pathOptions={{
+                  color: category.color,
+                  fillColor: category.color,
+                  fillOpacity: 0.75,
+                  weight: 2,
+                }}
+              />
+            </MapContainer>
+          </div>
+        )}
+      </div>
 
       {/* ── Related alerts ── */}
       {relatedAlerts.length > 0 && (
