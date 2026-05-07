@@ -42,18 +42,28 @@ export default function AlertsPage() {
   const [expandedGroups, setExpandedGroups] = useState(new Set());
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Read ?category= from URL on mount and apply filter
-  useEffect(() => {
-    const cat = searchParams.get('category');
-    if (cat && Object.keys(CATEGORIES).includes(cat)) {
-      setFilter('categories', [cat]);
-      setFilter('timeRange', 'all');
-      searchParams.delete('category');
-      setSearchParams(searchParams, { replace: true });
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // URL override: ?category=X — read synchronously so first render is already correct
+  const urlCat = searchParams.get('category');
+  const activeUrlCat = urlCat && Object.keys(CATEGORIES).includes(urlCat) ? urlCat : null;
 
-  const filteredEvents = getFilteredEvents();
+  // Sync URL category to store + clean URL (after first render)
+  useEffect(() => {
+    if (activeUrlCat) {
+      setFilter('categories', [activeUrlCat]);
+      setFilter('timeRange', 'all');
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('category');
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [activeUrlCat]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // filteredEvents: URL category takes priority on first render, then defers to store
+  const filteredEvents = useMemo(() => {
+    if (activeUrlCat) {
+      return events.filter((e) => e.type !== 'blackout' && e.type === activeUrlCat);
+    }
+    return getFilteredEvents();
+  }, [events, filters, activeUrlCat]); // eslint-disable-line react-hooks/exhaustive-deps
   const tierFilteredEvents = useMemo(() => {
     if (tierFilter === 'all') return filteredEvents;
     return filteredEvents.filter((e) => getAlertTier(e) === tierFilter);
