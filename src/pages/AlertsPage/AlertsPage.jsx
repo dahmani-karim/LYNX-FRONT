@@ -250,6 +250,48 @@ export default function AlertsPage() {
         </div>
       )}
 
+      {/* Active filters bar */}
+      {hasActiveFilters && tab === 'live' && (
+        <div className="alerts-page__active-filters">
+          {filters.timeRange !== '24h' && (
+            <span className="alerts-page__active-chip">
+              <Clock size={11} />
+              {TIME_RANGES.find((t) => t.value === filters.timeRange)?.label}
+              <button onClick={() => setFilter('timeRange', '24h')} aria-label="Retirer filtre période"><X size={10} /></button>
+            </span>
+          )}
+          {filters.severity !== 'all' && (
+            <span className="alerts-page__active-chip">
+              {SEVERITY_OPTIONS.find((s) => s.value === filters.severity)?.label}
+              <button onClick={() => setFilter('severity', 'all')} aria-label="Retirer filtre sévérité"><X size={10} /></button>
+            </span>
+          )}
+          {tierFilter !== 'all' && (
+            <span className="alerts-page__active-chip" style={{ color: TIER_CONFIG[tierFilter].color, borderColor: TIER_CONFIG[tierFilter].color, background: TIER_CONFIG[tierFilter].bg }}>
+              {TIER_CONFIG[tierFilter].label}
+              <button onClick={() => setTierFilter('all')} aria-label="Retirer filtre priorité" style={{ color: TIER_CONFIG[tierFilter].color }}><X size={10} /></button>
+            </span>
+          )}
+          {filters.categories.map((catId) => {
+            const cat = CATEGORIES[catId];
+            if (!cat) return null;
+            return (
+              <span key={catId} className="alerts-page__active-chip">
+                <span style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: cat.color, display: 'inline-block', flexShrink: 0 }} />
+                {cat.label}
+                <button onClick={() => toggleCategory(catId)} aria-label={`Retirer ${cat.label}`}><X size={10} /></button>
+              </span>
+            );
+          })}
+          <button
+            className="alerts-page__active-reset"
+            onClick={() => { resetFilters(); setTierFilter('all'); }}
+          >
+            Tout effacer
+          </button>
+        </div>
+      )}
+
       {/* Results count */}
       <div className="alerts-page__results">
         <p className="alerts-page__results-count">
