@@ -14,7 +14,7 @@ import { getScoreColor } from '../../services/riskEngine';
 import { findCorrelations, generateInsights } from '../../services/correlationEngine';
 import { getPredictiveAlerts } from '../../services/predictiveEngine';
 import { checkGeofences } from '../../utils/geofencing';
-import { RefreshCw, MapPin, Thermometer, Wind, Droplets, Link2, TrendingUp, Crosshair, ChevronRight, Sun, Gauge, CloudRain, Leaf } from 'lucide-react';
+import { RefreshCw, MapPin, Thermometer, Wind, Droplets, Link2, TrendingUp, Crosshair, ChevronRight, Sun, Gauge, CloudRain, Leaf, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import './Dashboard.scss';
 
@@ -222,28 +222,48 @@ export default function Dashboard() {
 
       {/* 4. Alertes récentes + Alertes zones (côte à côte) */}
       <div className="dashboard__two-col">
-        {topAlerts.length > 0 && (
-          <section>
-            <div className="dashboard__alerts-header">
-              <h3 className="dashboard__alerts-title">Alertes récentes ({events.length})</h3>
-              <Link to="/alerts" className="dashboard__alerts-link">
-                Toutes les alertes <ChevronRight size={14} />
+        <section>
+          <div className="dashboard__alerts-header">
+            <h3 className="dashboard__alerts-title">Alertes récentes ({events.length})</h3>
+            <Link to="/alerts" className="dashboard__alerts-link">
+              Toutes les alertes <ChevronRight size={14} />
+            </Link>
+          </div>
+          <div className="dashboard__alerts-list dashboard__alerts-list--single">
+            {topAlerts.length > 0 ? (
+              topAlerts.map((event) => (
+                <AlertCard key={event.id} event={event} compact />
+              ))
+            ) : (
+              <div className="dashboard__zone-empty">
+                <p className="dashboard__zone-empty-title">Aucune alerte récente</p>
+                <p className="dashboard__zone-empty-sub">Les alertes apparaîtront ici dès qu'elles seront détectées.</p>
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="dashboard__insights">
+          <h3 className="dashboard__insights-title">
+            <Crosshair size={16} />
+            {zoneMatches.length > 0 ? `Alertes dans vos zones (${zoneMatches.length})` : 'Alertes dans vos zones'}
+          </h3>
+          {zones.length === 0 ? (
+            <div className="dashboard__zone-empty">
+              <MapPin size={20} style={{ color: '#6366F1' }} />
+              <p className="dashboard__zone-empty-title">Aucune zone configurée</p>
+              <p className="dashboard__zone-empty-sub">Définissez des zones géographiques à surveiller pour recevoir des alertes ciblées.</p>
+              <Link to="/settings" className="dashboard__zone-empty-cta">
+                <Settings size={13} /> Configurer mes zones
               </Link>
             </div>
-            <div className="dashboard__alerts-list dashboard__alerts-list--single">
-              {topAlerts.map((event) => (
-                <AlertCard key={event.id} event={event} compact />
-              ))}
+          ) : zoneMatches.length === 0 ? (
+            <div className="dashboard__zone-empty">
+              <Crosshair size={20} style={{ color: '#10B981' }} />
+              <p className="dashboard__zone-empty-title">Tout est calme</p>
+              <p className="dashboard__zone-empty-sub">{zones.length} zone{zones.length > 1 ? 's' : ''} surveillée{zones.length > 1 ? 's' : ''} — aucune alerte à proximité.</p>
             </div>
-          </section>
-        )}
-
-        {zoneMatches.length > 0 && (
-          <section className="dashboard__insights">
-            <h3 className="dashboard__insights-title">
-              <Crosshair size={16} />
-              Alertes dans vos zones ({zoneMatches.length})
-            </h3>
+          ) : (
             <div className="dashboard__insights-list">
               {zoneMatches.slice(0, 5).map((m, i) => (
                 <div key={i} className={`dashboard__insight dashboard__insight--${m.event.severity === 'critical' || m.event.severity === 'high' ? 'high' : 'medium'}`}>
@@ -254,8 +274,8 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-          </section>
-        )}
+          )}
+        </section>
       </div>
 
       {/* 5. Corrélations + Tendances prédictives (côte à côte) */}
