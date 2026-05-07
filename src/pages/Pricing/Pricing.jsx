@@ -17,7 +17,7 @@ const PLANS = [
       { text: '6 modules de surveillance', included: true },
       { text: 'Carte interactive', included: true },
       { text: 'Score de risque global', included: true },
-      { text: 'Rafraîchissement 5 min', included: true },
+      { text: 'Rafraîchissement toutes les 5 min', included: true },
       { text: '1 zone surveillée', included: true },
       { text: 'Historique 24h', included: true },
       { text: 'Passerelles écosystème', included: true },
@@ -41,7 +41,7 @@ const PLANS = [
       { text: 'Tous les modules', included: true },
       { text: 'Carte interactive avancée', included: true },
       { text: 'Score de risque détaillé', included: true },
-      { text: 'Rafraîchissement 1 min', included: true },
+      { text: 'Rafraîchissement toutes les 1 min', included: true },
       { text: 'Zones illimitées', included: true },
       { text: 'Historique 30 jours', included: true },
       { text: 'Passerelles écosystème', included: true },
@@ -57,14 +57,14 @@ const PLANS = [
     name: 'Pro',
     price: '14,99€',
     period: '/mois',
-    desc: 'Pour les organisations et analystes professionnels.',
+    desc: 'Pour les organisations et analystes professionnels. Tarif personnalisé après échange.',
     icon: Zap,
-    cta: 'Contacter',
+    cta: 'Nous contacter',
     features: [
       { text: 'Tout Premium inclus', included: true },
       { text: 'API REST complète', included: true },
       { text: 'Webhooks personnalisés', included: true },
-      { text: 'Rafraîchissement temps réel', included: true },
+      { text: 'Rafraîchissement 15s (temps réel)', included: true },
       { text: 'Multi-utilisateurs', included: true },
       { text: 'Historique illimité', included: true },
       { text: 'Dashboard personnalisable', included: true },
@@ -116,7 +116,7 @@ export default function Pricing() {
       <header className="pricing__header">
         <h1 className="pricing__title">Choisissez votre niveau de vigilance</h1>
         <p className="pricing__desc">
-          Commencez gratuitement. Passez à Premium quand vous avez besoin de plus.
+          Un compte est requis pour accéder à LYNX. Commencez gratuitement, passez à Premium pour plus de réactivité.
         </p>
       </header>
 
@@ -206,7 +206,11 @@ export default function Pricing() {
           </div>
           <div className="pricing__faq-item">
             <h3>Comment fonctionne le plan Pro ?</h3>
-            <p>Le plan Pro est conçu pour les organisations. Contactez-nous pour une démonstration et un devis personnalisé.</p>
+            <p>Le plan Pro est conçu pour les organisations et professionnels. Il n'a pas de tarif fixe — nous échangeons d'abord sur vos besoins, puis nous établissons un devis sur mesure. Contactez-nous via le bouton « Nous contacter ».</p>
+          </div>
+          <div className="pricing__faq-item">
+            <h3>Pourquoi un compte est-il obligatoire ?</h3>
+            <p>LYNX est un outil de veille sécurisé. Un compte vous permet de personnaliser vos alertes, vos zones surveillées et de bénéficier du niveau de rafraîchissement correspondant à votre forfait.</p>
           </div>
           <div className="pricing__faq-item">
             <h3>Comment activer mon abonnement ?</h3>

@@ -93,10 +93,15 @@ export default function App() {
       // Load cached data first for instant display, then fetch fresh
       loadOfflineData().catch(() => {});
       fetchAllData(userLocation, weatherLocation); // silent first load
-      // Pro: 30s, Premium: 1min, Free: 5min
-      const ms = isPremium
-        ? (premiumPlan === 'Pro' ? 30 * 1000 : 60 * 1000)
-        : 5 * 60 * 1000;
+      // Pro: 15s (near real-time polling) | Premium/VIP: 1 min | Free: 5 min
+      let ms;
+      if (premiumPlan === 'Pro') {
+        ms = 15 * 1000;
+      } else if (isPremium) {
+        ms = 60 * 1000;
+      } else {
+        ms = 5 * 60 * 1000;
+      }
       const interval = setInterval(fetchWithSound, ms);
       return () => clearInterval(interval);
     }
