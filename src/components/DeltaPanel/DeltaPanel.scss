@@ -68,6 +68,11 @@
       background: rgba(59, 130, 246, 0.15);
       color: #60A5FA;
     }
+    &--outage {
+      background: rgba(99, 102, 241, 0.2);
+      color: #818CF8;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
   }
 
   &__tiers {
@@ -115,6 +120,33 @@
     &--escalated { color: #F87171; }
     &--resolved { color: #34D399; }
     &--deescalated { color: #60A5FA; }
+    &--outage { color: #818CF8; }
+  }
+
+  // Always-visible outage preview (collapsed state)
+  &__outages-preview {
+    padding: 0 $sp-3 $sp-2;
+    display: flex;
+    flex-direction: column;
+    gap: $sp-1;
+  }
+
+  &__item--outage {
+    border-left: 2px solid rgba(99, 102, 241, 0.5);
+  }
+
+  // Empty / all-clear state
+  &__ok {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    padding: $sp-2 $sp-4 $sp-3;
+    font-size: $text-xs;
+    color: #34D399;
+
+    &--body {
+      padding: $sp-2 0;
+    }
   }
 
   &__item {

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+﻿import { useState, useMemo } from 'react';
 import { useAlertStore } from '../../stores/alertStore';
 import { CATEGORIES } from '../../config/categories';
 import { getAlertTier, TIER_CONFIG } from '../../services/deltaEngine';
@@ -6,24 +6,31 @@ import { getChartData } from '../../services/deltaHistory';
 import { timeAgo } from '../../utils/date';
 import { Link } from 'react-router-dom';
 import {
-  ArrowUp, ArrowDown, Plus, CheckCircle, ChevronDown, ChevronUp, Zap, BarChart3
+  ArrowUp, ArrowDown, Plus, CheckCircle, ChevronDown, ChevronUp, Zap, BarChart3, Wifi, WifiOff
 } from 'lucide-react';
 import './DeltaPanel.scss';
 
 export default function DeltaPanel() {
   const delta = useAlertStore((s) => s.delta);
+  const events = useAlertStore((s) => s.events);
   const [expanded, setExpanded] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
   const { newEvents, resolved, escalated, deescalated } = delta;
   const totalChanges = newEvents.length + resolved.length + escalated.length + deescalated.length;
 
-  const historyData = useMemo(() => showHistory ? getChartData('24h') : [], [showHistory, totalChanges]);
+  // Active service outages (blackout type) â€” always shown regardless of delta
+  const activeOutages = useMemo(
+    () => events.filter((e) => e.type === 'blackout').sort((a, b) => new Date(b.eventDate) - new Date(a.eventDate)),
+    [events]
+  );
 
-  if (totalChanges === 0) return null;
+  const historyData = useMemo(() => showHistory ? getChartData('24h') : [], [showHistory, totalChanges]);
 
   const flashCount = newEvents.filter((e) => getAlertTier(e) === 'flash').length;
   const priorityCount = newEvents.filter((e) => getAlertTier(e) === 'priority').length;
+
+  const hasAnything = totalChanges > 0 || activeOutages.length > 0;
 
   return (
     <section className="delta-panel">
@@ -33,9 +40,16 @@ export default function DeltaPanel() {
       >
         <div className="delta-panel__header-left">
           <Zap size={14} className="delta-panel__icon" />
-          <span className="delta-panel__title">Changements détectés</span>
+          <span className="delta-panel__title">
+            {activeOutages.length > 0 ? 'Pannes & changements' : 'Changements détectés'}
+          </span>
         </div>
         <div className="delta-panel__badges">
+          {activeOutages.length > 0 && (
+            <span className="delta-panel__badge delta-panel__badge--outage">
+              <WifiOff size={10} /> {activeOutages.length} panne{activeOutages.length > 1 ? 's' : ''}
+            </span>
+          )}
           {newEvents.length > 0 && (
             <span className="delta-panel__badge delta-panel__badge--new">
               <Plus size={10} /> {newEvents.length} nouveau{newEvents.length > 1 ? 'x' : ''}
@@ -76,8 +90,45 @@ export default function DeltaPanel() {
         </div>
       )}
 
+      {/* Always-visible outages summary (collapsed state) */}
+      {!expanded && activeOutages.length > 0 && (
+        <div className="delta-panel__outages-preview">
+          {activeOutages.slice(0, 3).map((e) => (
+            <Link key={e.id} to={`/blackout`} className="delta-panel__item delta-panel__item--outage">
+              <WifiOff size={11} style={{ color: '#6366F1', flexShrink: 0 }} />
+              <span className="delta-panel__item-title">{e.title}</span>
+              <span className="delta-panel__item-time">{timeAgo(e.eventDate)}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* Empty state when nothing at all */}
+      {!expanded && !hasAnything && (
+        <div className="delta-panel__ok">
+          <Wifi size={13} style={{ color: '#10B981' }} />
+          <span>Aucun incident actif détecté</span>
+        </div>
+      )}
+
       {expanded && (
         <div className="delta-panel__body">
+          {/* Active Outages */}
+          {activeOutages.length > 0 && (
+            <div className="delta-panel__section">
+              <p className="delta-panel__section-label delta-panel__section-label--outage">
+                <WifiOff size={12} /> Pannes actives
+              </p>
+              {activeOutages.slice(0, 6).map((e) => (
+                <Link key={e.id} to={`/blackout`} className="delta-panel__item">
+                  <span className="delta-panel__item-dot" style={{ backgroundColor: '#6366F1' }} />
+                  <span className="delta-panel__item-title">{e.title}</span>
+                  <span className="delta-panel__item-time">{timeAgo(e.eventDate)}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+
           {/* New Events */}
           {newEvents.length > 0 && (
             <div className="delta-panel__section">
@@ -113,7 +164,7 @@ export default function DeltaPanel() {
                   <span className="delta-panel__item-dot" style={{ backgroundColor: '#EF4444' }} />
                   <span className="delta-panel__item-title">{event.title}</span>
                   <span className="delta-panel__item-change">
-                    {from} → {to}
+                    {from} â†’ {to}
                   </span>
                 </div>
               ))}
@@ -124,7 +175,7 @@ export default function DeltaPanel() {
           {resolved.length > 0 && (
             <div className="delta-panel__section">
               <p className="delta-panel__section-label delta-panel__section-label--resolved">
-                <CheckCircle size={12} /> Résolues
+                <CheckCircle size={12} /> Rétablies
               </p>
               {resolved.slice(0, 3).map((e) => (
                 <div key={e.id} className="delta-panel__item delta-panel__item--resolved">
@@ -146,10 +197,18 @@ export default function DeltaPanel() {
                   <span className="delta-panel__item-dot" style={{ backgroundColor: '#3B82F6' }} />
                   <span className="delta-panel__item-title">{event.title}</span>
                   <span className="delta-panel__item-change">
-                    {from} → {to}
+                    {from} â†’ {to}
                   </span>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Empty state inside expanded body */}
+          {!hasAnything && (
+            <div className="delta-panel__ok delta-panel__ok--body">
+              <Wifi size={13} style={{ color: '#10B981' }} />
+              <span>Aucun incident ni changement détecté</span>
             </div>
           )}
 
@@ -170,7 +229,7 @@ export default function DeltaPanel() {
                   const height = Math.max(2, (d.score / maxScore) * 40);
                   const color = d.score >= 75 ? '#EF4444' : d.score >= 50 ? '#F97316' : d.score >= 25 ? '#F59E0B' : '#10B981';
                   return (
-                    <div key={i} className="delta-panel__history-col" title={`${d.time} — Score: ${d.score}, ${d.total} alertes`}>
+                    <div key={i} className="delta-panel__history-col" title={`${d.time} â€” Score: ${d.score}, ${d.total} alertes`}>
                       <div className="delta-panel__history-bar" style={{ height: `${height}px`, backgroundColor: color }} />
                       {i % 4 === 0 && <span className="delta-panel__history-label">{d.time}</span>}
                     </div>
@@ -180,7 +239,7 @@ export default function DeltaPanel() {
             </div>
           )}
           {showHistory && historyData.length === 0 && (
-            <p className="delta-panel__history-empty">Pas encore de données — l'historique se remplit au fil des cycles.</p>
+            <p className="delta-panel__history-empty">Pas encore de données - l'historique se remplit au fil des cycles.</p>
           )}
         </div>
       )}
