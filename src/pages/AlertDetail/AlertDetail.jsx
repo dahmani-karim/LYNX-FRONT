@@ -205,18 +205,30 @@ export default function AlertDetail() {
   const [frozenEvent, setFrozenEvent] = useState(() =>
     events.find((e) => e.id === decodeURIComponent(id)) ?? null
   );
-  useEffect(() => {
-    if (frozenEvent) return; // already captured
-    const found = events.find((e) => e.id === decodeURIComponent(id));
-    if (found) setFrozenEvent(found);
-  }, [events, id, frozenEvent]);
-
-  const event = frozenEvent;
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(true);
   const [previewError, setPreviewError] = useState(false);
   const [imgError, setImgError] = useState(false);
+
+  // Reset everything when navigating to a different alert (same component, new id)
+  useEffect(() => {
+    setFrozenEvent(events.find((e) => e.id === decodeURIComponent(id)) ?? null);
+    setPreviewOpen(false);
+    setPreviewLoading(true);
+    setPreviewError(false);
+    setImgError(false);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // If frozenEvent is null after id change (store not yet loaded), populate when events arrive
+  useEffect(() => {
+    if (frozenEvent) return;
+    const found = events.find((e) => e.id === decodeURIComponent(id));
+    if (found) setFrozenEvent(found);
+  }, [events, id, frozenEvent]);
+
+  const event = frozenEvent;
   const iframeRef = useRef(null);
   const timeoutRef = useRef(null);
 
