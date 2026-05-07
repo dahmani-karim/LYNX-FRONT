@@ -314,11 +314,20 @@ export default function AlertDetail() {
               {event.country}
             </span>
           )}
-          <span className="alert-detail__chip">
-            <Shield size={12} />
-            {sourceDomain || event.sourceName}
-            {event.sourceReliability && <em className="alert-detail__chip-reliability">{event.sourceReliability}%</em>}
-          </span>
+          {event.sourceUrl ? (
+            <a href={event.sourceUrl} target="_blank" rel="noopener noreferrer" className="alert-detail__chip alert-detail__chip--link">
+              <Shield size={12} />
+              {sourceDomain || event.sourceName}
+              {event.sourceReliability && <em className="alert-detail__chip-reliability">{event.sourceReliability}%</em>}
+              <ExternalLink size={10} />
+            </a>
+          ) : (
+            <span className="alert-detail__chip">
+              <Shield size={12} />
+              {sourceDomain || event.sourceName}
+              {event.sourceReliability && <em className="alert-detail__chip-reliability">{event.sourceReliability}%</em>}
+            </span>
+          )}
           {hasMap && (
             <span className="alert-detail__chip alert-detail__chip--muted">
               <MapPin size={12} />
@@ -332,6 +341,21 @@ export default function AlertDetail() {
           <p className="alert-detail__imported">
             Importé dans LYNX le {formatDate(event.importedAt)}
           </p>
+        )}
+
+        {/* Source image embedded in header */}
+        {sourceImage && (
+          <div className="alert-detail__header-image">
+            <img
+              src={sourceImage}
+              alt={event.title}
+              className="alert-detail__header-img"
+              onError={() => setImgError(true)}
+            />
+            <p className="alert-detail__header-image-caption">
+              Image via {sourceDomain || event.sourceName}
+            </p>
+          </div>
         )}
       </div>
 
@@ -364,21 +388,6 @@ export default function AlertDetail() {
       {/* ── Type-specific metadata ── */}
       <MetadataSection event={event} />
 
-      {/* ── Source image (GDELT socialimage) ── */}
-      {sourceImage && (
-        <div className="alert-detail__source-image">
-          <img
-            src={sourceImage}
-            alt={event.title}
-            className="alert-detail__source-img"
-            onError={() => setImgError(true)}
-          />
-          <p className="alert-detail__source-image-caption">
-            Image via {sourceDomain || event.sourceName}
-          </p>
-        </div>
-      )}
-
       {/* ── Related alerts ── */}
       {relatedAlerts.length > 0 && (
         <div className="alert-detail__related">
@@ -404,32 +413,6 @@ export default function AlertDetail() {
           </div>
         </div>
       )}
-
-      {/* ── Source ── */}
-      <div className="alert-detail__source">
-        <h3 className="alert-detail__section-title">Source</h3>
-        <div className="alert-detail__source-row">
-          <div className="alert-detail__source-name">
-            <Shield size={14} />
-            <span>{sourceDomain || event.sourceName}</span>
-          </div>
-          {event.sourceReliability && (
-            <span className="alert-detail__source-reliability">
-              Fiabilité : <strong>{event.sourceReliability}%</strong>
-            </span>
-          )}
-        </div>
-        {event.sourceUrl && (
-          <a
-            href={event.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="alert-detail__source-link"
-          >
-            Voir la source originale <ExternalLink size={14} />
-          </a>
-        )}
-      </div>
 
       {/* ── Source preview (iframe — only when no image available) ── */}
       {event.sourceUrl && !sourceImage && (

@@ -8,20 +8,18 @@
     gap: $sp-5;
     align-items: start;
 
-    // Full-width elements
+    // Full-width
     &__back,
-    &__header,
-    &__related,
     &__actions { grid-column: 1 / -1; }
 
-    // Left column — content
-    &__meta-section { grid-column: 1; }
-    &__source       { grid-column: 1; }
+    // Left column
+    &__header   { grid-column: 1; }
+    &__mini-map { grid-column: 1; }
 
-    // Right column — contextual
-    &__mini-map     { grid-column: 2; }
+    // Right column
+    &__meta-section { grid-column: 2; }
+    &__related      { grid-column: 2; }
     &__preview      { grid-column: 2; }
-    &__source-image { grid-column: 2; }
   }
 
   // Back button
@@ -66,6 +64,28 @@
   &__header {
     @include card-lg;
     padding: $sp-5;
+    overflow: hidden;
+  }
+
+  &__header-image {
+    margin: $sp-4 (-$sp-5) (-$sp-5);
+    border-radius: 0 0 $radius-xl $radius-xl;
+    overflow: hidden;
+  }
+
+  &__header-img {
+    display: block;
+    width: 100%;
+    max-height: 220px;
+    object-fit: cover;
+    object-position: center top;
+  }
+
+  &__header-image-caption {
+    padding: $sp-2 $sp-3;
+    font-size: $text-xs;
+    color: $lynx-dim;
+    background-color: rgba(0, 0, 0, 0.25);
   }
 
   &__header-row {
@@ -146,6 +166,17 @@
 
     &--muted {
       opacity: 0.6;
+    }
+
+    &--link {
+      text-decoration: none;
+      @include transition;
+
+      &:hover {
+        background-color: rgba($lynx-accent, 0.1);
+        border-color: rgba($lynx-accent, 0.3);
+        color: $lynx-accent;
+      }
     }
   }
 
