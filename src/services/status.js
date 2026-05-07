@@ -14,8 +14,6 @@ export const SERVICE_CATEGORIES = {
 // ─── Statuspage.io-compatible services ─────────────────────
 const STATUSPAGE_SERVICES = [
   // Finance
-  { name: 'Stripe',       category: 'finance',       url: API_CONFIG.STATUS_PAGES.STRIPE },
-  { name: 'PayPal',       category: 'finance',       url: API_CONFIG.STATUS_PAGES.PAYPAL },
   { name: 'Wise',         category: 'finance',       url: API_CONFIG.STATUS_PAGES.WISE },
   { name: 'Coinbase',     category: 'finance',       url: API_CONFIG.STATUS_PAGES.COINBASE },
   // Cloud
@@ -27,12 +25,9 @@ const STATUSPAGE_SERVICES = [
   { name: 'DigitalOcean', category: 'cloud',         url: API_CONFIG.STATUS_PAGES.DIGITALOCEAN },
   // Communication
   { name: 'Discord',      category: 'communication', url: API_CONFIG.STATUS_PAGES.DISCORD },
-  { name: 'Zoom',         category: 'communication', url: API_CONFIG.STATUS_PAGES.ZOOM },
-  { name: 'Twitch',       category: 'communication', url: API_CONFIG.STATUS_PAGES.TWITCH },
   { name: 'Reddit',       category: 'communication', url: API_CONFIG.STATUS_PAGES.REDDIT },
   // Tools
   { name: 'OpenAI',       category: 'tools',         url: API_CONFIG.STATUS_PAGES.OPENAI },
-  { name: 'Notion',       category: 'tools',         url: API_CONFIG.STATUS_PAGES.NOTION },
   { name: 'Figma',        category: 'tools',         url: API_CONFIG.STATUS_PAGES.FIGMA },
   { name: 'Bitbucket',    category: 'tools',         url: API_CONFIG.STATUS_PAGES.BITBUCKET },
   { name: 'Datadog',      category: 'tools',         url: API_CONFIG.STATUS_PAGES.DATADOG },

@@ -197,7 +197,7 @@ export const useAlertStore = create(
 
     // Space Weather: maintenant géré côté Strapi (source NOAA SWPC, type=space_weather)
     // Les alertes sont incluses dans results[0] (fetchGlobalAlerts)
-    const spaceWeatherData = [];
+    const spaceWeatherData = allEvents.filter((e) => e.type === 'space_weather');
 
     const uniqueEvents = Array.from(
       new Map(allEvents.map((e) => [e.id, e])).values()

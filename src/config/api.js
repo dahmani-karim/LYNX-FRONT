@@ -37,8 +37,6 @@ export const API_CONFIG = {
 
   STATUS_PAGES: {
     // Finances & Paiement
-    STRIPE: 'https://status.stripe.com/api/v2/status.json',
-    PAYPAL: 'https://www.paypal-status.com/api/v2/status.json',
     WISE: 'https://status.wise.com/api/v2/status.json',
     COINBASE: 'https://status.coinbase.com/api/v2/status.json',
     // Cloud & Hébergement
@@ -51,12 +49,9 @@ export const API_CONFIG = {
     // Communication & Réseaux sociaux
     DISCORD: 'https://discordstatus.com/api/v2/status.json',
     SLACK: 'https://status.slack.com/api/v2.0.0/current',
-    ZOOM: 'https://status.zoom.us/api/v2/status.json',
-    TWITCH: 'https://status.twitch.tv/api/v2/status.json',
     REDDIT: 'https://www.redditstatus.com/api/v2/status.json',
     // Outils & Productivité
     OPENAI: 'https://status.openai.com/api/v2/status.json',
-    NOTION: 'https://status.notion.so/api/v2/status.json',
     FIGMA: 'https://status.figma.com/api/v2/status.json',
     BITBUCKET: 'https://bitbucket.status.atlassian.com/api/v2/status.json',
     DATADOG: 'https://status.datadoghq.com/api/v2/status.json',
