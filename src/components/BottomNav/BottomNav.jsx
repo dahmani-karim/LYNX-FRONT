@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Map, Bell, BarChart3, Settings } from 'lucide-react';
+import { Home, Map, Bell, Eye, Settings } from 'lucide-react';
 import { useAlertStore } from '../../stores/alertStore';
 import './BottomNav.scss';
 
@@ -7,7 +7,7 @@ const TABS = [
   { to: '/dashboard', icon: Home, label: 'Accueil' },
   { to: '/map', icon: Map, label: 'Carte' },
   { to: '/alerts', icon: Bell, label: 'Alertes' },
-  { to: '/stats', icon: BarChart3, label: 'Stats' },
+  { to: '/specter', icon: Eye, label: 'SPECTER' },
   { to: '/settings', icon: Settings, label: 'Plus' },
 ];
 

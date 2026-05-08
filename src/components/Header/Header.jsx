@@ -11,6 +11,7 @@ import './Header.scss';
 const NAV_MAIN = [
   { to: '/dashboard', icon: Home, label: 'Dashboard' },
   { to: '/alerts', icon: Bell, label: 'Alertes' },
+  { to: '/specter', icon: Eye, label: 'SPECTER' },
   { to: '/energy', icon: Zap, label: 'Énergie' },
   { to: '/blackout', icon: ShieldAlert, label: 'Blackout' },
   { to: '/map', icon: Map, label: 'Carte' },

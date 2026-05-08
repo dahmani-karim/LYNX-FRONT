@@ -26,6 +26,8 @@ const About = lazy(() => import('./pages/About/About'));
 const AnalysisPage = lazy(() => import('./pages/AnalysisPage/AnalysisPage'));
 const BlackoutPage = lazy(() => import('./pages/BlackoutPage/BlackoutPage'));
 const AdminPage = lazy(() => import('./pages/AdminPage/AdminPage'));
+const Specter = lazy(() => import('./pages/Specter/Specter'));
+const SpecterDetail = lazy(() => import('./pages/SpecterDetail/SpecterDetail'));
 
 function RequireAuth({ children }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -137,6 +139,8 @@ export default function App() {
           <Route path="/about" element={<About />} />
           <Route path="/alert/:id" element={<AlertDetail />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/specter" element={<Specter />} />
+          <Route path="/specter/:slug" element={<SpecterDetail />} />
         </Route>
 
         {/* Redirect old trackers route */}
