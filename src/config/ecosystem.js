@@ -70,11 +70,9 @@ export const ECOSYSTEM_APPS = [
     name: 'Primal',
     emoji: '🏋️',
     description: 'Préparation physique & fonctionnelle',
-    url: null,
-    devUrl: null,
+    url: 'https://primal.lacavernedurefractaire.fr',
+    devUrl: 'https://primal.lacavernedurefractaire.fr',
     color: '#DC2626',
-    disabled: true,
-    comingSoon: true,
   },
   {
     id: 'partner',
