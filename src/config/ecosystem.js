@@ -10,7 +10,7 @@ export const ECOSYSTEM_APPS = [
   },
   {
     id: 'lynx',
-    name: 'LYNX',
+    name: 'Lynx',
     emoji: '🐆',
     description: 'Anticipation & Alertes temps réel',
     url: 'https://lynx.lacavernedurefractaire.fr',
@@ -45,6 +45,7 @@ export const ECOSYSTEM_APPS = [
     devUrl: 'https://farmly.lacavernedurefractaire.fr',
     color: '#92400E',
     disabled: true,
+    comingSoon: true,
   },
   {
     id: 'herbogenius',
@@ -66,7 +67,7 @@ export const ECOSYSTEM_APPS = [
   },
   {
     id: 'primal',
-    name: 'PRIMAL',
+    name: 'Primal',
     emoji: '🏋️',
     description: 'Préparation physique & fonctionnelle',
     url: null,
@@ -77,13 +78,14 @@ export const ECOSYSTEM_APPS = [
   },
   {
     id: 'partner',
-    name: 'PARTNER',
+    name: 'Partner',
     emoji: '🤝',
     description: 'Réseau partenaires & collaborateurs',
     url: null,
     devUrl: null,
     color: '#6B7280',
     disabled: true,
+    comingSoon: true,
   },
 ];
 
