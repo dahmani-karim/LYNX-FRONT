@@ -185,6 +185,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
+  white-space: nowrap;
 
   &--left { justify-content: flex-end; color: #7C3AED; }
   &--right { justify-content: flex-start; color: #DC2626; }

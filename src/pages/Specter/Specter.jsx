@@ -41,7 +41,8 @@ function groupByYear(events) {
     if (!map[y]) map[y] = [];
     map[y].push(e);
   });
-  return Object.entries(map).sort((a, b) => Number(a[0]) - Number(b[0]));
+  // newest year first
+  return Object.entries(map).sort((a, b) => Number(b[0]) - Number(a[0]));
 }
 
 function attr(event, key) {
@@ -191,7 +192,8 @@ export default function Specter() {
     setLoading(true);
     fetchSpecterEvents()
       .then((data) => {
-        setEvents(data.sort((a, b) => new Date(attr(a, 'startDate')) - new Date(attr(b, 'startDate'))));
+        // most recent first
+        setEvents(data.sort((a, b) => new Date(attr(b, 'startDate')) - new Date(attr(a, 'startDate'))));
         setLoading(false);
       })
       .catch((err) => {
@@ -277,10 +279,11 @@ export default function Specter() {
         <div className="specter-timeline">
           <div className="specter-timeline__header">
             <div className="specter-timeline__col-label specter-timeline__col-label--left">
-              <FlaskConical size={13} /> Simulations & Exercices
+              <FlaskConical size={14} /> Simulations & Exercices
             </div>
+            <div />
             <div className="specter-timeline__col-label specter-timeline__col-label--right">
-              <RadioTower size={13} /> Crises & Épidémies
+              <RadioTower size={14} /> Crises & Épidémies
             </div>
           </div>
           {grouped.map(([year, yearEvents]) => (

@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { RefreshCw, Menu, X, Home, Map, Bell, BarChart3, Settings, Eye, Zap, Info, Compass, CreditCard, Link2, User, ShieldAlert, MoonStar, Sun } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { RefreshCw, Menu, X, Home, Map, Bell, BarChart3, Settings, Eye, Zap, Info, Compass, CreditCard, Link2, ShieldAlert, MoonStar, Sun, LogOut, UserCircle } from 'lucide-react';
 import { useAlertStore } from '../../stores/alertStore';
 import { useSettingsStore } from '../../stores/settingsStore';
+import { useAuthStore } from '../../stores/authStore';
+import { API_CONFIG } from '../../config/api';
 import { playSuccessSound, playErrorSound, playFlashSound, playPrioritySound, playRoutineSound } from '../../services/sounds';
 import LynxLogo from '../LynxLogo/LynxLogo';
 import { ECOSYSTEM_APPS, getAppUrl } from '../../config/ecosystem';
@@ -77,6 +79,76 @@ function EcosystemSwitcher() {
   );
 }
 
+// ─── UserMenu ───────────────────────────────────────────────────────────────────────
+function UserMenu() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
+  const profile = useAuthStore((s) => s.profile);
+  const logout = useAuthStore((s) => s.logout);
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const initials = user?.username
+    ? user.username.slice(0, 2).toUpperCase()
+    : user?.email?.slice(0, 2).toUpperCase() || '?';
+
+  // Support Strapi media (relative) or absolute URL
+  const rawAvatar = profile?.photo?.url || profile?.avatar?.url || null;
+  const avatarUrl = rawAvatar
+    ? (rawAvatar.startsWith('http') ? rawAvatar : `${API_CONFIG.STRAPI_URL}${rawAvatar}`)
+    : null;
+
+  const go = (path) => { setOpen(false); navigate(path); };
+
+  const handleLogout = () => {
+    setOpen(false);
+    logout();
+    navigate('/login');
+  };
+
+  return (
+    <div className="lynx-user-menu" ref={ref}>
+      <button
+        className={`lynx-user-menu__avatar ${open ? 'lynx-user-menu__avatar--open' : ''} ${avatarUrl ? 'lynx-user-menu__avatar--img' : ''}`}
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Menu utilisateur"
+        title={user?.username || 'Mon compte'}
+      >
+        {avatarUrl
+          ? <img src={avatarUrl} alt={user?.username || 'avatar'} />
+          : initials
+        }
+      </button>
+
+      {open && (
+        <div className="lynx-user-menu__dropdown">
+          <div className="lynx-user-menu__info">
+            <span className="lynx-user-menu__name">{user?.username || 'Utilisateur'}</span>
+            <span className="lynx-user-menu__email">{user?.email || ''}</span>
+          </div>
+          <div className="lynx-user-menu__sep" />
+          <button className="lynx-user-menu__item" onClick={() => go('/account')}>
+            <UserCircle size={14} /> Mon compte
+          </button>
+          <button className="lynx-user-menu__item" onClick={() => go('/settings')}>
+            <Settings size={14} /> Réglages
+          </button>
+          <div className="lynx-user-menu__sep" />
+          <button className="lynx-user-menu__item lynx-user-menu__item--danger" onClick={handleLogout}>
+            <LogOut size={14} /> Déconnexion
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const NAV_MAIN = [
   { to: '/dashboard', icon: Home, label: 'Dashboard' },
   { to: '/alerts', icon: Bell, label: 'Alertes' },
@@ -86,8 +158,6 @@ const NAV_MAIN = [
   { to: '/analysis', icon: Link2, label: 'Analyse' },
   { to: '/stats', icon: BarChart3, label: 'Stats' },
   { to: '/specter', icon: Eye, label: 'Specter' },
-  { to: '/account', icon: User, label: 'Mon compte' },
-  { to: '/settings', icon: Settings, label: 'Réglages' },
 ];
 
 const NAV_SECONDARY = [
@@ -156,14 +226,6 @@ export default function Header() {
             </Link>
           <div className="header__right">
             <button
-              onClick={() => setVeilleMode(!veilleMode)}
-              className={`header__icon-btn${veilleMode ? ' header__icon-btn--active' : ''}`}
-              aria-label="Mode veille"
-              title={veilleMode ? 'Désactiver mode veille' : 'Mode veille'}
-            >
-              {veilleMode ? <Sun size={18} /> : <MoonStar size={18} />}
-            </button>
-            <button
               onClick={handleManualRefresh}
               disabled={isLoading}
               className="header__icon-btn"
@@ -172,6 +234,7 @@ export default function Header() {
               <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
             </button>
             <EcosystemSwitcher />
+            <UserMenu />
           </div>
         </div>
       </header>
@@ -200,6 +263,15 @@ export default function Header() {
               <span>{label}</span>
             </Link>
           ))}
+          <div className="sidebar__separator" />
+          <button
+            onClick={() => setVeilleMode(!veilleMode)}
+            className={`sidebar__link sidebar__link--btn${veilleMode ? ' sidebar__link--active' : ''}`}
+            aria-label="Mode veille"
+          >
+            {veilleMode ? <Sun size={20} /> : <MoonStar size={20} />}
+            <span>Mode veille</span>
+          </button>
         </div>
       </nav>
 
@@ -241,6 +313,15 @@ export default function Header() {
                   <span>{label}</span>
                 </Link>
               ))}
+              <div className="mobile-sidebar__separator" />
+              <button
+                onClick={() => { setVeilleMode(!veilleMode); setShowSidebar(false); }}
+                className={`mobile-sidebar__link mobile-sidebar__link--btn${veilleMode ? ' mobile-sidebar__link--active' : ''}`}
+                aria-label="Mode veille"
+              >
+                {veilleMode ? <Sun size={20} /> : <MoonStar size={20} />}
+                <span>Mode veille</span>
+              </button>
             </div>
 
           </div>

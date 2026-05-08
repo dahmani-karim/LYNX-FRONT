@@ -277,6 +277,106 @@
     .emoji { font-size: $text-lg; }
     span { font-size: $text-sm; font-weight: 500; }
   }
+
+  &__link--btn {
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+  }
+}
+
+// ─── User Menu ────────────────────────────────────────────────────────────────
+.lynx-user-menu {
+  position: relative;
+
+  &__avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba($lynx-accent, 0.2);
+    color: $lynx-accent;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border: 2px solid transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s;
+
+    img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    &--open, &:hover { border-color: $lynx-accent; }
+    &--img { background: transparent; padding: 0; }
+  }
+
+  &__dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 200px;
+    background: $lynx-surface;
+    border: 1px solid $lynx-border;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    padding: 8px 0;
+    z-index: 500;
+    animation: eco-dropdown-in 0.15s ease;
+  }
+
+  &__info {
+    padding: 10px 14px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: $lynx-text;
+  }
+
+  &__email {
+    font-size: 0.7rem;
+    color: $lynx-muted;
+    word-break: break-all;
+  }
+
+  &__sep {
+    height: 1px;
+    background: $lynx-border;
+    margin: 4px 0;
+  }
+
+  &__item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    color: $lynx-text;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+
+    &:hover { background: $lynx-elevated; }
+
+    &--danger {
+      color: #EF4444;
+      &:hover { background: rgba(239, 68, 68, 0.1); }
+    }
+  }
 }
 
 // Mobile sidebar overlay
@@ -347,6 +447,14 @@
     &--active {
       background-color: rgba($lynx-accent, 0.15);
       color: $lynx-accent;
+    }
+
+    &--btn {
+      width: 100%;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-align: left;
     }
 
     span { font-size: $text-sm; font-weight: 500; }
