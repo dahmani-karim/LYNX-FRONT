@@ -1,22 +1,91 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { RefreshCw, Menu, X, Home, Map, Bell, BarChart3, Settings, Eye, Zap, Info, Compass, CreditCard, Link2, User, ShieldAlert, MoonStar, Sun } from 'lucide-react';
 import { useAlertStore } from '../../stores/alertStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { playSuccessSound, playErrorSound, playFlashSound, playPrioritySound, playRoutineSound } from '../../services/sounds';
 import LynxLogo from '../LynxLogo/LynxLogo';
-import AppSwitcher from '../AppSwitcher/AppSwitcher';
+import { ECOSYSTEM_APPS, getAppUrl } from '../../config/ecosystem';
 import './Header.scss';
+
+// ─── Inline EcosystemSwitcher (dropdown, like PRÊT·E) ───────────────────────
+function EcosystemSwitcher() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div className="eco-switcher" ref={ref}>
+      <button
+        className={`eco-switcher__btn ${open ? 'eco-switcher__btn--active' : ''}`}
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Changer d'application"
+        title="Écosystème La Caverne"
+      >
+        <span className="eco-switcher__dots">
+          <span /><span /><span />
+          <span /><span /><span />
+          <span /><span /><span />
+        </span>
+      </button>
+
+      {open && (
+        <div className="eco-switcher__dropdown">
+          <p className="eco-switcher__label">Écosystème La Caverne</p>
+          <div className="eco-switcher__grid">
+            {ECOSYSTEM_APPS.map((app) => {
+              if (app.current) {
+                return (
+                  <div key={app.id} className="eco-switcher__app eco-switcher__app--current">
+                    <span className="eco-switcher__app-icon" style={{ background: `${app.color}22`, color: app.color }}>{app.emoji}</span>
+                    <span className="eco-switcher__app-name">{app.name}</span>
+                  </div>
+                );
+              }
+              if (app.disabled) {
+                return (
+                  <div key={app.id} className="eco-switcher__app eco-switcher__app--disabled">
+                    <span className="eco-switcher__app-icon" style={{ background: 'rgba(255,255,255,0.05)', color: '#4B5563' }}>{app.emoji}</span>
+                    <span className="eco-switcher__app-name">{app.name}</span>
+                    {app.comingSoon && <span className="eco-switcher__soon">bientôt</span>}
+                  </div>
+                );
+              }
+              return (
+                <a
+                  key={app.id}
+                  href={getAppUrl(app)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="eco-switcher__app"
+                  onClick={() => setOpen(false)}
+                >
+                  <span className="eco-switcher__app-icon" style={{ background: `${app.color}22`, color: app.color }}>{app.emoji}</span>
+                  <span className="eco-switcher__app-name">{app.name}</span>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const NAV_MAIN = [
   { to: '/dashboard', icon: Home, label: 'Dashboard' },
   { to: '/alerts', icon: Bell, label: 'Alertes' },
-  { to: '/specter', icon: Eye, label: 'SPECTER' },
   { to: '/energy', icon: Zap, label: 'Énergie' },
   { to: '/blackout', icon: ShieldAlert, label: 'Blackout' },
   { to: '/map', icon: Map, label: 'Carte' },
   { to: '/analysis', icon: Link2, label: 'Analyse' },
   { to: '/stats', icon: BarChart3, label: 'Stats' },
+  { to: '/specter', icon: Eye, label: 'Specter' },
   { to: '/account', icon: User, label: 'Mon compte' },
   { to: '/settings', icon: Settings, label: 'Réglages' },
 ];
@@ -34,7 +103,6 @@ export default function Header() {
   const userLocation = useSettingsStore((s) => s.userLocation);
   const zones = useSettingsStore((s) => s.zones);
   const events = useAlertStore((s) => s.events);
-  const [showSwitcher, setShowSwitcher] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
 
   const weatherLocation = zones.length > 0
@@ -87,9 +155,6 @@ export default function Header() {
               <LynxLogo size={38} />
             </Link>
           <div className="header__right">
-            {/* {criticalCount > 0 && (
-              <span className="header__badge">{criticalCount}</span>
-            )} */}
             <button
               onClick={() => setVeilleMode(!veilleMode)}
               className={`header__icon-btn${veilleMode ? ' header__icon-btn--active' : ''}`}
@@ -106,13 +171,7 @@ export default function Header() {
             >
               <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
             </button>
-            {/* <button
-              onClick={() => setShowSwitcher(true)}
-              className="header__emoji-btn"
-              aria-label="Applications"
-            >
-              🐆
-            </button> */}
+            <EcosystemSwitcher />
           </div>
         </div>
       </header>
@@ -141,12 +200,6 @@ export default function Header() {
               <span>{label}</span>
             </Link>
           ))}
-        </div>
-        <div className="sidebar__footer">
-          <button onClick={() => setShowSwitcher(true)} className="sidebar__eco-btn">
-            <span className="emoji">🌐</span>
-            <span>Switcher</span>
-          </button>
         </div>
       </nav>
 
@@ -189,20 +242,11 @@ export default function Header() {
                 </Link>
               ))}
             </div>
-            <div className="mobile-sidebar__footer">
-              <button
-                onClick={() => { setShowSidebar(false); setShowSwitcher(true); }}
-                className="sidebar__eco-btn"
-              >
-                <span className="emoji">🌐</span>
-                <span>Switcher</span>
-              </button>
-            </div>
+
           </div>
         </div>
       )}
 
-      {showSwitcher && <AppSwitcher onClose={() => setShowSwitcher(false)} />}
     </>
   );
 }

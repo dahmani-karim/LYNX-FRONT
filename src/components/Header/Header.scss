@@ -75,6 +75,132 @@
   }
 }
 
+// ─── Ecosystem Switcher (inline dropdown) ──────────────────────────────────
+.eco-switcher {
+  position: relative;
+
+  &__btn {
+    @include btn-ghost;
+    padding: $sp-2;
+    color: $lynx-muted;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover, &--active {
+      color: $lynx-accent;
+      background-color: rgba($lynx-accent, 0.1);
+    }
+  }
+
+  &__dots {
+    display: grid;
+    grid-template-columns: repeat(3, 4px);
+    grid-template-rows: repeat(3, 4px);
+    gap: 3px;
+
+    span {
+      display: block;
+      width: 4px;
+      height: 4px;
+      background: currentColor;
+      border-radius: 1px;
+    }
+  }
+
+  &__dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 240px;
+    background: $lynx-surface;
+    border: 1px solid $lynx-border;
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    padding: 12px;
+    z-index: 300;
+    animation: eco-dropdown-in 0.15s ease;
+  }
+
+  &__label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $lynx-muted;
+    margin: 0 0 10px 4px;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  &__app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 4px;
+    border-radius: 10px;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.15s, border-color 0.15s;
+    color: inherit;
+
+    &:hover {
+      background: $lynx-elevated;
+      border-color: $lynx-border;
+    }
+
+    &--current {
+      background: rgba($lynx-accent, 0.08);
+      border-color: rgba($lynx-accent, 0.2);
+      cursor: default;
+    }
+
+    &--disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    &-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+    }
+
+    &-name {
+      font-size: 0.62rem;
+      font-weight: 500;
+      color: $lynx-muted;
+      text-align: center;
+      line-height: 1.2;
+    }
+  }
+}
+
+.eco-switcher__soon {
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6B7280;
+  margin-top: 1px;
+}
+
+@keyframes eco-dropdown-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 // Desktop sidebar
 .sidebar {
   display: none;

@@ -269,7 +269,7 @@ export default function Specter() {
 
       {!loading && !error && events.length === 0 && (
         <div className="specter-page__empty">
-          Aucun événement enregistré. Ajoutez-en via Strapi Admin.
+          Aucun événement enregistré.
         </div>
       )}
 
