@@ -12,6 +12,10 @@ export async function fetchSpecterEvents({ category, type, page = 1, pageSize = 
   params.set('pagination[pageSize]', pageSize);
   params.set('sort', 'startDate:desc');
   params.set('publicationState', 'live');
+  // Populate linkedEvents (title + type) for badges in cards
+  params.set('populate[linkedEvents][fields][0]', 'title');
+  params.set('populate[linkedEvents][fields][1]', 'type');
+  params.set('populate[linkedEvents][fields][2]', 'slug');
 
   if (category && category !== 'ALL') {
     params.set('filters[category][$eq]', category);

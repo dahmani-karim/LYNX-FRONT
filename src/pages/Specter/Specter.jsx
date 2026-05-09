@@ -4,7 +4,7 @@ import { fetchSpecterEvents } from '../../services/specter';
 import Loader from '../../components/Loader/Loader';
 import {
   Eye, FlaskConical, Zap, Shield, Skull, Heart, AlertTriangle, Globe,
-  ChevronRight, Clock, RadioTower
+  ChevronRight, Clock, RadioTower, Microscope, Link2
 } from 'lucide-react';
 import './Specter.scss';
 
@@ -29,6 +29,12 @@ const SEVERITY_LABELS = {
 };
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
+
+function getLinkedEvents(event) {
+  // Strapi v4: event.attributes.linkedEvents.data  |  Strapi v5 flat: event.linkedEvents
+  const raw = event.attributes?.linkedEvents?.data ?? event.linkedEvents ?? [];
+  return Array.isArray(raw) ? raw : [];
+}
 
 function getYear(event) {
   return new Date(event.attributes?.startDate || event.startDate).getFullYear();
@@ -66,7 +72,7 @@ function FamilyChip({ family, active, onClick }) {
   );
 }
 
-function EventCard({ event, dimmed }) {
+function EventCard({ event }) {
   const type = attr(event, 'type');
   const category = attr(event, 'category');
   const severity = attr(event, 'severity');
@@ -77,6 +83,7 @@ function EventCard({ event, dimmed }) {
   const startDate = attr(event, 'startDate');
   const endDate = attr(event, 'endDate');
   const location = attr(event, 'location');
+  const linkedEvents = getLinkedEvents(event);
   const family = SPECTER_FAMILIES[category] || SPECTER_FAMILIES.HEALTH;
   const sevDef = SEVERITY_LABELS[severity] || SEVERITY_LABELS.warning;
 
@@ -84,16 +91,22 @@ function EventCard({ event, dimmed }) {
     ? `${new Date(startDate).getFullYear()} — ${new Date(endDate).getFullYear()}`
     : new Date(startDate).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
 
+  const typeBadge = {
+    simulation: { icon: <FlaskConical size={11} />, label: 'Simulation' },
+    crisis:     { icon: <RadioTower size={11} />,  label: 'Crise réelle' },
+    program:    { icon: <Microscope size={11} />,  label: 'Programme' },
+  }[type] || { icon: <RadioTower size={11} />, label: type };
+
   return (
     <Link
       to={`/specter/${slug}`}
-      className={`specter-card specter-card--${type} ${isOngoing ? 'specter-card--ongoing' : ''} ${dimmed ? 'specter-card--dimmed' : ''}`}
+      className={`specter-card specter-card--${type} ${isOngoing ? 'specter-card--ongoing' : ''}`}
       style={{ '--family-color': family.color, '--family-bg': family.bg }}
     >
       <div className="specter-card__header">
         <span className="specter-card__type-badge">
-          {type === 'simulation' ? <FlaskConical size={11} /> : <RadioTower size={11} />}
-          {type === 'simulation' ? 'Simulation' : 'Crise réelle'}
+          {typeBadge.icon}
+          {typeBadge.label}
         </span>
         {isOngoing && (
           <span className="specter-card__ongoing-badge">
@@ -115,6 +128,26 @@ function EventCard({ event, dimmed }) {
       </div>
       <p className="specter-card__summary">{summary}</p>
 
+      {linkedEvents.length > 0 && (
+        <div className="specter-card__links">
+          <Link2 size={10} />
+          {linkedEvents.slice(0, 3).map((le, i) => {
+            const leTitle = le.attributes?.title ?? le.title;
+            const leType  = le.attributes?.type  ?? le.type;
+            return (
+              <span key={le.id ?? i} className={`specter-card__link-badge specter-card__link-badge--${leType}`}>
+                {leTitle}
+              </span>
+            );
+          })}
+          {linkedEvents.length > 3 && (
+            <span className="specter-card__link-badge specter-card__link-badge--more">
+              +{linkedEvents.length - 3}
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="specter-card__footer">
         <span
           className="specter-card__family-tag"
@@ -128,39 +161,117 @@ function EventCard({ event, dimmed }) {
   );
 }
 
-function YearRow({ year, events, activeFamily, activeType }) {
-  const sims = events.filter((e) => attr(e, 'type') === 'simulation');
-  const crises = events.filter((e) => attr(e, 'type') === 'crisis');
+function ProgramCard({ event }) {
+  const category = attr(event, 'category');
+  const severity = attr(event, 'severity');
+  const isOngoing = attr(event, 'isOngoing');
+  const title = attr(event, 'title');
+  const slug = attr(event, 'slug');
+  const summary = attr(event, 'summary');
+  const startDate = attr(event, 'startDate');
+  const endDate = attr(event, 'endDate');
+  const location = attr(event, 'location');
+  const linkedEvents = getLinkedEvents(event);
+  const family = SPECTER_FAMILIES[category] || SPECTER_FAMILIES.HEALTH;
+  const sevDef = SEVERITY_LABELS[severity] || SEVERITY_LABELS.warning;
 
-  // Interleave: pair sim+crisis by index
+  const dateStr = endDate
+    ? `${new Date(startDate).getFullYear()} — ${new Date(endDate).getFullYear()}`
+    : new Date(startDate).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+
+  return (
+    <div className="specter-program-row">
+      <Link
+        to={`/specter/${slug}`}
+        className={`specter-program-card ${isOngoing ? 'specter-program-card--ongoing' : ''}`}
+        style={{ '--family-color': family.color, '--family-bg': family.bg }}
+      >
+        <div className="specter-program-card__header">
+          <span className="specter-program-card__badge">
+            <Microscope size={11} /> PROGRAMME
+          </span>
+          {isOngoing && (
+            <span className="specter-card__ongoing-badge">
+              <span className="specter-card__pulse" />
+              EN COURS
+            </span>
+          )}
+          <span className="specter-program-card__severity" style={{ color: sevDef.color }}>
+            {sevDef.label}
+          </span>
+        </div>
+
+        <div className="specter-program-card__title">{title}</div>
+
+        <div className="specter-program-card__meta">
+          {location && <span className="specter-card__location">{location}</span>}
+          <span className="specter-card__date"><Clock size={11} />{dateStr}</span>
+          <span
+            className="specter-card__family-tag"
+            style={{ color: family.color, background: family.bg }}
+          >
+            {family.label}
+          </span>
+        </div>
+
+        <p className="specter-program-card__summary">{summary}</p>
+
+        {linkedEvents.length > 0 && (
+          <div className="specter-card__links">
+            <Link2 size={10} />
+            {linkedEvents.slice(0, 4).map((le, i) => {
+              const leTitle = le.attributes?.title ?? le.title;
+              const leType  = le.attributes?.type  ?? le.type;
+              return (
+                <span key={le.id ?? i} className={`specter-card__link-badge specter-card__link-badge--${leType}`}>
+                  {leTitle}
+                </span>
+              );
+            })}
+            {linkedEvents.length > 4 && (
+              <span className="specter-card__link-badge specter-card__link-badge--more">
+                +{linkedEvents.length - 4}
+              </span>
+            )}
+          </div>
+        )}
+
+        <div className="specter-program-card__footer">
+          <ChevronRight size={14} className="specter-card__chevron" />
+        </div>
+      </Link>
+    </div>
+  );
+}
+
+function YearRow({ year, events }) {
+  const programs = events.filter((e) => attr(e, 'type') === 'program');
+  const sims     = events.filter((e) => attr(e, 'type') === 'simulation');
+  const crises   = events.filter((e) => attr(e, 'type') === 'crisis');
+
+  // Interleave sims and crises by index
   const maxLen = Math.max(sims.length, crises.length);
   const rows = [];
   for (let i = 0; i < maxLen; i++) {
     rows.push({ sim: sims[i] || null, crisis: crises[i] || null });
   }
 
-  const isDimmed = (event) => {
-    if (!event) return false;
-    const cat = attr(event, 'type');
-    const family = attr(event, 'category');
-    if (activeFamily !== 'ALL' && family !== activeFamily) return true;
-    if (activeType !== 'ALL' && cat !== activeType) return true;
-    return false;
-  };
-
-  const allDimmed = events.every((e) => isDimmed(e));
-
   return (
-    <div className={`specter-year-block ${allDimmed ? 'specter-year-block--hidden' : ''}`}>
+    <div className="specter-year-block">
       <div className="specter-year-marker">
         <span>{year}</span>
       </div>
+
+      {/* Programs: full-width centered rows */}
+      {programs.map((prog) => (
+        <ProgramCard key={attr(prog, 'slug') || prog.id} event={prog} />
+      ))}
+
+      {/* Sim / Crisis dual-column pairs */}
       {rows.map((row, i) => (
         <div key={i} className="specter-row">
           <div className="specter-row__left">
-            {row.sim && (
-              <EventCard event={row.sim} dimmed={isDimmed(row.sim)} />
-            )}
+            {row.sim && <EventCard event={row.sim} />}
           </div>
           <div className="specter-row__spine">
             <div className="specter-row__line" />
@@ -169,9 +280,7 @@ function YearRow({ year, events, activeFamily, activeType }) {
             />
           </div>
           <div className="specter-row__right">
-            {row.crisis && (
-              <EventCard event={row.crisis} dimmed={isDimmed(row.crisis)} />
-            )}
+            {row.crisis && <EventCard event={row.crisis} />}
           </div>
         </div>
       ))}
@@ -202,15 +311,16 @@ export default function Specter() {
       });
   }, []);
 
-  const grouped = useMemo(() => groupByYear(events), [events]);
-
-  const visibleCount = useMemo(() => {
+  const filteredEvents = useMemo(() => {
     return events.filter((e) => {
       if (activeFamily !== 'ALL' && attr(e, 'category') !== activeFamily) return false;
       if (activeType !== 'ALL' && attr(e, 'type') !== activeType) return false;
       return true;
-    }).length;
+    });
   }, [events, activeFamily, activeType]);
+
+  const grouped = useMemo(() => groupByYear(filteredEvents), [filteredEvents]);
+  const visibleCount = filteredEvents.length;
 
   const toggleFamily = (f) => setActiveFamily((prev) => (prev === f ? 'ALL' : f));
 
@@ -228,6 +338,8 @@ export default function Specter() {
         <p className="specter-page__legend">
           <span className="specter-legend__sim"><FlaskConical size={12} /> Simulations (gauche)</span>
           <span className="specter-legend__sep">·</span>
+          <span className="specter-legend__program"><Microscope size={12} /> Programmes (centré)</span>
+          <span className="specter-legend__sep">·</span>
           <span className="specter-legend__crisis"><RadioTower size={12} /> Crises réelles (droite)</span>
         </p>
 
@@ -243,13 +355,18 @@ export default function Specter() {
             ))}
           </div>
           <div className="specter-filters__type">
-            {['ALL', 'simulation', 'crisis'].map((t) => (
+            {[
+              { key: 'ALL',        label: 'Tous' },
+              { key: 'simulation', label: '⚗️ Simulations' },
+              { key: 'program',    label: '🔬 Programmes' },
+              { key: 'crisis',     label: '🦠 Crises' },
+            ].map(({ key, label }) => (
               <button
-                key={t}
-                className={`specter-type-btn ${activeType === t ? 'specter-type-btn--active' : ''}`}
-                onClick={() => setActiveType((prev) => (prev === t ? 'ALL' : t))}
+                key={key}
+                className={`specter-type-btn ${activeType === key ? 'specter-type-btn--active' : ''}`}
+                onClick={() => setActiveType((prev) => (prev === key ? 'ALL' : key))}
               >
-                {t === 'ALL' ? 'Tous' : t === 'simulation' ? 'Simulations' : 'Crises'}
+                {label}
               </button>
             ))}
           </div>
@@ -291,8 +408,6 @@ export default function Specter() {
               key={year}
               year={year}
               events={yearEvents}
-              activeFamily={activeFamily}
-              activeType={activeType}
             />
           ))}
         </div>
