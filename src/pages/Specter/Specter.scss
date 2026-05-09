@@ -210,7 +210,7 @@
 
 .specter-timeline__header {
   display: grid;
-  grid-template-columns: 1fr 24px 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   align-items: center;
   padding: 12px 4px 4px;
   font-size: 0.67rem;
@@ -226,7 +226,12 @@
   white-space: nowrap;
 
   &--left { justify-content: flex-end; color: #7C3AED; }
+  &--center { justify-content: center; color: #F59E0B; }
   &--right { justify-content: flex-start; color: #DC2626; }
+
+  @media (max-width: 640px) {
+    &--center svg { display: none; }
+  }
 }
 
 /* Year block */

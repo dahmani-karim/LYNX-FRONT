@@ -441,7 +441,7 @@ export default function Specter() {
         <p className="specter-page__legend">
           <span className="specter-legend__sim"><FlaskConical size={12} /> Simulations (gauche)</span>
           <span className="specter-legend__sep">·</span>
-          <span className="specter-legend__program"><Microscope size={12} /> Programmes (centré)</span>
+          <span className="specter-legend__program"><Microscope size={12} /> Programmes (centre)</span>
           <span className="specter-legend__sep">·</span>
           <span className="specter-legend__crisis"><RadioTower size={12} /> Crises réelles (droite)</span>
         </p>
@@ -520,7 +520,9 @@ export default function Specter() {
               <div className="specter-timeline__col-label specter-timeline__col-label--left">
                 <FlaskConical size={14} /> Simulations & Exercices
               </div>
-              <div />
+              <div className="specter-timeline__col-label specter-timeline__col-label--center">
+                <Microscope size={14} /> Programmes
+              </div>
               <div className="specter-timeline__col-label specter-timeline__col-label--right">
                 <RadioTower size={14} /> Crises & Épidémies
               </div>
