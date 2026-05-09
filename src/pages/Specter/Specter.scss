@@ -504,6 +504,13 @@
   max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
+  // Reset button appearance when used as <button>
+  appearance: none;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+  line-height: inherit;
+  &:hover { filter: brightness(1.3); }
 
   &--simulation {
     background: rgba(99, 102, 241, 0.12);

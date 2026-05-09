@@ -62,7 +62,7 @@ export default function SpecterDetail() {
   const location = attr(event, 'location');
   const sources = attr(event, 'sources') || [];
   const tags = attr(event, 'tags') || [];
-  const linkedEvents = attr(event, 'linkedEvents')?.data || event?.linkedEvents || [];
+  const linkedEvents = attr(event, 'linkedEventsInverse')?.data || event?.linkedEventsInverse || [];
   const casualtiesEstimate = attr(event, 'casualtiesEstimate');
   const organizerOrSource = attr(event, 'organizerOrSource');
   const keyLesson = attr(event, 'keyLesson');

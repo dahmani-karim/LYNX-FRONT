@@ -70,9 +70,14 @@ const SEVERITY_LABELS = {
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function getLinkedEvents(event) {
-  // Strapi v4: event.attributes.linkedEvents.data  |  Strapi v5 flat: event.linkedEvents
-  const raw = event.attributes?.linkedEvents?.data ?? event.linkedEvents ?? [];
+  // Strapi v5 flat: event.linkedEventsInverse
+  const raw = event.attributes?.linkedEventsInverse?.data ?? event.linkedEventsInverse ?? [];
   return Array.isArray(raw) ? raw : [];
+}
+
+function scrollToCard(slug) {
+  const el = document.getElementById(`specter-card-${slug}`);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function getYear(event) {
@@ -141,6 +146,7 @@ function EventCard({ event }) {
 
   return (
     <Link
+      id={`specter-card-${slug}`}
       to={`/specter/${slug}`}
       className={`specter-card specter-card--${type} ${isOngoing ? 'specter-card--ongoing' : ''} ${collapsed ? 'specter-card--collapsed' : ''}`}
       style={{ '--family-color': family.color, '--family-bg': family.bg }}
@@ -170,22 +176,33 @@ function EventCard({ event }) {
       {!collapsed && <div className="specter-card__date"><Clock size={11} />{dateStr}</div>}
       {!collapsed && <p className="specter-card__summary">{summary}</p>}
 
-      {!collapsed && linkedEvents.length > 0 && (
+      {linkedEvents.length > 0 && (
         <div className="specter-card__links">
           <Link2 size={10} />
           {linkedEvents.slice(0, 3).map((le, i) => {
             const leTitle = le.attributes?.title ?? le.title;
             const leType  = le.attributes?.type  ?? le.type;
+            const leSlug  = le.attributes?.slug  ?? le.slug;
             return (
-              <span key={le.id ?? i} className={`specter-card__link-badge specter-card__link-badge--${leType}`}>
+              <button
+                key={le.id ?? leSlug ?? i}
+                type="button"
+                className={`specter-card__link-badge specter-card__link-badge--${leType}`}
+                title={leTitle}
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); scrollToCard(leSlug); }}
+              >
                 {leTitle}
-              </span>
+              </button>
             );
           })}
           {linkedEvents.length > 3 && (
-            <span className="specter-card__link-badge specter-card__link-badge--more">
+            <button
+              type="button"
+              className="specter-card__link-badge specter-card__link-badge--more"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCollapsed(false); }}
+            >
               +{linkedEvents.length - 3}
-            </span>
+            </button>
           )}
         </div>
       )}
@@ -226,6 +243,7 @@ function ProgramCard({ event }) {
   return (
     <div className="specter-program-row">
       <Link
+        id={`specter-card-${slug}`}
         to={`/specter/${slug}`}
         className={`specter-program-card ${isOngoing ? 'specter-program-card--ongoing' : ''} ${collapsed ? 'specter-program-card--collapsed' : ''}`}
         style={{ '--family-color': family.color, '--family-bg': family.bg }}
@@ -260,22 +278,33 @@ function ProgramCard({ event }) {
 
         {!collapsed && <p className="specter-program-card__summary">{summary}</p>}
 
-        {!collapsed && linkedEvents.length > 0 && (
+        {linkedEvents.length > 0 && (
           <div className="specter-card__links">
             <Link2 size={10} />
             {linkedEvents.slice(0, 4).map((le, i) => {
               const leTitle = le.attributes?.title ?? le.title;
               const leType  = le.attributes?.type  ?? le.type;
+              const leSlug  = le.attributes?.slug  ?? le.slug;
               return (
-                <span key={le.id ?? i} className={`specter-card__link-badge specter-card__link-badge--${leType}`}>
+                <button
+                  key={le.id ?? leSlug ?? i}
+                  type="button"
+                  className={`specter-card__link-badge specter-card__link-badge--${leType}`}
+                  title={leTitle}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); scrollToCard(leSlug); }}
+                >
                   {leTitle}
-                </span>
+                </button>
               );
             })}
             {linkedEvents.length > 4 && (
-              <span className="specter-card__link-badge specter-card__link-badge--more">
+              <button
+                type="button"
+                className="specter-card__link-badge specter-card__link-badge--more"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              >
                 +{linkedEvents.length - 4}
-              </span>
+              </button>
             )}
           </div>
         )}
