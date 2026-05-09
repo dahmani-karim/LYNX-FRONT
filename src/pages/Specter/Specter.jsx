@@ -1,12 +1,51 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchSpecterEvents } from '../../services/specter';
 import Loader from '../../components/Loader/Loader';
 import {
   Eye, FlaskConical, Zap, Shield, Skull, Heart, AlertTriangle, Globe,
-  ChevronRight, Clock, RadioTower, Microscope, Link2
+  ChevronRight, ChevronDown, Clock, RadioTower, Microscope, Link2, Columns, AlignJustify
 } from 'lucide-react';
 import './Specter.scss';
+
+// ─── Drag-to-scroll ────────────────────────────────────────────────────────
+
+function useDragScroll() {
+  const ref = useRef(null);
+  const s = useRef({ down: false, startX: 0, scrollLeft: 0, moved: false });
+
+  const onMouseDown = useCallback((e) => {
+    const el = ref.current;
+    if (!el) return;
+    s.current = { down: true, startX: e.pageX - el.offsetLeft, scrollLeft: el.scrollLeft, moved: false };
+    el.style.cursor = 'grabbing';
+    el.style.userSelect = 'none';
+  }, []);
+
+  const onMouseMove = useCallback((e) => {
+    if (!s.current.down || !ref.current) return;
+    e.preventDefault();
+    const x = e.pageX - ref.current.offsetLeft;
+    const walk = (x - s.current.startX) * 1.5;
+    if (Math.abs(walk) > 3) s.current.moved = true;
+    ref.current.scrollLeft = s.current.scrollLeft - walk;
+  }, []);
+
+  const onMouseUp = useCallback(() => {
+    s.current.down = false;
+    if (ref.current) { ref.current.style.cursor = ''; ref.current.style.userSelect = ''; }
+  }, []);
+
+  const onClickCapture = useCallback((e) => {
+    if (s.current.moved) {
+      e.preventDefault();
+      e.stopPropagation();
+      s.current.moved = false;
+    }
+  }, []);
+
+  return { ref, onMouseDown, onMouseMove, onMouseUp, onMouseLeave: onMouseUp, onClickCapture };
+}
 
 // ─── Threat families ────────────────────────────────────────────────────────
 
@@ -40,15 +79,16 @@ function getYear(event) {
   return new Date(event.attributes?.startDate || event.startDate).getFullYear();
 }
 
-function groupByYear(events) {
+function groupByYear(events, asc = false) {
   const map = {};
   events.forEach((e) => {
     const y = getYear(e);
     if (!map[y]) map[y] = [];
     map[y].push(e);
   });
-  // newest year first
-  return Object.entries(map).sort((a, b) => Number(b[0]) - Number(a[0]));
+  return Object.entries(map).sort((a, b) =>
+    asc ? Number(a[0]) - Number(b[0]) : Number(b[0]) - Number(a[0])
+  );
 }
 
 function attr(event, key) {
@@ -73,6 +113,8 @@ function FamilyChip({ family, active, onClick }) {
 }
 
 function EventCard({ event }) {
+  const [collapsed, setCollapsed] = useState(true);
+  const toggleCollapse = (e) => { e.preventDefault(); e.stopPropagation(); setCollapsed((c) => !c); };
   const type = attr(event, 'type');
   const category = attr(event, 'category');
   const severity = attr(event, 'severity');
@@ -100,7 +142,7 @@ function EventCard({ event }) {
   return (
     <Link
       to={`/specter/${slug}`}
-      className={`specter-card specter-card--${type} ${isOngoing ? 'specter-card--ongoing' : ''}`}
+      className={`specter-card specter-card--${type} ${isOngoing ? 'specter-card--ongoing' : ''} ${collapsed ? 'specter-card--collapsed' : ''}`}
       style={{ '--family-color': family.color, '--family-bg': family.bg }}
     >
       <div className="specter-card__header">
@@ -117,18 +159,18 @@ function EventCard({ event }) {
         <span className="specter-card__severity" style={{ color: sevDef.color }}>
           {sevDef.label}
         </span>
+        <button className={`specter-card__collapse-btn${collapsed ? ' specter-card__collapse-btn--up' : ''}`} onClick={toggleCollapse}>
+          <ChevronDown size={10} />
+        </button>
       </div>
 
       <div className="specter-card__title">{title}</div>
 
-      {location && <div className="specter-card__location">{location}</div>}
-      <div className="specter-card__date">
-        <Clock size={11} />
-        {dateStr}
-      </div>
-      <p className="specter-card__summary">{summary}</p>
+      {!collapsed && location && <div className="specter-card__location">{location}</div>}
+      {!collapsed && <div className="specter-card__date"><Clock size={11} />{dateStr}</div>}
+      {!collapsed && <p className="specter-card__summary">{summary}</p>}
 
-      {linkedEvents.length > 0 && (
+      {!collapsed && linkedEvents.length > 0 && (
         <div className="specter-card__links">
           <Link2 size={10} />
           {linkedEvents.slice(0, 3).map((le, i) => {
@@ -162,6 +204,8 @@ function EventCard({ event }) {
 }
 
 function ProgramCard({ event }) {
+  const [collapsed, setCollapsed] = useState(true);
+  const toggleCollapse = (e) => { e.preventDefault(); e.stopPropagation(); setCollapsed((c) => !c); };
   const category = attr(event, 'category');
   const severity = attr(event, 'severity');
   const isOngoing = attr(event, 'isOngoing');
@@ -183,7 +227,7 @@ function ProgramCard({ event }) {
     <div className="specter-program-row">
       <Link
         to={`/specter/${slug}`}
-        className={`specter-program-card ${isOngoing ? 'specter-program-card--ongoing' : ''}`}
+        className={`specter-program-card ${isOngoing ? 'specter-program-card--ongoing' : ''} ${collapsed ? 'specter-program-card--collapsed' : ''}`}
         style={{ '--family-color': family.color, '--family-bg': family.bg }}
       >
         <div className="specter-program-card__header">
@@ -199,24 +243,24 @@ function ProgramCard({ event }) {
           <span className="specter-program-card__severity" style={{ color: sevDef.color }}>
             {sevDef.label}
           </span>
+          <button className={`specter-card__collapse-btn${collapsed ? ' specter-card__collapse-btn--up' : ''}`} onClick={toggleCollapse}>
+            <ChevronDown size={10} />
+          </button>
         </div>
 
         <div className="specter-program-card__title">{title}</div>
 
-        <div className="specter-program-card__meta">
-          {location && <span className="specter-card__location">{location}</span>}
-          <span className="specter-card__date"><Clock size={11} />{dateStr}</span>
-          <span
-            className="specter-card__family-tag"
-            style={{ color: family.color, background: family.bg }}
-          >
-            {family.label}
-          </span>
-        </div>
+        {!collapsed && (
+          <div className="specter-program-card__meta">
+            {location && <span className="specter-card__location">{location}</span>}
+            <span className="specter-card__date"><Clock size={11} />{dateStr}</span>
+            <span className="specter-card__family-tag" style={{ color: family.color, background: family.bg }}>{family.label}</span>
+          </div>
+        )}
 
-        <p className="specter-program-card__summary">{summary}</p>
+        {!collapsed && <p className="specter-program-card__summary">{summary}</p>}
 
-        {linkedEvents.length > 0 && (
+        {!collapsed && linkedEvents.length > 0 && (
           <div className="specter-card__links">
             <Link2 size={10} />
             {linkedEvents.slice(0, 4).map((le, i) => {
@@ -244,10 +288,31 @@ function ProgramCard({ event }) {
   );
 }
 
-function YearRow({ year, events }) {
+function YearRow({ year, events, isHorizontal }) {
   const programs = events.filter((e) => attr(e, 'type') === 'program');
   const sims     = events.filter((e) => attr(e, 'type') === 'simulation');
   const crises   = events.filter((e) => attr(e, 'type') === 'crisis');
+
+  if (isHorizontal) {
+    return (
+      <div className="specter-year-block specter-year-block--h">
+        <div className="specter-year-marker">
+          <span>{year}</span>
+        </div>
+        <div className="specter-year-block__events">
+          {programs.map((prog) => (
+            <ProgramCard key={attr(prog, 'slug') || prog.id} event={prog} />
+          ))}
+          {sims.map((sim) => (
+            <EventCard key={attr(sim, 'slug') || sim.id} event={sim} />
+          ))}
+          {crises.map((crisis) => (
+            <EventCard key={attr(crisis, 'slug') || crisis.id} event={crisis} />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   // Interleave sims and crises by index
   const maxLen = Math.max(sims.length, crises.length);
@@ -296,6 +361,15 @@ export default function Specter() {
   const [error, setError] = useState(null);
   const [activeFamily, setActiveFamily] = useState('ALL');
   const [activeType, setActiveType] = useState('ALL');
+  const [isHorizontal, setIsHorizontal] = useState(false);
+  const { ref: dragRef, onMouseDown, onMouseMove, onMouseUp, onMouseLeave, onClickCapture } = useDragScroll();
+
+  // Scroll to the right end (most recent) when entering horizontal mode
+  useEffect(() => {
+    if (isHorizontal && dragRef.current) {
+      setTimeout(() => { dragRef.current.scrollLeft = dragRef.current.scrollWidth; }, 50);
+    }
+  }, [isHorizontal, dragRef]);
 
   useEffect(() => {
     setLoading(true);
@@ -319,7 +393,7 @@ export default function Specter() {
     });
   }, [events, activeFamily, activeType]);
 
-  const grouped = useMemo(() => groupByYear(filteredEvents), [filteredEvents]);
+  const grouped = useMemo(() => groupByYear(filteredEvents, isHorizontal), [filteredEvents, isHorizontal]);
   const visibleCount = filteredEvents.length;
 
   const toggleFamily = (f) => setActiveFamily((prev) => (prev === f ? 'ALL' : f));
@@ -370,9 +444,19 @@ export default function Specter() {
               </button>
             ))}
           </div>
-          <div className="specter-filters__count">
-            {visibleCount} événement{visibleCount !== 1 ? 's' : ''}
-            {(activeFamily !== 'ALL' || activeType !== 'ALL') && ` / ${events.length} total`}
+          <div className="specter-filters__bottom">
+            <div className="specter-filters__count">
+              {visibleCount} événement{visibleCount !== 1 ? 's' : ''}
+              {(activeFamily !== 'ALL' || activeType !== 'ALL') && ` / ${events.length} total`}
+            </div>
+            <button
+              className={`specter-view-toggle ${isHorizontal ? 'specter-view-toggle--active' : ''}`}
+              onClick={() => setIsHorizontal((h) => !h)}
+              title={isHorizontal ? 'Passer en vue verticale' : 'Passer en vue horizontale'}
+            >
+              {isHorizontal ? <AlignJustify size={13} /> : <Columns size={13} />}
+              <span>{isHorizontal ? 'Vertical' : 'Horizontal'}</span>
+            </button>
           </div>
         </div>
       </div>
@@ -393,21 +477,32 @@ export default function Specter() {
       )}
 
       {!loading && !error && grouped.length > 0 && (
-        <div className="specter-timeline">
-          <div className="specter-timeline__header">
-            <div className="specter-timeline__col-label specter-timeline__col-label--left">
-              <FlaskConical size={14} /> Simulations & Exercices
+        <div
+          ref={isHorizontal ? dragRef : null}
+          className={`specter-timeline${isHorizontal ? ' specter-timeline--horizontal' : ''}`}
+          onMouseDown={isHorizontal ? onMouseDown : undefined}
+          onMouseMove={isHorizontal ? onMouseMove : undefined}
+          onMouseUp={isHorizontal ? onMouseUp : undefined}
+          onMouseLeave={isHorizontal ? onMouseLeave : undefined}
+          onClickCapture={isHorizontal ? onClickCapture : undefined}
+        >
+          {!isHorizontal && (
+            <div className="specter-timeline__header">
+              <div className="specter-timeline__col-label specter-timeline__col-label--left">
+                <FlaskConical size={14} /> Simulations & Exercices
+              </div>
+              <div />
+              <div className="specter-timeline__col-label specter-timeline__col-label--right">
+                <RadioTower size={14} /> Crises & Épidémies
+              </div>
             </div>
-            <div />
-            <div className="specter-timeline__col-label specter-timeline__col-label--right">
-              <RadioTower size={14} /> Crises & Épidémies
-            </div>
-          </div>
+          )}
           {grouped.map(([year, yearEvents]) => (
             <YearRow
               key={year}
               year={year}
               events={yearEvents}
+              isHorizontal={isHorizontal}
             />
           ))}
         </div>
