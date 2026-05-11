@@ -10,8 +10,9 @@ import SeverityBadge from '../../components/SeverityBadge/SeverityBadge';
 import PremiumGate from '../../components/PremiumGate/PremiumGate';
 import CountryDossier from '../../components/CountryDossier/CountryDossier';
 import { timeAgo } from '../../utils/date';
-import { Locate, ExternalLink, Layers, Radio, Plane, Satellite, Ship, Eye, EyeOff, SlidersHorizontal, X, Globe, Sun, Moon } from 'lucide-react';
+import { Locate, ExternalLink, Layers, Radio, Plane, Satellite, Ship, Eye, EyeOff, SlidersHorizontal, X, Globe, Sun, Moon, Activity } from 'lucide-react';
 import HeatmapLayer from '../../components/HeatmapLayer/HeatmapLayer';
+import { fetchHantavirusCases } from '../../services/hantavirus';
 import { computeTerminator } from '../../services/terminator';
 import { loadCountryBoundaries, computeCountryRisks, getRiskColor, getRiskOpacity } from '../../services/choropleth';
 import TrackerClusterLayer from '../../components/TrackerClusterLayer/TrackerClusterLayer';
@@ -108,6 +109,11 @@ export default function MapPage() {
   const [showChoropleth, setShowChoropleth] = useState(false);
   const [countryGeoJSON, setCountryGeoJSON] = useState(null);
   const [dossierPos, setDossierPos] = useState(null); // { lat, lng }
+  const [showHantavirus, setShowHantavirus] = useState(false);
+  const [hantavirusCases, setHantavirusCases] = useState([]);
+  const [hantavirusLoading, setHantavirusLoading] = useState(false);
+  const [showBaseAlerts, setShowBaseAlerts] = useState(true);
+  const [showLayersPanel, setShowLayersPanel] = useState(false);
 
   // GIBS date (yesterday — imagery has 24-48h delay)
   const gibsDate = useMemo(() => {
@@ -128,6 +134,16 @@ export default function MapPage() {
       loadCountryBoundaries().then((data) => { if (data) setCountryGeoJSON(data); });
     }
   }, [showChoropleth, countryGeoJSON]);
+
+  // Fetch hantavirus cases when layer is toggled on
+  useEffect(() => {
+    if (!showHantavirus || hantavirusCases.length > 0) return;
+    setHantavirusLoading(true);
+    fetchHantavirusCases()
+      .then((cases) => setHantavirusCases(cases))
+      .catch((err) => console.warn('[hantavirus] fetch failed:', err.message))
+      .finally(() => setHantavirusLoading(false));
+  }, [showHantavirus]);
 
   // Compute country risks
   const countryRisks = useMemo(() => computeCountryRisks(events), [events]);
@@ -244,46 +260,65 @@ export default function MapPage() {
         </button>
       </div>
 
-      {/* Alert mode: heatmap left, filter toggle right */}
+      {/* Alert mode: layers left, filter toggle right */}
       {mode === 'alerts' && (
         <>
-          {/* Heatmap button — top left */}
-          <div className="map-page__heatmap-btn">
-            <PremiumGate feature="Heatmap">
-              <button
-                onClick={() => setShowHeatmap(!showHeatmap)}
-                className={`map-page__chip ${showHeatmap ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
-              >
-                <Layers size={14} />
-                Heatmap
-              </button>
-            </PremiumGate>
-          </div>
+          {/* Calques button — top left */}
+          {(() => {
+            const activeLayersCount = [showHeatmap, showSatellite, showTerminator, showChoropleth, showHantavirus].filter(Boolean).length;
+            return (
+              <>
+                <button
+                  className={`map-page__layers-toggle ${activeLayersCount > 0 ? 'map-page__layers-toggle--active' : ''}`}
+                  onClick={() => setShowLayersPanel(!showLayersPanel)}
+                >
+                  {showLayersPanel ? <X size={16} /> : <Layers size={16} />}
+                  <span>Calques{activeLayersCount > 0 ? ` (${activeLayersCount})` : ''}</span>
+                </button>
 
-          {/* Extra map layers — below heatmap */}
-          <div className="map-page__extra-layers">
-            <button
-              onClick={() => setShowSatellite(!showSatellite)}
-              className={`map-page__chip ${showSatellite ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
-            >
-              <Globe size={14} />
-              Satellite
-            </button>
-            <button
-              onClick={() => setShowTerminator(!showTerminator)}
-              className={`map-page__chip ${showTerminator ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
-            >
-              <Moon size={14} />
-              Jour/Nuit
-            </button>
-            <button
-              onClick={() => setShowChoropleth(!showChoropleth)}
-              className={`map-page__chip ${showChoropleth ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
-            >
-              <Globe size={14} />
-              Risques
-            </button>
-          </div>
+                {showLayersPanel && (
+                  <div className="map-page__layers-panel">
+                    <button
+                      onClick={() => setShowHeatmap(!showHeatmap)}
+                      className={`map-page__chip ${showHeatmap ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
+                    >
+                      <Layers size={14} />
+                      Heatmap
+                    </button>
+                    <button
+                      onClick={() => setShowSatellite(!showSatellite)}
+                      className={`map-page__chip ${showSatellite ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
+                    >
+                      <Globe size={14} />
+                      Satellite
+                    </button>
+                    <button
+                      onClick={() => setShowTerminator(!showTerminator)}
+                      className={`map-page__chip ${showTerminator ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
+                    >
+                      <Moon size={14} />
+                      Jour / Nuit
+                    </button>
+                    <button
+                      onClick={() => setShowChoropleth(!showChoropleth)}
+                      className={`map-page__chip ${showChoropleth ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
+                    >
+                      <Globe size={14} />
+                      Risques pays
+                    </button>
+                    <button
+                      onClick={() => setShowHantavirus(!showHantavirus)}
+                      className={`map-page__chip ${showHantavirus ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
+                      style={showHantavirus ? { borderColor: '#F97316', color: '#F97316' } : {}}
+                    >
+                      <Activity size={14} />
+                      {hantavirusLoading ? 'Chargement…' : 'Hantavirus'}
+                    </button>
+                  </div>
+                )}
+              </>
+            );
+          })()}
 
           {/* Filter toggle — top right */}
           <button
@@ -407,9 +442,48 @@ export default function MapPage() {
         {/* Alert markers */}
         {mode === 'alerts' && (
           <>
-            {showHeatmap && isPremium && <HeatmapLayer points={heatPoints} />}
+            {showHeatmap && isPremium && showBaseAlerts && <HeatmapLayer points={heatPoints} />}
 
-            {filteredEvents.map((event) => {
+            {/* Hantavirus layer */}
+            {showHantavirus && hantavirusCases.map((c) => {
+              const color = c.severity === 'critical' ? '#EF4444' : c.severity === 'high' ? '#F97316' : '#FBBF24';
+              return (
+                <CircleMarker
+                  key={c.id}
+                  center={[c.latitude, c.longitude]}
+                  radius={c.severity === 'critical' ? 12 : c.severity === 'high' ? 9 : 7}
+                  pathOptions={{
+                    color: color,
+                    fillColor: color,
+                    fillOpacity: 0.75,
+                    weight: 2,
+                  }}
+                >
+                  <Popup>
+                    <div className="map-page__popup">
+                      <div className="map-page__popup-header">
+                        <span style={{ color, fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase' }}>
+                          ⚠ Hantavirus
+                        </span>
+                      </div>
+                      <h4 className="map-page__popup-title">{c.title}</h4>
+                      <p className="map-page__popup-desc">{c.description}</p>
+                      <div className="map-page__popup-meta">
+                        <span>{c.sourceName}</span>
+                        <span>{timeAgo(c.eventDate)}</span>
+                      </div>
+                      {c.sourceUrl && (
+                        <a href={c.sourceUrl} target="_blank" rel="noopener noreferrer" className="map-page__popup-link">
+                          Source <ExternalLink size={10} />
+                        </a>
+                      )}
+                    </div>
+                  </Popup>
+                </CircleMarker>
+              );
+            })}
+
+            {showBaseAlerts && filteredEvents.map((event) => {
               const cat = CATEGORIES[event.type] || CATEGORIES.other;
               const sev = SEVERITY_LEVELS[event.severity] || SEVERITY_LEVELS.info;
               return (
@@ -493,6 +567,18 @@ export default function MapPage() {
       {/* Country Dossier — right-click / long-press */}
       {dossierPos && (
         <CountryDossier lat={dossierPos.lat} lng={dossierPos.lng} onClose={() => setDossierPos(null)} />
+      )}
+
+      {/* Toggle alertes — bas gauche */}
+      {mode === 'alerts' && (
+        <button
+          onClick={() => setShowBaseAlerts(!showBaseAlerts)}
+          className="map-page__toggle-alerts"
+          aria-label={showBaseAlerts ? 'Masquer les alertes' : 'Afficher les alertes'}
+          title={showBaseAlerts ? 'Masquer les alertes' : 'Afficher les alertes'}
+        >
+          {showBaseAlerts ? <Eye size={18} /> : <EyeOff size={18} />}
+        </button>
       )}
 
       {/* Bottom info bar */}

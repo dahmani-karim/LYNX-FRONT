@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useMap } from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet.heat';
 
 export default function HeatmapLayer({ points, options = {} }) {
@@ -8,7 +9,7 @@ export default function HeatmapLayer({ points, options = {} }) {
   useEffect(() => {
     if (!points || points.length === 0) return;
 
-    const heatLayer = window.L.heatLayer(points, {
+    const heatLayer = L.heatLayer(points, {
       radius: 25,
       blur: 15,
       maxZoom: 12,
