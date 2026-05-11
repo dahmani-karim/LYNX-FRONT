@@ -10,9 +10,10 @@ import SeverityBadge from '../../components/SeverityBadge/SeverityBadge';
 import PremiumGate from '../../components/PremiumGate/PremiumGate';
 import CountryDossier from '../../components/CountryDossier/CountryDossier';
 import { timeAgo } from '../../utils/date';
-import { Locate, ExternalLink, Layers, Radio, Plane, Satellite, Ship, Eye, EyeOff, SlidersHorizontal, X, Globe, Sun, Moon, Activity, Biohazard } from 'lucide-react';
+import { Locate, ExternalLink, Layers, Radio, Plane, Satellite, Ship, Eye, EyeOff, SlidersHorizontal, X, Globe, Sun, Moon, Activity, Biohazard, Newspaper } from 'lucide-react';
 import HeatmapLayer from '../../components/HeatmapLayer/HeatmapLayer';
 import { fetchHantavirusCases, MV_HONDIUS_CASES, ENDEMIC_ZONES, OUTBREAK_SUMMARY } from '../../services/hantavirus';
+import { fetchGDELTNews, fetchWikiStats, parseGDELTDate } from '../../services/hantaLive';
 import { computeTerminator } from '../../services/terminator';
 import { loadCountryBoundaries, computeCountryRisks, getRiskColor, getRiskOpacity } from '../../services/choropleth';
 import TrackerClusterLayer from '../../components/TrackerClusterLayer/TrackerClusterLayer';
@@ -117,6 +118,12 @@ export default function MapPage() {
   const [showBaseAlerts, setShowBaseAlerts] = useState(true);
   const [showLayersPanel, setShowLayersPanel] = useState(false);
 
+  // Hantavirus live data (GDELT + Wikipedia)
+  const [liveStats, setLiveStats] = useState(null);    // { confirmed, suspected, deaths, timestamp }
+  const [liveNews, setLiveNews] = useState([]);          // articles GDELT
+  const [showNews, setShowNews] = useState(false);
+  const [newsLoading, setNewsLoading] = useState(false);
+
   // GIBS date (yesterday — imagery has 24-48h delay)
   const gibsDate = useMemo(() => {
     const d = new Date();
@@ -147,6 +154,24 @@ export default function MapPage() {
       .catch((err) => console.warn('[hantavirus] fetch failed:', err.message))
       .finally(() => setHantavirusLoading(false));
   }, [showHantavirus, mode]);
+
+  // Wikipedia — stats live au chargement du mode hantavirus
+  useEffect(() => {
+    if (mode !== 'hantavirus') return;
+    fetchWikiStats()
+      .then(setLiveStats)
+      .catch((e) => console.warn('[wiki-stats]', e.message));
+  }, [mode]);
+
+  // GDELT — actualités, chargement différé à l'ouverture du drawer
+  useEffect(() => {
+    if (!showNews || liveNews.length > 0) return;
+    setNewsLoading(true);
+    fetchGDELTNews()
+      .then(setLiveNews)
+      .catch((e) => console.warn('[gdelt]', e.message))
+      .finally(() => setNewsLoading(false));
+  }, [showNews]);
 
   // Compute country risks
   const countryRisks = useMemo(() => computeCountryRisks(events), [events]);
@@ -396,9 +421,10 @@ export default function MapPage() {
       {mode === 'hantavirus' && (
         <div className="map-page__hanta-bar">
           <div className="map-page__hanta-summary">
-            <span className="map-page__hanta-stat map-page__hanta-stat--deceased">☠ {OUTBREAK_SUMMARY.totalDeceased} décès</span>
-            <span className="map-page__hanta-stat map-page__hanta-stat--confirmed">● {OUTBREAK_SUMMARY.totalConfirmed} confirmés</span>
-            <span className="map-page__hanta-stat map-page__hanta-stat--suspected">◎ {OUTBREAK_SUMMARY.totalSuspected} suspects</span>
+            {liveStats && <span className="map-page__hanta-live-dot" title="Stats Wikipedia live" />}
+            <span className="map-page__hanta-stat map-page__hanta-stat--deceased">☠ {liveStats?.deaths ?? OUTBREAK_SUMMARY.totalDeceased} décès</span>
+            <span className="map-page__hanta-stat map-page__hanta-stat--confirmed">● {liveStats?.confirmed ?? OUTBREAK_SUMMARY.totalConfirmed} confirmés</span>
+            <span className="map-page__hanta-stat map-page__hanta-stat--suspected">◎ {liveStats?.suspected ?? OUTBREAK_SUMMARY.totalSuspected} suspects</span>
             <span className="map-page__hanta-stat map-page__hanta-stat--monitoring">○ ~{OUTBREAK_SUMMARY.totalMonitoring} surveillance</span>
           </div>
           <div className="map-page__hanta-filters">
@@ -416,6 +442,13 @@ export default function MapPage() {
               <Eye size={13} />
               <span className="map-page__chip-label">Surveillance</span>
             </button>
+            <button
+              className={`map-page__chip ${showNews ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
+              onClick={() => setShowNews(!showNews)}
+            >
+              <Newspaper size={13} />
+              <span className="map-page__chip-label">Actualités</span>
+            </button>
             <a
               href={OUTBREAK_SUMMARY.whoUrl}
               target="_blank"
@@ -424,9 +457,37 @@ export default function MapPage() {
               style={{ textDecoration: 'none', borderColor: '#F97316', color: '#F97316' }}
             >
               <ExternalLink size={12} />
-              <span className="map-page__chip-label">WHO DON#99</span>
+              <span className="map-page__chip-label">WHO DON600</span>
             </a>
           </div>
+          {showNews && (
+            <div className="map-page__hanta-news">
+              {newsLoading && (
+                <p className="map-page__hanta-news-empty">Chargement…</p>
+              )}
+              {!newsLoading && liveNews.length === 0 && (
+                <p className="map-page__hanta-news-empty">Aucun article récent</p>
+              )}
+              {liveNews.map((article, i) => {
+                const d = parseGDELTDate(article.seendate);
+                return (
+                  <a
+                    key={i}
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="map-page__hanta-news-item"
+                  >
+                    <span className="map-page__hanta-news-item-title">{article.title}</span>
+                    <span className="map-page__hanta-news-item-meta">
+                      <span>{article.domain}</span>
+                      {d && <span>{timeAgo(d)}</span>}
+                    </span>
+                  </a>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
