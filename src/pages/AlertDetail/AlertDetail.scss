@@ -235,6 +235,32 @@
     padding: $sp-4;
   }
 
+  &__hanta-context {
+    margin-top: $sp-3;
+    padding: $sp-3;
+    background: rgba(239, 68, 68, 0.07);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 8px;
+  }
+
+  &__hanta-context-title {
+    font-size: $text-xs;
+    font-weight: 600;
+    color: #fca5a5;
+    margin-bottom: $sp-2;
+  }
+
+  &__hanta-context-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: $sp-2;
+    font-size: $text-xs;
+    color: $lynx-accent;
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
+  }
+
   &__meta-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);

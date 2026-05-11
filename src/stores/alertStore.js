@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { fetchGlobalAlerts } from '../services/globalAlerts';
+import { recategorizeEvent } from '../services/recategorize';
 import { fetchWeather } from '../services/weather';
 import { fetchAirQuality } from '../services/airQuality';
 import { fetchFires } from '../services/fires';
@@ -200,7 +201,7 @@ export const useAlertStore = create(
     const spaceWeatherData = allEvents.filter((e) => e.type === 'space_weather');
 
     const uniqueEvents = Array.from(
-      new Map(allEvents.map((e) => [e.id, e])).values()
+      new Map(allEvents.map(recategorizeEvent).map((e) => [e.id, e])).values()
     );
 
     // Filter earthquakes by minimum magnitude setting

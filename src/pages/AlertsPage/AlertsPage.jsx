@@ -36,7 +36,7 @@ export default function AlertsPage() {
   const isPremium = useAuthStore((s) => s.isPremium);
   const { savedAlerts, fetchSaved } = useSavedAlertStore();
   const [showFilters, setShowFilters] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(() => filters.searchQuery ?? '');
   const [tab, setTab] = useState('live'); // 'live' | 'saved' | 'timeline'
   const [tierFilter, setTierFilter] = useState('all'); // 'all' | 'flash' | 'priority' | 'routine'
   const [expandedGroups, setExpandedGroups] = useState(new Set());
@@ -84,7 +84,7 @@ export default function AlertsPage() {
   };
 
   const availableCategories = Object.values(CATEGORIES).filter((c) => c.id !== 'other');
-  const hasActiveFilters = filters.categories.length > 0 || filters.severity !== 'all' || filters.timeRange !== '24h' || tierFilter !== 'all';
+  const hasActiveFilters = filters.categories.length > 0 || filters.severity !== 'all' || filters.timeRange !== '24h' || tierFilter !== 'all' || !!searchQuery;
 
   // Timeline grouping by date
   const timelineGroups = useMemo(() => {
@@ -243,7 +243,7 @@ export default function AlertsPage() {
           </div>
 
           {hasActiveFilters && (
-            <button onClick={() => { resetFilters(); setTierFilter('all'); }} className="alerts-page__reset">
+            <button onClick={() => { resetFilters(); setTierFilter('all'); setSearchQuery(''); }} className="alerts-page__reset">
               Réinitialiser les filtres
             </button>
           )}
@@ -283,12 +283,27 @@ export default function AlertsPage() {
               </span>
             );
           })}
+          {searchQuery && (
+            <span className="alerts-page__active-chip">
+              🔍 {searchQuery}
+              <button onClick={() => handleSearch('')} aria-label="Effacer la recherche"><X size={10} /></button>
+            </span>
+          )}
           <button
             className="alerts-page__active-reset"
-            onClick={() => { resetFilters(); setTierFilter('all'); }}
+            onClick={() => { resetFilters(); setTierFilter('all'); setSearchQuery(''); }}
           >
             Tout effacer
           </button>
+        </div>
+      )}
+
+      {/* Hantavirus outbreak banner */}
+      {tab === 'live' && events.some((e) => e.type === 'health' && /hantavirus|hondius/i.test(e.title + ' ' + (e.description || ''))) && (
+        <div className="alerts-page__outbreak-banner">
+          <span className="alerts-page__outbreak-dot" />
+          <span><strong>Épidémie active · MV Hondius</strong> — 7 confirmés · 3 décès · 17+ suspects</span>
+          <a href="https://www.who.int/emergencies/disease-outbreak-news/item/2026-DON600" target="_blank" rel="noopener noreferrer" className="alerts-page__outbreak-link">WHO DON#600 →</a>
         </div>
       )}
 

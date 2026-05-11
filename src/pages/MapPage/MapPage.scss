@@ -417,6 +417,25 @@
     &:hover { text-decoration: underline; }
   }
 
+  &__popup-detail-btn {
+    display: block;
+    width: 100%;
+    margin-top: $sp-1;
+    padding: 4px 0;
+    background: none;
+    border: 1px solid rgba(251, 146, 60, 0.35);
+    border-radius: 5px;
+    font-size: $text-xs;
+    color: $lynx-accent;
+    cursor: pointer;
+    text-align: center;
+    @include transition;
+
+    &:hover {
+      background: rgba(251, 146, 60, 0.08);
+    }
+  }
+
   // Location button
   &__locate-btn {
     position: absolute;

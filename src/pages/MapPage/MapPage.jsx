@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, CircleMarker, Circle, Popup, useMap, useMapEvents, GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
 import { useAlertStore } from '../../stores/alertStore';
@@ -97,6 +98,7 @@ function createTrackerIcon(type, heading = 0) {
 }
 
 export default function MapPage() {
+  const navigate = useNavigate();
   const events = useAlertStore((s) => s.events);
   const { userLocation, zones } = useSettingsStore();
   const isPremium = useAuthStore((s) => s.isPremium);
@@ -693,6 +695,12 @@ export default function MapPage() {
                           Source <ExternalLink size={10} />
                         </a>
                       )}
+                      <button
+                        className="map-page__popup-detail-btn"
+                        onClick={() => navigate(`/alert/${encodeURIComponent(event.id)}`)}
+                      >
+                        Voir détails →
+                      </button>
                     </div>
                   </Popup>
                 </CircleMarker>

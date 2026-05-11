@@ -101,10 +101,12 @@ function MetadataSection({ event }) {
 
   if (type === 'health') {
     const hasData = m.todayCases != null || m.todayDeaths != null || m.active != null || m.risques || m.categorie;
-    if (!hasData) return null;
+    const isHantavirus = /hantavirus|hondius/i.test(`${event.title || ''} ${event.description || ''}`);
+    if (!hasData && !isHantavirus) return null;
     return (
       <div className="alert-detail__meta-section">
         <h3 className="alert-detail__section-title">Données sanitaires</h3>
+        {hasData && (
         <div className="alert-detail__meta-grid">
           {m.todayCases != null && (
             <div className="alert-detail__meta-cell">
@@ -137,6 +139,34 @@ function MetadataSection({ event }) {
             </div>
           )}
         </div>
+        )}
+        {isHantavirus && (
+          <div className="alert-detail__hanta-context">
+            <p className="alert-detail__hanta-context-title">🦠 Épidémie MV Hondius — Données OMS (11 mai 2026)</p>
+            <div className="alert-detail__meta-grid">
+              <div className="alert-detail__meta-cell">
+                <span className="alert-detail__meta-label">Confirmés</span>
+                <span className="alert-detail__meta-value alert-detail__meta-value--big">7</span>
+              </div>
+              <div className="alert-detail__meta-cell">
+                <span className="alert-detail__meta-label">Décès</span>
+                <span className="alert-detail__meta-value alert-detail__meta-value--big">3</span>
+              </div>
+              <div className="alert-detail__meta-cell">
+                <span className="alert-detail__meta-label">Suspects</span>
+                <span className="alert-detail__meta-value alert-detail__meta-value--big">17+</span>
+              </div>
+            </div>
+            <a
+              href="https://www.who.int/emergencies/disease-outbreak-news/item/2026-DON600"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="alert-detail__hanta-context-link"
+            >
+              <ExternalLink size={11} /> WHO DON#600 — Disease Outbreak News
+            </a>
+          </div>
+        )}
       </div>
     );
   }

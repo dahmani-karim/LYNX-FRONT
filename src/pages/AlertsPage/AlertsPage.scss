@@ -198,6 +198,43 @@
     @include transition;
   }
 
+  // Outbreak banner
+  &__outbreak-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 $sp-1;
+    padding: 8px 12px;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 8px;
+    font-size: $text-xs;
+    color: #fca5a5;
+    flex-wrap: wrap;
+  }
+
+  &__outbreak-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ef4444;
+    flex-shrink: 0;
+    animation: hanta-pulse 1.4s ease-in-out infinite;
+  }
+
+  @keyframes hanta-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  &__outbreak-link {
+    margin-left: auto;
+    color: #f87171;
+    text-decoration: none;
+    white-space: nowrap;
+    &:hover { text-decoration: underline; }
+  }
+
   // Results header
   &__results {
     @include flex-between;
