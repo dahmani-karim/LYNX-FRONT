@@ -47,9 +47,71 @@
       color: white;
     }
 
-    &:not(&--active):hover {
+    &--hanta {
+      background-color: rgba(249, 115, 22, 0.15);
+      color: #F97316;
+      border: 1px solid #F97316;
+    }
+
+    &:not(&--active):not(&--hanta):hover {
       color: $lynx-text;
     }
+  }
+
+  // Mode label — hidden on mobile, visible on desktop
+  &__mode-label {
+    @media (max-width: 479px) { display: none; }
+  }
+
+  // Chip label — hidden on mobile, visible on desktop
+  &__chip-label {
+    @media (max-width: 479px) { display: none; }
+  }
+
+  // Hantavirus bar — below mode switch
+  &__hanta-bar {
+    position: absolute;
+    top: calc($sp-3 + 2.5rem);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: $z-map-controls;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $sp-1-5;
+    pointer-events: none;
+  }
+
+  &__hanta-summary {
+    display: flex;
+    gap: $sp-2;
+    background-color: rgba($lynx-surface, 0.92);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(249, 115, 22, 0.4);
+    border-radius: $radius-full;
+    padding: $sp-1 $sp-3;
+    pointer-events: auto;
+  }
+
+  &__hanta-stat {
+    font-size: $text-xs;
+    font-weight: 700;
+    white-space: nowrap;
+
+    &--deceased  { color: #6B7280; }
+    &--confirmed { color: #EF4444; }
+    &--suspected { color: #F97316; }
+    &--monitoring { color: #FBBF24; }
+
+    @media (max-width: 479px) {
+      font-size: 0.6rem;
+    }
+  }
+
+  &__hanta-filters {
+    display: flex;
+    gap: $sp-1-5;
+    pointer-events: auto;
   }
 
   // Filter chips (tracking mode only)
@@ -154,7 +216,7 @@
     border: 1px solid $lynx-border;
     border-radius: $radius-xl;
     box-shadow: $shadow-lg;
-    max-height: 60vh;
+    max-height: 80vh;
     overflow-y: auto;
     max-width: 14rem;
   }

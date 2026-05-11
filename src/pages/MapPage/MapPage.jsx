@@ -10,9 +10,9 @@ import SeverityBadge from '../../components/SeverityBadge/SeverityBadge';
 import PremiumGate from '../../components/PremiumGate/PremiumGate';
 import CountryDossier from '../../components/CountryDossier/CountryDossier';
 import { timeAgo } from '../../utils/date';
-import { Locate, ExternalLink, Layers, Radio, Plane, Satellite, Ship, Eye, EyeOff, SlidersHorizontal, X, Globe, Sun, Moon, Activity } from 'lucide-react';
+import { Locate, ExternalLink, Layers, Radio, Plane, Satellite, Ship, Eye, EyeOff, SlidersHorizontal, X, Globe, Sun, Moon, Activity, Biohazard } from 'lucide-react';
 import HeatmapLayer from '../../components/HeatmapLayer/HeatmapLayer';
-import { fetchHantavirusCases } from '../../services/hantavirus';
+import { fetchHantavirusCases, MV_HONDIUS_CASES, ENDEMIC_ZONES, OUTBREAK_SUMMARY } from '../../services/hantavirus';
 import { computeTerminator } from '../../services/terminator';
 import { loadCountryBoundaries, computeCountryRisks, getRiskColor, getRiskOpacity } from '../../services/choropleth';
 import TrackerClusterLayer from '../../components/TrackerClusterLayer/TrackerClusterLayer';
@@ -102,7 +102,7 @@ export default function MapPage() {
   const [activeCategories, setActiveCategories] = useState(new Set());
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [showCatPanel, setShowCatPanel] = useState(false);
-  const [mode, setMode] = useState('alerts'); // 'alerts' | 'tracking'
+  const [mode, setMode] = useState('alerts'); // 'alerts' | 'tracking' | 'hantavirus'
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [showSatellite, setShowSatellite] = useState(false);
   const [showTerminator, setShowTerminator] = useState(false);
@@ -112,6 +112,8 @@ export default function MapPage() {
   const [showHantavirus, setShowHantavirus] = useState(false);
   const [hantavirusCases, setHantavirusCases] = useState([]);
   const [hantavirusLoading, setHantavirusLoading] = useState(false);
+  const [showEndemic, setShowEndemic] = useState(true);
+  const [showMonitoring, setShowMonitoring] = useState(true);
   const [showBaseAlerts, setShowBaseAlerts] = useState(true);
   const [showLayersPanel, setShowLayersPanel] = useState(false);
 
@@ -135,15 +137,16 @@ export default function MapPage() {
     }
   }, [showChoropleth, countryGeoJSON]);
 
-  // Fetch hantavirus cases when layer is toggled on
+  // Fetch hantavirus cases when layer is toggled on OR when entering hantavirus mode
   useEffect(() => {
-    if (!showHantavirus || hantavirusCases.length > 0) return;
+    const shouldFetch = showHantavirus || mode === 'hantavirus';
+    if (!shouldFetch || hantavirusCases.length > 0) return;
     setHantavirusLoading(true);
     fetchHantavirusCases()
       .then((cases) => setHantavirusCases(cases))
       .catch((err) => console.warn('[hantavirus] fetch failed:', err.message))
       .finally(() => setHantavirusLoading(false));
-  }, [showHantavirus]);
+  }, [showHantavirus, mode]);
 
   // Compute country risks
   const countryRisks = useMemo(() => computeCountryRisks(events), [events]);
@@ -249,14 +252,21 @@ export default function MapPage() {
           className={`map-page__mode-btn ${mode === 'alerts' ? 'map-page__mode-btn--active' : ''}`}
         >
           <Radio size={14} />
-          Alertes
+          <span className="map-page__mode-label">Alertes</span>
         </button>
         <button
           onClick={() => setMode('tracking')}
           className={`map-page__mode-btn ${mode === 'tracking' ? 'map-page__mode-btn--active' : ''}`}
         >
           <Plane size={14} />
-          Tracking
+          <span className="map-page__mode-label">Tracking</span>
+        </button>
+        <button
+          onClick={() => setMode('hantavirus')}
+          className={`map-page__mode-btn ${mode === 'hantavirus' ? 'map-page__mode-btn--hanta' : ''}`}
+        >
+          <Biohazard size={14} />
+          <span className="map-page__mode-label">Hantavirus</span>
         </button>
       </div>
 
@@ -273,7 +283,7 @@ export default function MapPage() {
                   onClick={() => setShowLayersPanel(!showLayersPanel)}
                 >
                   {showLayersPanel ? <X size={16} /> : <Layers size={16} />}
-                  <span>Calques{activeLayersCount > 0 ? ` (${activeLayersCount})` : ''}</span>
+                  <span className="map-page__chip-label">Calques{activeLayersCount > 0 ? ` (${activeLayersCount})` : ''}</span>
                 </button>
 
                 {showLayersPanel && (
@@ -306,14 +316,7 @@ export default function MapPage() {
                       <Globe size={14} />
                       Risques pays
                     </button>
-                    <button
-                      onClick={() => setShowHantavirus(!showHantavirus)}
-                      className={`map-page__chip ${showHantavirus ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
-                      style={showHantavirus ? { borderColor: '#F97316', color: '#F97316' } : {}}
-                    >
-                      <Activity size={14} />
-                      {hantavirusLoading ? 'Chargement…' : 'Hantavirus'}
-                    </button>
+
                   </div>
                 )}
               </>
@@ -326,7 +329,7 @@ export default function MapPage() {
             onClick={() => setShowCatPanel(!showCatPanel)}
           >
             {showCatPanel ? <X size={16} /> : <SlidersHorizontal size={16} />}
-            <span>Filtres{activeCategories.size > 0 ? ` (${activeCategories.size})` : ''}</span>
+            <span className="map-page__chip-label">Filtres{activeCategories.size > 0 ? ` (${activeCategories.size})` : ''}</span>
           </button>
 
           {/* Collapsible category panel */}
@@ -389,6 +392,44 @@ export default function MapPage() {
         </div>
       )}
 
+      {/* Hantavirus mode toolbar */}
+      {mode === 'hantavirus' && (
+        <div className="map-page__hanta-bar">
+          <div className="map-page__hanta-summary">
+            <span className="map-page__hanta-stat map-page__hanta-stat--deceased">☠ {OUTBREAK_SUMMARY.totalDeceased} décès</span>
+            <span className="map-page__hanta-stat map-page__hanta-stat--confirmed">● {OUTBREAK_SUMMARY.totalConfirmed} confirmés</span>
+            <span className="map-page__hanta-stat map-page__hanta-stat--suspected">◎ {OUTBREAK_SUMMARY.totalSuspected} suspects</span>
+            <span className="map-page__hanta-stat map-page__hanta-stat--monitoring">○ ~{OUTBREAK_SUMMARY.totalMonitoring} surveillance</span>
+          </div>
+          <div className="map-page__hanta-filters">
+            <button
+              className={`map-page__chip ${showEndemic ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
+              onClick={() => setShowEndemic(!showEndemic)}
+            >
+              <Globe size={13} />
+              <span className="map-page__chip-label">Endémiques</span>
+            </button>
+            <button
+              className={`map-page__chip ${showMonitoring ? 'map-page__chip--active' : 'map-page__chip--inactive'}`}
+              onClick={() => setShowMonitoring(!showMonitoring)}
+            >
+              <Eye size={13} />
+              <span className="map-page__chip-label">Surveillance</span>
+            </button>
+            <a
+              href={OUTBREAK_SUMMARY.whoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="map-page__chip map-page__chip--active"
+              style={{ textDecoration: 'none', borderColor: '#F97316', color: '#F97316' }}
+            >
+              <ExternalLink size={12} />
+              <span className="map-page__chip-label">WHO DON#99</span>
+            </a>
+          </div>
+        </div>
+      )}
+
       {/* Map */}
       <div className="map-page__map-wrap">
         {mode === 'tracking' && trackersLoading && allTrackerPoints.length === 0 && (
@@ -439,10 +480,81 @@ export default function MapPage() {
         {/* Viewport tracking for refetch */}
         {mode === 'tracking' && <MapCenterTracker onCenterChange={handleCenterChange} />}
 
+        {/* Hantavirus 2026 — onglet dédié */}
+        {mode === 'hantavirus' && (
+          <>
+            {/* Zones endémiques (fond) */}
+            {showEndemic && ENDEMIC_ZONES.map((z) => (
+              <CircleMarker
+                key={z.id}
+                center={[z.lat, z.lng]}
+                radius={8}
+                pathOptions={{ color: '#64748B', fillColor: '#334155', fillOpacity: 0.35, weight: 1.5, dashArray: '4 3' }}
+              >
+                <Popup>
+                  <div className="map-page__popup">
+                    <div className="map-page__popup-header">
+                      <span style={{ fontSize: '0.65rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Zone endémique</span>
+                    </div>
+                    <h4 className="map-page__popup-title">{z.label}</h4>
+                    <p className="map-page__popup-desc">{z.country} — Virus : {z.virus}</p>
+                    <a href={z.url} target="_blank" rel="noopener noreferrer" className="map-page__popup-link">
+                      Source <ExternalLink size={10} />
+                    </a>
+                  </div>
+                </Popup>
+              </CircleMarker>
+            ))}
+
+            {/* Cas MV Hondius */}
+            {MV_HONDIUS_CASES.filter((c) => {
+              if (!showMonitoring && c.status === 'monitoring') return false;
+              return true;
+            }).map((c) => {
+              const cfg = {
+                deceased:      { color: '#111827', fill: '#1F2937', r: 14, label: '☠' },
+                confirmed:     { color: '#EF4444', fill: '#DC2626', r: 11, label: '●' },
+                suspected:     { color: '#F97316', fill: '#EA580C', r: 9,  label: '◎' },
+                monitoring:    { color: '#FBBF24', fill: '#D97706', r: 7,  label: '○' },
+                exposure_site: { color: '#A855F7', fill: '#9333EA', r: 13, label: '★' },
+              }[c.status] || { color: '#64748B', fill: '#475569', r: 7, label: '?' };
+              return (
+                <CircleMarker
+                  key={c.id}
+                  center={[c.lat, c.lng]}
+                  radius={cfg.r}
+                  pathOptions={{ color: cfg.color, fillColor: cfg.fill, fillOpacity: 0.85, weight: 2 }}
+                >
+                  <Popup>
+                    <div className="map-page__popup">
+                      <div className="map-page__popup-header">
+                        <span style={{ color: cfg.color, fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase' }}>
+                          {cfg.label} {c.status.replace('_', ' ')}
+                          {c.origin === 'imported' && <span style={{ marginLeft: 6, opacity: 0.7 }}>✈ importé</span>}
+                          {c.origin === 'response' && <span style={{ marginLeft: 6, opacity: 0.7 }}>&#x1F6E1; réponse</span>}
+                        </span>
+                      </div>
+                      <h4 className="map-page__popup-title">{c.label}</h4>
+                      <p className="map-page__popup-desc">{c.detail}</p>
+                      <div className="map-page__popup-meta">
+                        <span>{c.source}</span>
+                        <span>{c.date}</span>
+                      </div>
+                      <a href={c.url} target="_blank" rel="noopener noreferrer" className="map-page__popup-link">
+                        Source <ExternalLink size={10} />
+                      </a>
+                    </div>
+                  </Popup>
+                </CircleMarker>
+              );
+            })}
+          </>
+        )}
+
         {/* Alert markers */}
         {mode === 'alerts' && (
           <>
-            {showHeatmap && isPremium && showBaseAlerts && <HeatmapLayer points={heatPoints} />}
+            {showHeatmap && showBaseAlerts && <HeatmapLayer points={heatPoints} />}
 
             {/* Hantavirus layer */}
             {showHantavirus && hantavirusCases.map((c) => {
@@ -542,8 +654,8 @@ export default function MapPage() {
           <Popup><p style={{ fontSize: '0.875rem', fontWeight: 500 }}>{userLocation.label}</p></Popup>
         </CircleMarker>
 
-        {/* Geofence zones */}
-        {zones.map((zone) => (
+        {/* Geofence zones — tracking mode only (would block clicks in other modes) */}
+        {mode === 'tracking' && zones.map((zone) => (
           <Circle
             key={zone.id}
             center={[zone.lat, zone.lng]}
@@ -583,10 +695,11 @@ export default function MapPage() {
 
       {/* Bottom info bar */}
       <div className="map-page__count">
-        {mode === 'alerts'
-          ? `${filteredEvents.length} événement${filteredEvents.length > 1 ? 's' : ''}`
-          : `${allTrackerPoints.length} objet${allTrackerPoints.length > 1 ? 's' : ''} suivi${allTrackerPoints.length > 1 ? 's' : ''}`
-        }
+        {mode === 'alerts' && `${filteredEvents.length} événement${filteredEvents.length > 1 ? 's' : ''}`}
+        {mode === 'tracking' && `${allTrackerPoints.length} objet${allTrackerPoints.length > 1 ? 's' : ''} suivi${allTrackerPoints.length > 1 ? 's' : ''}`}
+        {mode === 'hantavirus' && `MV Hondius · ${OUTBREAK_SUMMARY.totalConfirmed} confirmés · ${OUTBREAK_SUMMARY.totalDeceased} décès · WHO risque ${OUTBREAK_SUMMARY.whoRisk}`}
+        {/* empty placeholder to satisfy original logic */}
+        {false && ''}
         {mode === 'tracking' && activeTrackers.includes('ship') && !trackersLoading && lastFetch && maritimeCoverage !== 'global' && (
           <span className="map-page__last-update"> · Navires: {ships.length === 0 ? 'aucun à proximité' : 'couverture régionale'}</span>
         )}
