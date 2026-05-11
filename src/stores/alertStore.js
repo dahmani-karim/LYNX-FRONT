@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { fetchGlobalAlerts } from '../services/globalAlerts';
-import { recategorizeEvent } from '../services/recategorize';
+import { recategorizeEvent, deduplicateEvents } from '../services/recategorize';
 import { fetchWeather } from '../services/weather';
 import { fetchAirQuality } from '../services/airQuality';
 import { fetchFires } from '../services/fires';
@@ -200,9 +200,11 @@ export const useAlertStore = create(
     // Les alertes sont incluses dans results[0] (fetchGlobalAlerts)
     const spaceWeatherData = allEvents.filter((e) => e.type === 'space_weather');
 
-    const uniqueEvents = Array.from(
-      new Map(allEvents.map(recategorizeEvent).map((e) => [e.id, e])).values()
-    );
+    // Pass 1 — recategorize (fix Strapi misclassifications)
+    const recategorized = allEvents.map(recategorizeEvent);
+    // Pass 2 — deduplicate by ID, then by title-signature (removes GDELT near-duplicates)
+    const uniqueById = Array.from(new Map(recategorized.map((e) => [e.id, e])).values());
+    const uniqueEvents = deduplicateEvents(uniqueById);
 
     // Filter earthquakes by minimum magnitude setting
     const minMag = useSettingsStore.getState().earthquakeMinMagnitude || 4;
